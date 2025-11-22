@@ -39,7 +39,7 @@ class GongstagramGenerator {
     return await picture.toImage(size.width.toInt(), size.height.toInt());
   }
 
-  /// Minimal style (무지/모트모트 감성)
+  /// Minimal style
   static void _drawMinimalStyle(Canvas canvas, Size size, GongstagramReport report) {
     // Background
     final bgPaint = Paint()..color = const Color(0xFFFFFAF0); // Ivory
