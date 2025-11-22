@@ -10,6 +10,7 @@ class HybridInputDetector {
 
   // Input state
   PointerDeviceKind? _lastInputDevice;
+  DrawingMode? _modeBeforePen;
 
   // Double tap detection for OCR conversion
   DateTime? _lastTapTime;
