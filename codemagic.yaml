@@ -1,0 +1,65 @@
+workflows:
+  android-workflow:
+    name: Android Workflow
+    max_build_duration: 120
+    environment:
+      # android_signing:
+      #   - keystore_reference
+      # Uncomment above and add keystore in Codemagic dashboard (Code signing identities)
+      # to enable signed release builds
+      groups:
+        - google_play
+      flutter: stable
+      xcode: latest
+      cocoapods: default
+    scripts:
+      - name: Get Flutter packages
+        script: |
+          cd flutter_note_app
+          flutter packages pub get
+      - name: Flutter analyze
+        script: |
+          cd flutter_note_app
+          flutter analyze --no-fatal-infos
+      - name: Build APK with Flutter
+        script: |
+          cd flutter_note_app
+          flutter build apk --release
+    artifacts:
+      - flutter_note_app/build/**/outputs/**/*.apk
+      - flutter_note_app/build/**/outputs/**/mapping.txt
+      - flutter_note_app/flutter_drive.log
+    publishing:
+      email:
+        recipients:
+          - user@example.com
+        notify:
+          success: true
+          failure: false
+
+  ios-workflow:
+    name: iOS Workflow
+    max_build_duration: 120
+    environment:
+      flutter: stable
+      xcode: latest
+      cocoapods: default
+    scripts:
+      - name: Get Flutter packages
+        script: |
+          cd flutter_note_app
+          flutter packages pub get
+      - name: Flutter build iOS (simulator - debug)
+        script: |
+          cd flutter_note_app
+          flutter build ios --debug --simulator
+    artifacts:
+      - flutter_note_app/build/ios/iphonesimulator/*.app
+      - flutter_note_app/flutter_drive.log
+    publishing:
+      email:
+        recipients:
+          - user@example.com
+        notify:
+          success: true
+          failure: false

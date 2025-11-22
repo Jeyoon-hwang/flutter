@@ -1,0 +1,6 @@
+#include "Generated.xcconfig"
+
+// Disable code signing for CI builds
+CODE_SIGN_IDENTITY=
+CODE_SIGNING_REQUIRED=NO
+CODE_SIGNING_ALLOWED=NO
