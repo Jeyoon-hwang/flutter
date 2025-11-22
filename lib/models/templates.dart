@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 
-/// Simple planner templates
+/// Planner templates inspired by 모트모트 (Motemote)
+/// Focus on 10-minute interval time blocks for detailed scheduling
 enum PlannerTemplateType {
+  motemote10min,    // 모트모트 스타일: 10분 단위
   hourly,           // 시간 단위
   dailyList,        // 리스트 형식
   weeklyOverview,   // 주간 개요
@@ -19,6 +21,13 @@ class PlannerTemplate {
     required this.description,
     required this.accentColor,
   });
+
+  static const motemote = PlannerTemplate(
+    type: PlannerTemplateType.motemote10min,
+    name: '모트모트 스타일',
+    description: '10분 단위 시간표 (6:00~24:00)',
+    accentColor: Color(0xFFF8B4D9), // 모트모트 핑크
+  );
 
   static const hourly = PlannerTemplate(
     type: PlannerTemplateType.hourly,
@@ -42,13 +51,101 @@ class PlannerTemplate {
   );
 
   static List<PlannerTemplate> get all => [
+    motemote,
     hourly,
     dailyList,
     weeklyOverview,
   ];
 }
 
-// 10분 단위 플래너 제거됨 (모트모트 제외)
+/// Time block for 모트모트 style planner
+class TimeBlock {
+  final int hour;
+  final int minute; // 0, 10, 20, 30, 40, 50
+  final String? task;
+  final String? subject;
+  final Color? color;
+
+  TimeBlock({
+    required this.hour,
+    required this.minute,
+    this.task,
+    this.subject,
+    this.color,
+  });
+
+  String get timeString {
+    final h = hour.toString().padLeft(2, '0');
+    final m = minute.toString().padLeft(2, '0');
+    return '$h:$m';
+  }
+
+  bool get isEmpty => task == null || task!.isEmpty;
+
+  TimeBlock copyWith({
+    String? task,
+    String? subject,
+    Color? color,
+  }) {
+    return TimeBlock(
+      hour: hour,
+      minute: minute,
+      task: task ?? this.task,
+      subject: subject ?? this.subject,
+      color: color ?? this.color,
+    );
+  }
+}
+
+/// Motemote-style daily planner (6:00 ~ 24:00, 10분 단위)
+class MotemoteDailyPlanner {
+  final DateTime date;
+  final Map<String, TimeBlock> blocks; // key: "HH:mm"
+
+  MotemoteDailyPlanner({
+    required this.date,
+    Map<String, TimeBlock>? blocks,
+  }) : blocks = blocks ?? _generateEmptyBlocks();
+
+  static Map<String, TimeBlock> _generateEmptyBlocks() {
+    final blocks = <String, TimeBlock>{};
+
+    // 6:00 ~ 24:00, 10분 간격
+    for (int hour = 6; hour < 24; hour++) {
+      for (int minute = 0; minute < 60; minute += 10) {
+        final block = TimeBlock(hour: hour, minute: minute);
+        blocks[block.timeString] = block;
+      }
+    }
+
+    return blocks;
+  }
+
+  /// Get all time blocks sorted by time
+  List<TimeBlock> get sortedBlocks {
+    final list = blocks.values.toList();
+    list.sort((a, b) {
+      if (a.hour != b.hour) return a.hour.compareTo(b.hour);
+      return a.minute.compareTo(b.minute);
+    });
+    return list;
+  }
+
+  /// Get filled blocks (with tasks)
+  List<TimeBlock> get filledBlocks => sortedBlocks.where((b) => !b.isEmpty).toList();
+
+  /// Calculate total planned time
+  Duration get totalPlannedTime => Duration(minutes: filledBlocks.length * 10);
+
+  /// Get time blocks grouped by hour
+  Map<int, List<TimeBlock>> get blocksByHour {
+    final grouped = <int, List<TimeBlock>>{};
+    for (final block in sortedBlocks) {
+      grouped.putIfAbsent(block.hour, () => []).add(block);
+    }
+    return grouped;
+  }
+}
 
 /// Study report for 공스타그램 (Gong-stagram)
 /// Creates beautiful images for social media sharing
@@ -198,6 +295,20 @@ class CustomFontPreset {
     description: 'SF Pro / Roboto',
   );
 
+  static const handwriting1 = CustomFontPreset(
+    name: '손글씨체 1',
+    fontFamily: 'NanumPenScript',
+    description: '나눔 손글씨',
+    isHandwriting: true,
+  );
+
+  static const handwriting2 = CustomFontPreset(
+    name: '손글씨체 2',
+    fontFamily: 'EastSeaDokdo',
+    description: '동해바다 손글씨',
+    isHandwriting: true,
+  );
+
   static const minimal = CustomFontPreset(
     name: '미니멀',
     fontFamily: 'NotoSansKR',
@@ -206,6 +317,8 @@ class CustomFontPreset {
 
   static List<CustomFontPreset> get all => [
     defaultFont,
+    handwriting1,
+    handwriting2,
     minimal,
   ];
 }
