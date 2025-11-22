@@ -10,7 +10,6 @@ class HybridInputDetector {
 
   // Input state
   PointerDeviceKind? _lastInputDevice;
-  DrawingMode? _modeBeforePen;
 
   // Double tap detection for OCR conversion
   DateTime? _lastTapTime;
@@ -52,7 +51,6 @@ class HybridInputDetector {
   void _handlePenDown(PointerDownEvent event) {
     // If not in pen mode, switch to it
     if (provider.mode != DrawingMode.pen) {
-      _modeBeforePen = provider.mode;
       provider.setMode(DrawingMode.pen);
     }
 
@@ -161,7 +159,6 @@ class HybridInputDetector {
   /// Reset input state
   void reset() {
     _lastInputDevice = null;
-    _modeBeforePen = null;
     _lastTapTime = null;
     _lastTapPosition = null;
   }

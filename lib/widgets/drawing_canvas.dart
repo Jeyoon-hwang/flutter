@@ -119,8 +119,8 @@ class _DrawingCanvasState extends State<DrawingCanvas> {
               },
               child: Transform(
                 transform: Matrix4.identity()
-                  ..translate(provider.offset.dx, provider.offset.dy)
-                  ..scale(provider.scale),
+                  ..translate(provider.offset.dx, provider.offset.dy, 0.0)
+                  ..scale(provider.scale, provider.scale, 1.0),
                 child: Listener(
                   onPointerDown: (event) {
                 _pointerCount++;
