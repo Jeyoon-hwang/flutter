@@ -298,7 +298,7 @@ class SettingsScreen extends StatelessWidget {
           ),
           boxShadow: [
             BoxShadow(
-            color: Colors.black.withOpacity(isDarkMode ? 0.3 : 0.05),
+            color: Colors.black.withValues(alpha: isDarkMode ? 0.3 : 0.05),
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),

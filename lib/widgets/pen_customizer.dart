@@ -110,7 +110,7 @@ class _PenCustomizerState extends State<PenCustomizer> {
           width: 50,
           height: 50,
           decoration: BoxDecoration(
-            color: _currentPen.color.withOpacity(0.2),
+            color: _currentPen.color.withValues(alpha: 0.2),
             borderRadius: BorderRadius.circular(AppTheme.radiusSm),
           ),
           child: Icon(
@@ -187,10 +187,10 @@ class _PenCustomizerState extends State<PenCustomizer> {
                 ),
                 decoration: BoxDecoration(
                   color: isSelected
-                      ? AppTheme.primary.withOpacity(0.2)
+                      ? AppTheme.primary.withValues(alpha: 0.2)
                       : (widget.isDarkMode
-                          ? Colors.white.withOpacity(0.05)
-                          : Colors.black.withOpacity(0.05)),
+                          ? Colors.white.withValues(alpha: 0.05)
+                          : Colors.black.withValues(alpha: 0.05)),
                   borderRadius: BorderRadius.circular(AppTheme.radiusSm),
                   border: Border.all(
                     color: isSelected
@@ -468,7 +468,7 @@ class _PenPreviewPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = pen.color.withOpacity(pen.opacity)
+      ..color = pen.color.withValues(alpha: pen.opacity)
       ..strokeCap = StrokeCap.round
       ..strokeWidth = pen.width
       ..style = PaintingStyle.stroke;

@@ -80,7 +80,7 @@ class _BackgroundSettingsScreenState extends State<BackgroundSettingsScreen> {
                               icon: const Icon(Icons.close, color: Colors.white),
                               onPressed: () => _removeBackgroundImage(provider),
                               style: IconButton.styleFrom(
-                                backgroundColor: Colors.black.withOpacity(0.5),
+                                backgroundColor: Colors.black.withValues(alpha: 0.5),
                               ),
                             ),
                           ),
@@ -300,7 +300,7 @@ class _BackgroundSettingsScreenState extends State<BackgroundSettingsScreen> {
               ),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
+                  color: Colors.black.withValues(alpha: 0.1),
                   blurRadius: 4,
                   offset: const Offset(0, 2),
                 ),

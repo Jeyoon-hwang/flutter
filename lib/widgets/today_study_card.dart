@@ -27,14 +27,14 @@ class TodayStudyCard extends StatelessWidget {
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
                 colors: [
-                  AppTheme.primary.withOpacity(0.9),
+                  AppTheme.primary.withValues(alpha: 0.9),
                   AppTheme.primary,
                 ],
               ),
               borderRadius: BorderRadius.circular(AppTheme.radiusLg),
               boxShadow: [
                 BoxShadow(
-                  color: AppTheme.primary.withOpacity(0.3),
+                  color: AppTheme.primary.withValues(alpha: 0.3),
                   blurRadius: 15,
                   offset: const Offset(0, 8),
                 ),
@@ -49,7 +49,7 @@ class TodayStudyCard extends StatelessWidget {
                     Container(
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.2),
+                        color: Colors.white.withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: const Icon(
@@ -112,7 +112,7 @@ class TodayStudyCard extends StatelessWidget {
                   child: Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.15),
+                      color: Colors.white.withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(AppTheme.radiusMd),
                     ),
                     child: Row(
@@ -128,7 +128,7 @@ class TodayStudyCard extends StatelessWidget {
                             _getMotivationMessage(todayStats.totalStudyTime),
                             style: TextStyle(
                               fontSize: 13,
-                              color: Colors.white.withOpacity(0.95),
+                              color: Colors.white.withValues(alpha: 0.95),
                             ),
                           ),
                         ),
@@ -157,7 +157,7 @@ class TodayStudyCard extends StatelessWidget {
         children: [
           Icon(
             icon,
-            color: Colors.white.withOpacity(0.9),
+            color: Colors.white.withValues(alpha: 0.9),
             size: 24,
           ),
           const SizedBox(height: 8),
@@ -174,7 +174,7 @@ class TodayStudyCard extends StatelessWidget {
             label,
             style: TextStyle(
               fontSize: 11,
-              color: Colors.white.withOpacity(0.7),
+              color: Colors.white.withValues(alpha: 0.7),
             ),
           ),
         ],

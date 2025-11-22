@@ -24,8 +24,8 @@ class FavoritePenBar extends StatelessWidget {
           ),
           decoration: BoxDecoration(
             color: isDarkMode
-                ? AppTheme.darkSurface.withOpacity(0.95)
-                : Colors.white.withOpacity(0.95),
+                ? AppTheme.darkSurface.withValues(alpha: 0.95)
+                : Colors.white.withValues(alpha: 0.95),
             borderRadius: BorderRadius.circular(AppTheme.radiusLg),
             boxShadow: AppTheme.shadowMd(isDarkMode),
             border: Border.all(
@@ -115,7 +115,7 @@ class FavoritePenBar extends StatelessWidget {
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
             color: isSelected
-                ? pen.color.withOpacity(0.2)
+                ? pen.color.withValues(alpha: 0.2)
                 : Colors.transparent,
             borderRadius: BorderRadius.circular(AppTheme.radiusSm),
             border: isSelected
@@ -136,7 +136,7 @@ class FavoritePenBar extends StatelessWidget {
                 width: pen.width.clamp(2.0, 16.0),
                 height: 3,
                 decoration: BoxDecoration(
-                  color: pen.color.withOpacity(pen.opacity),
+                  color: pen.color.withValues(alpha: pen.opacity),
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -167,7 +167,7 @@ class FavoritePenBar extends StatelessWidget {
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
             color: isSelected
-                ? AppTheme.primary.withOpacity(0.2)
+                ? AppTheme.primary.withValues(alpha: 0.2)
                 : Colors.transparent,
             borderRadius: BorderRadius.circular(AppTheme.radiusSm),
             border: isSelected

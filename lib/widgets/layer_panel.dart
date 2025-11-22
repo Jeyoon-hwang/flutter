@@ -36,24 +36,24 @@ class LayerPanel extends StatelessWidget {
                     end: Alignment.bottomRight,
                     colors: provider.isDarkMode
                         ? [
-                            Colors.black.withOpacity(0.7),
-                            Colors.black.withOpacity(0.5),
+                            Colors.black.withValues(alpha: 0.7),
+                            Colors.black.withValues(alpha: 0.5),
                           ]
                         : [
-                            Colors.white.withOpacity(0.7),
-                            Colors.white.withOpacity(0.5),
+                            Colors.white.withValues(alpha: 0.7),
+                            Colors.white.withValues(alpha: 0.5),
                           ],
                   ),
                   borderRadius: BorderRadius.circular(isTablet ? 20 : 16),
                   border: Border.all(
                     color: provider.isDarkMode
-                        ? Colors.white.withOpacity(0.1)
-                        : Colors.black.withOpacity(0.1),
+                        ? Colors.white.withValues(alpha: 0.1)
+                        : Colors.black.withValues(alpha: 0.1),
                     width: 1.5,
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
+                      color: Colors.black.withValues(alpha: 0.1),
                       blurRadius: 30,
                       offset: const Offset(0, 10),
                     ),
@@ -71,8 +71,8 @@ class LayerPanel extends StatelessWidget {
                             Icons.layers,
                             size: isTablet ? 24 : 20,
                             color: provider.isDarkMode
-                                ? Colors.white.withOpacity(0.9)
-                                : Colors.black.withOpacity(0.8),
+                                ? Colors.white.withValues(alpha: 0.9)
+                                : Colors.black.withValues(alpha: 0.8),
                           ),
                           SizedBox(width: isTablet ? 12 : 8),
                           Text(
@@ -81,8 +81,8 @@ class LayerPanel extends StatelessWidget {
                               fontSize: isTablet ? 18 : 16,
                               fontWeight: FontWeight.bold,
                               color: provider.isDarkMode
-                                  ? Colors.white.withOpacity(0.9)
-                                  : Colors.black.withOpacity(0.8),
+                                  ? Colors.white.withValues(alpha: 0.9)
+                                  : Colors.black.withValues(alpha: 0.8),
                             ),
                           ),
                           const Spacer(),
@@ -97,8 +97,8 @@ class LayerPanel extends StatelessWidget {
                                 padding: EdgeInsets.all(isTablet ? 8 : 6),
                                 decoration: BoxDecoration(
                                   color: provider.autoLayerManagement
-                                      ? const Color(0xFF34C759).withOpacity(0.2)
-                                      : Colors.grey.withOpacity(0.2),
+                                      ? const Color(0xFF34C759).withValues(alpha: 0.2)
+                                      : Colors.grey.withValues(alpha: 0.2),
                                   borderRadius: BorderRadius.circular(isTablet ? 10 : 8),
                                 ),
                                 child: Icon(
@@ -119,7 +119,7 @@ class LayerPanel extends StatelessWidget {
                             child: Container(
                               padding: EdgeInsets.all(isTablet ? 8 : 6),
                               decoration: BoxDecoration(
-                                color: const Color(0xFF667EEA).withOpacity(0.2),
+                                color: const Color(0xFF667EEA).withValues(alpha: 0.2),
                                 borderRadius: BorderRadius.circular(isTablet ? 10 : 8),
                               ),
                               child: Icon(
@@ -268,12 +268,12 @@ class _LayerItem extends StatelessWidget {
           color: isSelected
               ? null
               : (isDarkMode
-                  ? Colors.white.withOpacity(0.05)
-                  : Colors.black.withOpacity(0.03)),
+                  ? Colors.white.withValues(alpha: 0.05)
+                  : Colors.black.withValues(alpha: 0.03)),
           borderRadius: BorderRadius.circular(isTablet ? 14 : 12),
           border: Border.all(
             color: isSelected
-                ? Colors.white.withOpacity(0.3)
+                ? Colors.white.withValues(alpha: 0.3)
                 : Colors.transparent,
             width: 1,
           ),
@@ -287,8 +287,8 @@ class _LayerItem extends StatelessWidget {
                   padding: EdgeInsets.all(isTablet ? 8 : 6),
                   decoration: BoxDecoration(
                     color: isSelected
-                        ? Colors.white.withOpacity(0.2)
-                        : layer.getColor().withOpacity(0.2),
+                        ? Colors.white.withValues(alpha: 0.2)
+                        : layer.getColor().withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(isTablet ? 10 : 8),
                   ),
                   child: Icon(
@@ -312,8 +312,8 @@ class _LayerItem extends StatelessWidget {
                           color: isSelected
                               ? Colors.white
                               : (isDarkMode
-                                  ? Colors.white.withOpacity(0.8)
-                                  : Colors.black.withOpacity(0.7)),
+                                  ? Colors.white.withValues(alpha: 0.8)
+                                  : Colors.black.withValues(alpha: 0.7)),
                         ),
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -324,10 +324,10 @@ class _LayerItem extends StatelessWidget {
                           style: TextStyle(
                             fontSize: isTablet ? 11 : 9,
                             color: isSelected
-                                ? Colors.white.withOpacity(0.7)
+                                ? Colors.white.withValues(alpha: 0.7)
                                 : (isDarkMode
-                                    ? Colors.white.withOpacity(0.5)
-                                    : Colors.black.withOpacity(0.5)),
+                                    ? Colors.white.withValues(alpha: 0.5)
+                                    : Colors.black.withValues(alpha: 0.5)),
                           ),
                         ),
                     ],
@@ -346,10 +346,10 @@ class _LayerItem extends StatelessWidget {
                         size: isTablet ? 20 : 18,
                       ),
                       color: isSelected
-                          ? Colors.white.withOpacity(0.9)
+                          ? Colors.white.withValues(alpha: 0.9)
                           : (isDarkMode
-                              ? Colors.white.withOpacity(0.6)
-                              : Colors.black.withOpacity(0.5)),
+                              ? Colors.white.withValues(alpha: 0.6)
+                              : Colors.black.withValues(alpha: 0.5)),
                       onPressed: onToggleVisibility,
                       padding: EdgeInsets.zero,
                       constraints: BoxConstraints(
@@ -363,10 +363,10 @@ class _LayerItem extends StatelessWidget {
                         size: isTablet ? 20 : 18,
                       ),
                       color: isSelected
-                          ? Colors.white.withOpacity(0.9)
+                          ? Colors.white.withValues(alpha: 0.9)
                           : (isDarkMode
-                              ? Colors.white.withOpacity(0.6)
-                              : Colors.black.withOpacity(0.5)),
+                              ? Colors.white.withValues(alpha: 0.6)
+                              : Colors.black.withValues(alpha: 0.5)),
                       onPressed: onToggleLock,
                       padding: EdgeInsets.zero,
                       constraints: BoxConstraints(
@@ -381,8 +381,8 @@ class _LayerItem extends StatelessWidget {
                           size: isTablet ? 20 : 18,
                         ),
                         color: isSelected
-                            ? Colors.white.withOpacity(0.9)
-                            : Colors.red.withOpacity(0.6),
+                            ? Colors.white.withValues(alpha: 0.9)
+                            : Colors.red.withValues(alpha: 0.6),
                         onPressed: onDelete,
                         padding: EdgeInsets.zero,
                         constraints: BoxConstraints(
@@ -403,15 +403,15 @@ class _LayerItem extends StatelessWidget {
                   Icon(
                     Icons.opacity,
                     size: isTablet ? 16 : 14,
-                    color: Colors.white.withOpacity(0.7),
+                    color: Colors.white.withValues(alpha: 0.7),
                   ),
                   Expanded(
                     child: SliderTheme(
                       data: SliderThemeData(
                         activeTrackColor: Colors.white,
-                        inactiveTrackColor: Colors.white.withOpacity(0.3),
+                        inactiveTrackColor: Colors.white.withValues(alpha: 0.3),
                         thumbColor: Colors.white,
-                        overlayColor: Colors.white.withOpacity(0.2),
+                        overlayColor: Colors.white.withValues(alpha: 0.2),
                         trackHeight: isTablet ? 4 : 3,
                         thumbShape: RoundSliderThumbShape(
                           enabledThumbRadius: isTablet ? 8 : 6,
@@ -429,7 +429,7 @@ class _LayerItem extends StatelessWidget {
                     '${(layer.opacity * 100).toInt()}%',
                     style: TextStyle(
                       fontSize: isTablet ? 13 : 11,
-                      color: Colors.white.withOpacity(0.7),
+                      color: Colors.white.withValues(alpha: 0.7),
                     ),
                   ),
                 ],

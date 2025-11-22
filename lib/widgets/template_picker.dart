@@ -22,13 +22,13 @@ class TemplatePickerButton extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             decoration: BoxDecoration(
               color: isDarkMode
-                  ? Colors.white.withOpacity(0.1)
-                  : Colors.black.withOpacity(0.05),
+                  ? Colors.white.withValues(alpha: 0.1)
+                  : Colors.black.withValues(alpha: 0.05),
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
                 color: isDarkMode
-                    ? Colors.white.withOpacity(0.2)
-                    : Colors.black.withOpacity(0.1),
+                    ? Colors.white.withValues(alpha: 0.2)
+                    : Colors.black.withValues(alpha: 0.1),
               ),
             ),
             child: Row(
@@ -171,7 +171,7 @@ class TemplatePickerButton extends StatelessWidget {
           boxShadow: isSelected
               ? [
                   BoxShadow(
-                    color: const Color(0xFF667EEA).withOpacity(0.3),
+                    color: const Color(0xFF667EEA).withValues(alpha: 0.3),
                     blurRadius: 12,
                     offset: const Offset(0, 4),
                   ),
@@ -191,7 +191,7 @@ class TemplatePickerButton extends StatelessWidget {
                     : null,
                 color: isSelected
                     ? null
-                    : (isDarkMode ? Colors.white.withOpacity(0.1) : Colors.white),
+                    : (isDarkMode ? Colors.white.withValues(alpha: 0.1) : Colors.white),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(

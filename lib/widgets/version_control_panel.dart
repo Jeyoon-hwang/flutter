@@ -38,24 +38,24 @@ class VersionControlPanel extends StatelessWidget {
                     end: Alignment.bottomRight,
                     colors: provider.isDarkMode
                         ? [
-                            Colors.black.withOpacity(0.7),
-                            Colors.black.withOpacity(0.5),
+                            Colors.black.withValues(alpha: 0.7),
+                            Colors.black.withValues(alpha: 0.5),
                           ]
                         : [
-                            Colors.white.withOpacity(0.7),
-                            Colors.white.withOpacity(0.5),
+                            Colors.white.withValues(alpha: 0.7),
+                            Colors.white.withValues(alpha: 0.5),
                           ],
                   ),
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(
                     color: provider.isDarkMode
-                        ? Colors.white.withOpacity(0.1)
-                        : Colors.black.withOpacity(0.1),
+                        ? Colors.white.withValues(alpha: 0.1)
+                        : Colors.black.withValues(alpha: 0.1),
                     width: 1.5,
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
+                      color: Colors.black.withValues(alpha: 0.1),
                       blurRadius: 30,
                       offset: const Offset(0, 10),
                     ),
@@ -81,8 +81,8 @@ class VersionControlPanel extends StatelessWidget {
                                   ? Colors.white
                                   : Colors.black,
                               unselectedLabelColor: provider.isDarkMode
-                                  ? Colors.white.withOpacity(0.5)
-                                  : Colors.black.withOpacity(0.5),
+                                  ? Colors.white.withValues(alpha: 0.5)
+                                  : Colors.black.withValues(alpha: 0.5),
                             ),
                             Expanded(
                               child: TabBarView(
@@ -124,8 +124,8 @@ class VersionControlPanel extends StatelessWidget {
             Icons.account_tree,
             size: 20,
             color: provider.isDarkMode
-                ? Colors.white.withOpacity(0.9)
-                : Colors.black.withOpacity(0.8),
+                ? Colors.white.withValues(alpha: 0.9)
+                : Colors.black.withValues(alpha: 0.8),
           ),
           const SizedBox(width: 8),
           Text(
@@ -134,8 +134,8 @@ class VersionControlPanel extends StatelessWidget {
               fontSize: 16,
               fontWeight: FontWeight.bold,
               color: provider.isDarkMode
-                  ? Colors.white.withOpacity(0.9)
-                  : Colors.black.withOpacity(0.8),
+                  ? Colors.white.withValues(alpha: 0.9)
+                  : Colors.black.withValues(alpha: 0.8),
             ),
           ),
           if (isLeader) ...[
@@ -143,7 +143,7 @@ class VersionControlPanel extends StatelessWidget {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               decoration: BoxDecoration(
-                color: const Color(0xFFFF9500).withOpacity(0.2),
+                color: const Color(0xFFFF9500).withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: const Text(
@@ -167,7 +167,7 @@ class VersionControlPanel extends StatelessWidget {
                 borderRadius: BorderRadius.circular(8),
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFF667EEA).withOpacity(0.3),
+                    color: const Color(0xFF667EEA).withValues(alpha: 0.3),
                     blurRadius: 8,
                     offset: const Offset(0, 2),
                   ),
@@ -208,16 +208,16 @@ class VersionControlPanel extends StatelessWidget {
               Icons.history,
               size: 48,
               color: provider.isDarkMode
-                  ? Colors.white.withOpacity(0.3)
-                  : Colors.black.withOpacity(0.3),
+                  ? Colors.white.withValues(alpha: 0.3)
+                  : Colors.black.withValues(alpha: 0.3),
             ),
             const SizedBox(height: 16),
             Text(
               '아직 커밋이 없습니다',
               style: TextStyle(
                 color: provider.isDarkMode
-                    ? Colors.white.withOpacity(0.5)
-                    : Colors.black.withOpacity(0.5),
+                    ? Colors.white.withValues(alpha: 0.5)
+                    : Colors.black.withValues(alpha: 0.5),
               ),
             ),
             const SizedBox(height: 8),
@@ -226,8 +226,8 @@ class VersionControlPanel extends StatelessWidget {
               style: TextStyle(
                 fontSize: 12,
                 color: provider.isDarkMode
-                    ? Colors.white.withOpacity(0.3)
-                    : Colors.black.withOpacity(0.3),
+                    ? Colors.white.withValues(alpha: 0.3)
+                    : Colors.black.withValues(alpha: 0.3),
               ),
             ),
           ],
@@ -258,8 +258,8 @@ class VersionControlPanel extends StatelessWidget {
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: provider.isDarkMode
-            ? Colors.white.withOpacity(0.05)
-            : Colors.black.withOpacity(0.03),
+            ? Colors.white.withValues(alpha: 0.05)
+            : Colors.black.withValues(alpha: 0.03),
         borderRadius: BorderRadius.circular(12),
         border: isHead
             ? Border.all(color: const Color(0xFF34C759), width: 2)
@@ -275,8 +275,8 @@ class VersionControlPanel extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
                   color: provider.isDarkMode
-                      ? Colors.white.withOpacity(0.1)
-                      : Colors.black.withOpacity(0.1),
+                      ? Colors.white.withValues(alpha: 0.1)
+                      : Colors.black.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: Text(
@@ -285,8 +285,8 @@ class VersionControlPanel extends StatelessWidget {
                     fontSize: 11,
                     fontFamily: 'monospace',
                     color: provider.isDarkMode
-                        ? Colors.white.withOpacity(0.7)
-                        : Colors.black.withOpacity(0.7),
+                        ? Colors.white.withValues(alpha: 0.7)
+                        : Colors.black.withValues(alpha: 0.7),
                   ),
                 ),
               ),
@@ -314,8 +314,8 @@ class VersionControlPanel extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 11,
                   color: provider.isDarkMode
-                      ? Colors.white.withOpacity(0.5)
-                      : Colors.black.withOpacity(0.5),
+                      ? Colors.white.withValues(alpha: 0.5)
+                      : Colors.black.withValues(alpha: 0.5),
                 ),
               ),
             ],
@@ -340,8 +340,8 @@ class VersionControlPanel extends StatelessWidget {
                 Icons.person,
                 size: 12,
                 color: provider.isDarkMode
-                    ? Colors.white.withOpacity(0.5)
-                    : Colors.black.withOpacity(0.5),
+                    ? Colors.white.withValues(alpha: 0.5)
+                    : Colors.black.withValues(alpha: 0.5),
               ),
               const SizedBox(width: 4),
               Text(
@@ -349,8 +349,8 @@ class VersionControlPanel extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 12,
                   color: provider.isDarkMode
-                      ? Colors.white.withOpacity(0.5)
-                      : Colors.black.withOpacity(0.5),
+                      ? Colors.white.withValues(alpha: 0.5)
+                      : Colors.black.withValues(alpha: 0.5),
                 ),
               ),
               const SizedBox(width: 12),
@@ -359,8 +359,8 @@ class VersionControlPanel extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 11,
                   color: provider.isDarkMode
-                      ? Colors.white.withOpacity(0.4)
-                      : Colors.black.withOpacity(0.4),
+                      ? Colors.white.withValues(alpha: 0.4)
+                      : Colors.black.withValues(alpha: 0.4),
                 ),
               ),
             ],
@@ -373,7 +373,7 @@ class VersionControlPanel extends StatelessWidget {
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF007AFF).withOpacity(0.1),
+                  color: const Color(0xFF007AFF).withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: const Row(
@@ -414,16 +414,16 @@ class VersionControlPanel extends StatelessWidget {
               Icons.merge_type,
               size: 48,
               color: provider.isDarkMode
-                  ? Colors.white.withOpacity(0.3)
-                  : Colors.black.withOpacity(0.3),
+                  ? Colors.white.withValues(alpha: 0.3)
+                  : Colors.black.withValues(alpha: 0.3),
             ),
             const SizedBox(height: 16),
             Text(
               '병합 요청이 없습니다',
               style: TextStyle(
                 color: provider.isDarkMode
-                    ? Colors.white.withOpacity(0.5)
-                    : Colors.black.withOpacity(0.5),
+                    ? Colors.white.withValues(alpha: 0.5)
+                    : Colors.black.withValues(alpha: 0.5),
               ),
             ),
           ],
@@ -452,11 +452,11 @@ class VersionControlPanel extends StatelessWidget {
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: provider.isDarkMode
-            ? Colors.white.withOpacity(0.05)
-            : Colors.black.withOpacity(0.03),
+            ? Colors.white.withValues(alpha: 0.05)
+            : Colors.black.withValues(alpha: 0.03),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: mergeRequest.statusColor.withOpacity(0.5),
+          color: mergeRequest.statusColor.withValues(alpha: 0.5),
           width: 1.5,
         ),
       ),
@@ -481,7 +481,7 @@ class VersionControlPanel extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
-                  color: mergeRequest.statusColor.withOpacity(0.2),
+                  color: mergeRequest.statusColor.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: Text(
@@ -503,8 +503,8 @@ class VersionControlPanel extends StatelessWidget {
                 Icons.person,
                 size: 12,
                 color: provider.isDarkMode
-                    ? Colors.white.withOpacity(0.5)
-                    : Colors.black.withOpacity(0.5),
+                    ? Colors.white.withValues(alpha: 0.5)
+                    : Colors.black.withValues(alpha: 0.5),
               ),
               const SizedBox(width: 4),
               Text(
@@ -512,8 +512,8 @@ class VersionControlPanel extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 12,
                   color: provider.isDarkMode
-                      ? Colors.white.withOpacity(0.5)
-                      : Colors.black.withOpacity(0.5),
+                      ? Colors.white.withValues(alpha: 0.5)
+                      : Colors.black.withValues(alpha: 0.5),
                 ),
               ),
               const SizedBox(width: 12),
@@ -521,8 +521,8 @@ class VersionControlPanel extends StatelessWidget {
                 Icons.schedule,
                 size: 12,
                 color: provider.isDarkMode
-                    ? Colors.white.withOpacity(0.5)
-                    : Colors.black.withOpacity(0.5),
+                    ? Colors.white.withValues(alpha: 0.5)
+                    : Colors.black.withValues(alpha: 0.5),
               ),
               const SizedBox(width: 4),
               Text(
@@ -530,8 +530,8 @@ class VersionControlPanel extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 11,
                   color: provider.isDarkMode
-                      ? Colors.white.withOpacity(0.5)
-                      : Colors.black.withOpacity(0.5),
+                      ? Colors.white.withValues(alpha: 0.5)
+                      : Colors.black.withValues(alpha: 0.5),
                 ),
               ),
             ],
@@ -639,9 +639,9 @@ class VersionControlPanel extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: Colors.blue.withOpacity(0.1),
+                color: Colors.blue.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.blue.withOpacity(0.3)),
+                border: Border.all(color: Colors.blue.withValues(alpha: 0.3)),
               ),
               child: const Column(
                 crossAxisAlignment: CrossAxisAlignment.start,

@@ -104,7 +104,7 @@ class _GestureGuideScreenState extends State<GestureGuideScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black.withOpacity(0.85),
+      backgroundColor: Colors.black.withValues(alpha: 0.85),
       body: SafeArea(
         child: Stack(
           children: [
@@ -127,7 +127,7 @@ class _GestureGuideScreenState extends State<GestureGuideScreen> {
                   onPressed: _skip,
                   style: TextButton.styleFrom(
                     foregroundColor: Colors.white,
-                    backgroundColor: Colors.white.withOpacity(0.1),
+                    backgroundColor: Colors.white.withValues(alpha: 0.1),
                     padding: const EdgeInsets.symmetric(
                       horizontal: 20,
                       vertical: 10,
@@ -209,7 +209,7 @@ class _GestureGuideScreenState extends State<GestureGuideScreen> {
               width: 120,
               height: 120,
               decoration: BoxDecoration(
-                color: AppTheme.primary.withOpacity(0.2),
+                color: AppTheme.primary.withValues(alpha: 0.2),
                 shape: BoxShape.circle,
               ),
               child: Center(
@@ -249,7 +249,7 @@ class _GestureGuideScreenState extends State<GestureGuideScreen> {
               item.description,
               style: TextStyle(
                 fontSize: 16,
-                color: Colors.white.withOpacity(0.8),
+                color: Colors.white.withValues(alpha: 0.8),
                 height: 1.6,
               ),
               textAlign: TextAlign.center,
@@ -267,10 +267,10 @@ class _GestureGuideScreenState extends State<GestureGuideScreen> {
                 vertical: 12,
               ),
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.1),
+                color: Colors.white.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(30),
                 border: Border.all(
-                  color: Colors.white.withOpacity(0.3),
+                  color: Colors.white.withValues(alpha: 0.3),
                   width: 1,
                 ),
               ),
@@ -298,7 +298,7 @@ class _GestureGuideScreenState extends State<GestureGuideScreen> {
       width: isActive ? 24 : 8,
       height: 8,
       decoration: BoxDecoration(
-        color: isActive ? AppTheme.primary : Colors.white.withOpacity(0.3),
+        color: isActive ? AppTheme.primary : Colors.white.withValues(alpha: 0.3),
         borderRadius: BorderRadius.circular(4),
       ),
     );

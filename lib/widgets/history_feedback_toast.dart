@@ -157,12 +157,12 @@ class _ToastWidgetState extends State<_ToastWidget>
                       : Colors.white,
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(
-                    color: widget.color.withOpacity(0.3),
+                    color: widget.color.withValues(alpha: 0.3),
                     width: 2,
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.2),
+                      color: Colors.black.withValues(alpha: 0.2),
                       blurRadius: 20,
                       offset: const Offset(0, 4),
                     ),
@@ -174,7 +174,7 @@ class _ToastWidgetState extends State<_ToastWidget>
                     Container(
                       padding: const EdgeInsets.all(10),
                       decoration: BoxDecoration(
-                        color: widget.color.withOpacity(0.15),
+                        color: widget.color.withValues(alpha: 0.15),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Icon(

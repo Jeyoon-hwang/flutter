@@ -258,7 +258,7 @@ class _DrawingCanvasState extends State<DrawingCanvas> {
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
                     color: provider.selectedTextObject?.id == textObj.id
-                        ? const Color(0xFF667EEA).withOpacity(0.1)
+                        ? const Color(0xFF667EEA).withValues(alpha: 0.1)
                         : Colors.transparent,
                     borderRadius: BorderRadius.circular(8),
                     border: provider.selectedTextObject?.id == textObj.id
@@ -413,21 +413,21 @@ class DrawingPainter extends CustomPainter {
 
   void _drawPageBoundaries(Canvas canvas, Size size) {
     final pagePaint = Paint()
-      ..color = isDarkMode ? Colors.white.withOpacity(0.15) : Colors.black.withOpacity(0.1)
+      ..color = isDarkMode ? Colors.white.withValues(alpha: 0.15) : Colors.black.withValues(alpha: 0.1)
       ..strokeWidth = 2.0
       ..style = PaintingStyle.stroke;
 
     // Only draw shadows if performance allows
     final shadowPaint = enableShadows
         ? (Paint()
-          ..color = Colors.black.withOpacity(0.1)
+          ..color = Colors.black.withValues(alpha: 0.1)
           ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 8))
         : null;
 
     final currentPageHighlightPaint = Paint()
       ..color = isDarkMode
-          ? const Color(0xFF667EEA).withOpacity(0.1)
-          : const Color(0xFF667EEA).withOpacity(0.05)
+          ? const Color(0xFF667EEA).withValues(alpha: 0.1)
+          : const Color(0xFF667EEA).withValues(alpha: 0.05)
       ..style = PaintingStyle.fill;
 
     for (int i = 0; i < pages.length; i++) {
@@ -507,8 +507,8 @@ class DrawingPainter extends CustomPainter {
       paint.color = stroke.isEraser
           ? (isDarkMode ? const Color(0xFF1E1E1E) : Colors.white)
           : (isDarkMode
-              ? _invertColorIntelligently(stroke.color).withOpacity(stroke.opacity)
-              : stroke.color.withOpacity(stroke.opacity));
+              ? _invertColorIntelligently(stroke.color).withValues(alpha: stroke.opacity)
+              : stroke.color.withValues(alpha: stroke.opacity));
 
       canvas.drawCircle(point.offset, dotRadius, paint);
       return;
@@ -548,15 +548,15 @@ class DrawingPainter extends CustomPainter {
           stroke.gradientColors![colorIndex],
           stroke.gradientColors![nextColorIndex],
           localProgress,
-        )!.withOpacity(stroke.opacity);
+        )!.withValues(alpha: stroke.opacity);
       } else {
         paint.color = stroke.isEraser
             ? (isDarkMode
                 ? const Color(0xFF1E1E1E)
                 : Colors.white)
             : (isDarkMode
-                ? _invertColorIntelligently(stroke.color).withOpacity(stroke.opacity)
-                : stroke.color.withOpacity(stroke.opacity));
+                ? _invertColorIntelligently(stroke.color).withValues(alpha: stroke.opacity)
+                : stroke.color.withValues(alpha: stroke.opacity));
       }
 
       paint.strokeWidth = adjustedWidth;
@@ -587,7 +587,7 @@ class DrawingPainter extends CustomPainter {
       glowPaint.color = (isDarkMode
               ? _invertColorIntelligently(stroke.color)
               : stroke.color)
-          .withOpacity(stroke.opacity * 0.3);
+          .withValues(alpha: stroke.opacity * 0.3);
       glowPaint.strokeWidth = adjustedWidth;
 
       canvas.drawLine(point1.offset, point2.offset, glowPaint);
@@ -599,7 +599,7 @@ class DrawingPainter extends CustomPainter {
     final particleCount = (stroke.glitterDensity! * 3).toInt();
     final paint = Paint()
       ..style = PaintingStyle.fill
-      ..color = Colors.white.withOpacity(0.8);
+      ..color = Colors.white.withValues(alpha: 0.8);
 
     for (int i = 0; i < particleCount; i++) {
       final t = i / particleCount;
@@ -646,7 +646,7 @@ class DrawingPainter extends CustomPainter {
 
   void _drawGridLines(Canvas canvas, Size size) {
     final gridPaint = Paint()
-      ..color = (isDarkMode ? Colors.white : Colors.black).withOpacity(0.1)
+      ..color = (isDarkMode ? Colors.white : Colors.black).withValues(alpha: 0.1)
       ..strokeWidth = 1
       ..style = PaintingStyle.stroke;
 
@@ -690,7 +690,7 @@ class SelectionPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     // Draw selection background
     final bgPaint = Paint()
-      ..color = const Color(0xFF667EEA).withOpacity(0.1)
+      ..color = const Color(0xFF667EEA).withValues(alpha: 0.1)
       ..style = PaintingStyle.fill;
     canvas.drawRect(selectionRect, bgPaint);
 

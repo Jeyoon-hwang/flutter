@@ -426,7 +426,7 @@ class _HomeDashboardState extends State<HomeDashboard> {
         color: isDarkMode ? AppTheme.darkSurface : Colors.white,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withValues(alpha: 0.1),
             blurRadius: 10,
             offset: const Offset(0, -2),
           ),
@@ -561,7 +561,7 @@ class _HomeDashboardState extends State<HomeDashboard> {
           color: color,
           borderRadius: BorderRadius.circular(AppTheme.radiusMd),
           border: Border.all(
-            color: isSelected ? AppTheme.primary : Colors.grey.withOpacity(0.3),
+            color: isSelected ? AppTheme.primary : Colors.grey.withValues(alpha: 0.3),
             width: isSelected ? 3 : 1,
           ),
         ),

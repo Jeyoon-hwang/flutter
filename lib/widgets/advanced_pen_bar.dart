@@ -61,8 +61,8 @@ class _AdvancedPenBarState extends State<AdvancedPenBar>
           ),
           decoration: BoxDecoration(
             color: isDarkMode
-                ? AppTheme.darkSurface.withOpacity(0.95)
-                : Colors.white.withOpacity(0.95),
+                ? AppTheme.darkSurface.withValues(alpha: 0.95)
+                : Colors.white.withValues(alpha: 0.95),
             borderRadius: BorderRadius.circular(AppTheme.radiusLg * scaleFactor),
             boxShadow: provider.performanceSettings.enableShadows
                 ? AppTheme.shadowMd(isDarkMode)
@@ -206,7 +206,7 @@ class _AdvancedPenBarState extends State<AdvancedPenBar>
       constraints: BoxConstraints(minWidth: touchTargetSize, minHeight: touchTargetSize),
       decoration: BoxDecoration(
         color: isSelected
-            ? pen.color.withOpacity(0.2)
+            ? pen.color.withValues(alpha: 0.2)
             : Colors.transparent,
         borderRadius: BorderRadius.circular(AppTheme.radiusSm * scaleFactor),
         border: isSelected
@@ -223,7 +223,7 @@ class _AdvancedPenBarState extends State<AdvancedPenBar>
               if (pen.enableGlow)
                 Icon(
                   pen.getIcon(),
-                  color: pen.color.withOpacity(0.5),
+                  color: pen.color.withValues(alpha: 0.5),
                   size: 28 * scaleFactor,
                 ),
               Icon(
@@ -243,7 +243,7 @@ class _AdvancedPenBarState extends State<AdvancedPenBar>
                   ? LinearGradient(colors: pen.gradientColors!)
                   : null,
               color: pen.gradientColors == null
-                  ? pen.color.withOpacity(pen.opacity)
+                  ? pen.color.withValues(alpha: pen.opacity)
                   : null,
               borderRadius: BorderRadius.circular(2 * scaleFactor),
             ),
@@ -278,7 +278,7 @@ class _AdvancedPenBarState extends State<AdvancedPenBar>
           constraints: BoxConstraints(minWidth: touchTargetSize, minHeight: touchTargetSize),
           decoration: BoxDecoration(
             color: isSelected
-                ? AppTheme.primary.withOpacity(0.2)
+                ? AppTheme.primary.withValues(alpha: 0.2)
                 : Colors.transparent,
             borderRadius: BorderRadius.circular(AppTheme.radiusSm * scaleFactor),
             border: isSelected

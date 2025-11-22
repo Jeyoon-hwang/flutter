@@ -80,7 +80,7 @@ class _WrongAnswerClipDialogState extends State<WrongAnswerClipDialog> {
           borderRadius: BorderRadius.circular(20),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.3),
+              color: Colors.black.withValues(alpha: 0.3),
               blurRadius: 30,
               offset: const Offset(0, 10),
             ),
@@ -125,8 +125,8 @@ class _WrongAnswerClipDialogState extends State<WrongAnswerClipDialog> {
                         style: TextStyle(
                           fontSize: 13,
                           color: isDarkMode
-                              ? Colors.white.withOpacity(0.6)
-                              : Colors.black.withOpacity(0.6),
+                              ? Colors.white.withValues(alpha: 0.6)
+                              : Colors.black.withValues(alpha: 0.6),
                         ),
                       ),
                     ],
@@ -137,8 +137,8 @@ class _WrongAnswerClipDialogState extends State<WrongAnswerClipDialog> {
                   icon: Icon(
                     Icons.close,
                     color: isDarkMode
-                        ? Colors.white.withOpacity(0.7)
-                        : Colors.black.withOpacity(0.7),
+                        ? Colors.white.withValues(alpha: 0.7)
+                        : Colors.black.withValues(alpha: 0.7),
                   ),
                 ),
               ],
@@ -161,8 +161,8 @@ class _WrongAnswerClipDialogState extends State<WrongAnswerClipDialog> {
                 hintText: '예: 수학 I, 영어 독해',
                 filled: true,
                 fillColor: isDarkMode
-                    ? Colors.white.withOpacity(0.05)
-                    : Colors.black.withOpacity(0.03),
+                    ? Colors.white.withValues(alpha: 0.05)
+                    : Colors.black.withValues(alpha: 0.03),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                   borderSide: BorderSide.none,
@@ -199,8 +199,8 @@ class _WrongAnswerClipDialogState extends State<WrongAnswerClipDialog> {
                       color: isSelected
                           ? const Color(0xFF667EEA)
                           : isDarkMode
-                              ? Colors.white.withOpacity(0.1)
-                              : Colors.black.withOpacity(0.05),
+                              ? Colors.white.withValues(alpha: 0.1)
+                              : Colors.black.withValues(alpha: 0.05),
                       borderRadius: BorderRadius.circular(8),
                       border: isSelected
                           ? Border.all(
@@ -216,8 +216,8 @@ class _WrongAnswerClipDialogState extends State<WrongAnswerClipDialog> {
                         color: isSelected
                             ? Colors.white
                             : isDarkMode
-                                ? Colors.white.withOpacity(0.7)
-                                : Colors.black.withOpacity(0.7),
+                                ? Colors.white.withValues(alpha: 0.7)
+                                : Colors.black.withValues(alpha: 0.7),
                         fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
                       ),
                     ),
@@ -243,8 +243,8 @@ class _WrongAnswerClipDialogState extends State<WrongAnswerClipDialog> {
                 hintText: '예: 지수함수, 수능 기출 2024',
                 filled: true,
                 fillColor: isDarkMode
-                    ? Colors.white.withOpacity(0.05)
-                    : Colors.black.withOpacity(0.03),
+                    ? Colors.white.withValues(alpha: 0.05)
+                    : Colors.black.withValues(alpha: 0.03),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                   borderSide: BorderSide.none,
@@ -310,10 +310,10 @@ class _WrongAnswerClipDialogState extends State<WrongAnswerClipDialog> {
                         padding: const EdgeInsets.symmetric(vertical: 12),
                         decoration: BoxDecoration(
                           color: isSelected
-                              ? color.withOpacity(0.2)
+                              ? color.withValues(alpha: 0.2)
                               : isDarkMode
-                                  ? Colors.white.withOpacity(0.05)
-                                  : Colors.black.withOpacity(0.03),
+                                  ? Colors.white.withValues(alpha: 0.05)
+                                  : Colors.black.withValues(alpha: 0.03),
                           borderRadius: BorderRadius.circular(12),
                           border: isSelected
                               ? Border.all(color: color, width: 2)
@@ -326,8 +326,8 @@ class _WrongAnswerClipDialogState extends State<WrongAnswerClipDialog> {
                               color: isSelected
                                   ? color
                                   : isDarkMode
-                                      ? Colors.white.withOpacity(0.5)
-                                      : Colors.black.withOpacity(0.5),
+                                      ? Colors.white.withValues(alpha: 0.5)
+                                      : Colors.black.withValues(alpha: 0.5),
                               size: 24,
                             ),
                             const SizedBox(height: 4),
@@ -340,8 +340,8 @@ class _WrongAnswerClipDialogState extends State<WrongAnswerClipDialog> {
                                 color: isSelected
                                     ? color
                                     : isDarkMode
-                                        ? Colors.white.withOpacity(0.7)
-                                        : Colors.black.withOpacity(0.7),
+                                        ? Colors.white.withValues(alpha: 0.7)
+                                        : Colors.black.withValues(alpha: 0.7),
                               ),
                             ),
                           ],
@@ -378,8 +378,8 @@ class _WrongAnswerClipDialogState extends State<WrongAnswerClipDialog> {
                         fontSize: 15,
                         fontWeight: FontWeight.w600,
                         color: isDarkMode
-                            ? Colors.white.withOpacity(0.7)
-                            : Colors.black.withOpacity(0.7),
+                            ? Colors.white.withValues(alpha: 0.7)
+                            : Colors.black.withValues(alpha: 0.7),
                       ),
                     ),
                   ),

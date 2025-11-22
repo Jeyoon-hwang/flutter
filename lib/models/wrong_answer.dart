@@ -159,14 +159,14 @@ class WrongAnswerTemplate {
 
     final dividerY = size.height * problemAreaHeight;
     final lineColor = isDarkMode
-        ? Colors.white.withOpacity(0.1)
-        : Colors.black.withOpacity(0.08);
+        ? Colors.white.withValues(alpha: 0.1)
+        : Colors.black.withValues(alpha: 0.08);
 
     // Draw divider line between problem and solution areas
     final dividerPaint = Paint()
       ..color = isDarkMode
-          ? Colors.white.withOpacity(0.2)
-          : Colors.black.withOpacity(0.15)
+          ? Colors.white.withValues(alpha: 0.2)
+          : Colors.black.withValues(alpha: 0.15)
       ..strokeWidth = 2.0
       ..style = PaintingStyle.stroke;
 
@@ -184,8 +184,8 @@ class WrongAnswerTemplate {
           fontSize: 14,
           fontWeight: FontWeight.bold,
           color: isDarkMode
-              ? Colors.white.withOpacity(0.5)
-              : Colors.black.withOpacity(0.3),
+              ? Colors.white.withValues(alpha: 0.5)
+              : Colors.black.withValues(alpha: 0.3),
         ),
       ),
       textDirection: TextDirection.ltr,
@@ -201,8 +201,8 @@ class WrongAnswerTemplate {
           fontSize: 14,
           fontWeight: FontWeight.bold,
           color: isDarkMode
-              ? Colors.white.withOpacity(0.5)
-              : Colors.black.withOpacity(0.3),
+              ? Colors.white.withValues(alpha: 0.5)
+              : Colors.black.withValues(alpha: 0.3),
         ),
       ),
       textDirection: TextDirection.ltr,
