@@ -40,7 +40,6 @@ class DrawingCanvas extends StatefulWidget {
 }
 
 class _DrawingCanvasState extends State<DrawingCanvas> {
-  Offset? _twoFingerStartPosition;
   int _pointerCount = 0;
   HybridInputDetector? _hybridDetector;
   bool _clipDialogShown = false;
@@ -93,18 +92,43 @@ class _DrawingCanvasState extends State<DrawingCanvas> {
 
         return Stack(
           children: [
-            Listener(
-              onPointerDown: (event) {
+            // GestureDetector for zoom & pan (필기앱 필수 기능)
+            GestureDetector(
+              onScaleStart: (details) {
+                // 두 손가락 이상일 때만 확대/축소 모드
+                if (details.pointerCount >= 2) {
+                  _pointerCount = details.pointerCount;
+                }
+              },
+              onScaleUpdate: (details) {
+                // 두 손가락 확대/축소 및 이동
+                if (_pointerCount >= 2) {
+                  provider.updateTransform(
+                    provider.scale * details.scale,
+                    provider.offset + details.focalPointDelta,
+                  );
+                }
+              },
+              onScaleEnd: (details) {
+                if (_pointerCount >= 2) {
+                  _pointerCount = 0;
+                }
+              },
+              child: Transform(
+                transform: Matrix4.identity()
+                  ..translate(provider.offset.dx, provider.offset.dy)
+                  ..scale(provider.scale),
+                child: Listener(
+                  onPointerDown: (event) {
                 _pointerCount++;
 
-                // Track two-finger gesture start position
+                // Track two-finger tap for undo
                 if (_pointerCount == 2) {
-                  _twoFingerStartPosition = event.localPosition;
                   _twoFingerTapTime = DateTime.now();
                   return; // Don't start drawing with two fingers
                 }
 
-                // Only start drawing with one finger
+                // Only start drawing with one finger/pen
                 if (_pointerCount == 1) {
                   // Use hybrid input detector for automatic mode switching
                   _hybridDetector?.onPointerDown(event);
@@ -120,41 +144,12 @@ class _DrawingCanvasState extends State<DrawingCanvas> {
                 }
               },
               onPointerMove: (event) {
-                // Handle two-finger swipe gesture
-                if (_pointerCount == 2 && _twoFingerStartPosition != null) {
-                  final delta = event.localPosition - _twoFingerStartPosition!;
-                  final threshold = 50.0;
-
-                  // Check if swipe distance exceeds threshold
-                  if (delta.dx.abs() > threshold || delta.dy.abs() > threshold) {
-                    // Determine primary direction
-                    if (delta.dx.abs() > delta.dy.abs()) {
-                      // Horizontal swipe
-                      if (delta.dx > 0) {
-                        // Right swipe: Select mode
-                        provider.setMode(DrawingMode.select);
-                      } else {
-                        // Left swipe: Shape mode
-                        provider.setMode(DrawingMode.shape);
-                      }
-                    } else {
-                      // Vertical swipe
-                      if (delta.dy < 0) {
-                        // Up swipe: Pen mode
-                        provider.setMode(DrawingMode.pen);
-                      } else {
-                        // Down swipe: Eraser mode
-                        provider.setMode(DrawingMode.eraser);
-                      }
-                    }
-
-                    // Reset to prevent multiple triggers
-                    _twoFingerStartPosition = null;
-                  }
+                // Skip if two fingers (handled by GestureDetector for zoom/pan)
+                if (_pointerCount >= 2) {
                   return;
                 }
 
-                // Only update drawing with one finger
+                // Only update drawing with one finger/pen
                 if (_pointerCount == 1) {
                   provider.updateDrawing(
                     event.localPosition,
@@ -184,9 +179,8 @@ class _DrawingCanvasState extends State<DrawingCanvas> {
                 // Notify hybrid detector
                 _hybridDetector?.onPointerUp(event);
 
-                // Reset two-finger tracking
+                // Reset two-finger tap tracking
                 if (_pointerCount < 2) {
-                  _twoFingerStartPosition = null;
                   _twoFingerTapTime = null;
                 }
 
@@ -198,7 +192,7 @@ class _DrawingCanvasState extends State<DrawingCanvas> {
               onPointerCancel: (event) {
                 _pointerCount--;
                 if (_pointerCount < 0) _pointerCount = 0;
-                _twoFingerStartPosition = null;
+                _twoFingerTapTime = null;
               },
               child: RepaintBoundary(
                 key: widget.repaintBoundaryKey,
@@ -229,6 +223,9 @@ class _DrawingCanvasState extends State<DrawingCanvas> {
                         ? const Color(0xFF1E1E1E)
                         : Colors.white,
                   ),
+                ),
+              ),
+            ),
                 ),
               ),
             ),

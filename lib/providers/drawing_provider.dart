@@ -61,6 +61,12 @@ class DrawingProvider extends ChangeNotifier {
   InputDeviceType _currentInputDevice = InputDeviceType.touch;
   bool _isStylusDetected = false;
 
+  // Canvas transform (zoom & pan) - 필기앱 필수 기능
+  double _scale = 1.0;
+  Offset _offset = Offset.zero;
+  static const double _minScale = 0.5;
+  static const double _maxScale = 5.0;
+
   // Recent colors (최근 사용한 색상, 최대 8개)
   final List<Color> _recentColors = [];
 
@@ -341,6 +347,10 @@ class DrawingProvider extends ChangeNotifier {
         return '알 수 없음';
     }
   }
+
+  // Canvas transform getters
+  double get scale => _scale;
+  Offset get offset => _offset;
   DrawingMode get mode => _mode;
   bool get isEraser => _mode == DrawingMode.eraser;
   bool get isSelectMode => _mode == DrawingMode.select;
@@ -399,6 +409,29 @@ class DrawingProvider extends ChangeNotifier {
 
   void toggleAutoShape() {
     _autoShapeEnabled = !_autoShapeEnabled;
+    notifyListeners();
+  }
+
+  // Canvas transform methods (필기앱 필수 기능)
+  void setScale(double newScale) {
+    _scale = newScale.clamp(_minScale, _maxScale);
+    notifyListeners();
+  }
+
+  void setOffset(Offset newOffset) {
+    _offset = newOffset;
+    notifyListeners();
+  }
+
+  void updateTransform(double newScale, Offset newOffset) {
+    _scale = newScale.clamp(_minScale, _maxScale);
+    _offset = newOffset;
+    notifyListeners();
+  }
+
+  void resetTransform() {
+    _scale = 1.0;
+    _offset = Offset.zero;
     notifyListeners();
   }
 
