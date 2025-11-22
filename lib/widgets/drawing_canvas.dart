@@ -210,6 +210,8 @@ class _DrawingCanvasState extends State<DrawingCanvas> {
                     noteTemplate: provider.noteService.currentNote?.template ?? NoteTemplate.blank,
                     backgroundColor: provider.noteService.currentNote?.backgroundColor ??
                         (provider.isDarkMode ? const Color(0xFF1E1E1E) : Colors.white),
+                    backgroundImagePath: provider.noteService.currentNote?.backgroundImagePath,
+                    backgroundImageOpacity: provider.noteService.currentNote?.backgroundImageOpacity ?? 1.0,
                     pages: provider.pageManager.pages,
                     currentPageIndex: provider.pageManager.currentPageIndex,
                     enableGlowEffects: provider.performanceSettings.enableGlowEffects,
@@ -302,6 +304,8 @@ class DrawingPainter extends CustomPainter {
   final bool showGridLines;
   final NoteTemplate noteTemplate;
   final Color backgroundColor;
+  final String? backgroundImagePath;
+  final double backgroundImageOpacity;
   final List<NotePage> pages;
   final int currentPageIndex;
   final bool enableGlowEffects;
@@ -320,6 +324,8 @@ class DrawingPainter extends CustomPainter {
     this.showGridLines = false,
     this.noteTemplate = NoteTemplate.blank,
     required this.backgroundColor,
+    this.backgroundImagePath,
+    this.backgroundImageOpacity = 1.0,
     this.pages = const [],
     this.currentPageIndex = 0,
     this.enableGlowEffects = true,

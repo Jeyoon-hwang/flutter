@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/drawing_provider.dart';
 import '../utils/responsive_util.dart';
+import 'background_settings_screen.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({Key? key}) : super(key: key);
@@ -40,6 +41,22 @@ class SettingsScreen extends StatelessWidget {
             children: [
               // Appearance Section
               _buildSectionHeader('외관', provider.isDarkMode),
+              _buildSettingCard(
+                context,
+                icon: Icons.wallpaper,
+                title: '배경 설정',
+                subtitle: '종이 템플릿, 이미지, 색상 변경',
+                trailing: const Icon(Icons.chevron_right),
+                isDarkMode: provider.isDarkMode,
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const BackgroundSettingsScreen(),
+                    ),
+                  );
+                },
+              ),
               _buildSettingCard(
                 context,
                 icon: Icons.dark_mode,
@@ -263,20 +280,24 @@ class SettingsScreen extends StatelessWidget {
     required String subtitle,
     required Widget trailing,
     required bool isDarkMode,
+    VoidCallback? onTap,
   }) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      decoration: BoxDecoration(
-        color: isDarkMode ? const Color(0xFF2A2A2A) : Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: isDarkMode
-              ? const Color(0xFF404040)
-              : const Color(0xFFE0E0E0),
-          width: 1,
-        ),
-        boxShadow: [
-          BoxShadow(
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 12),
+        decoration: BoxDecoration(
+          color: isDarkMode ? const Color(0xFF2A2A2A) : Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: isDarkMode
+                ? const Color(0xFF404040)
+                : const Color(0xFFE0E0E0),
+            width: 1,
+          ),
+          boxShadow: [
+            BoxShadow(
             color: Colors.black.withOpacity(isDarkMode ? 0.3 : 0.05),
             blurRadius: 10,
             offset: const Offset(0, 2),
@@ -311,6 +332,7 @@ class SettingsScreen extends StatelessWidget {
           ),
         ),
         trailing: trailing,
+      ),
       ),
     );
   }

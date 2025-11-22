@@ -144,6 +144,8 @@ class Note {
         'backgroundColor': backgroundColor.value,
         'audioPath': audioPath,
         'pdfPath': pdfPath,
+        'backgroundImagePath': backgroundImagePath,
+        'backgroundImageOpacity': backgroundImageOpacity,
         // Layers and strokes would need more complex serialization
       };
 
@@ -158,5 +160,7 @@ class Note {
         backgroundColor: Color(json['backgroundColor'] ?? Colors.white.value),
         audioPath: json['audioPath'],
         pdfPath: json['pdfPath'],
+        backgroundImagePath: json['backgroundImagePath'],
+        backgroundImageOpacity: json['backgroundImageOpacity'] ?? 1.0,
       );
 }
