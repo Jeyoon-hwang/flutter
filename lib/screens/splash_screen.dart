@@ -195,7 +195,7 @@ class _SplashScreenState extends State<SplashScreen>
                     AnimatedBuilder(
                       animation: _textController,
                       builder: (context, child) {
-                        return Transform.offset(
+                        return Transform.translate(
                           offset: Offset(0, _textSlideAnimation.value),
                           child: Opacity(
                             opacity: _textOpacityAnimation.value,
