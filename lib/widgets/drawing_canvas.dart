@@ -482,6 +482,24 @@ class DrawingPainter extends CustomPainter {
       ..strokeJoin = StrokeJoin.round
       ..style = PaintingStyle.stroke;
 
+    // Draw single point as a dot (for immediate feedback when user starts drawing)
+    if (stroke.points.length == 1) {
+      final point = stroke.points[0];
+      final pressure = point.pressure;
+      final dotRadius = stroke.isEraser
+          ? stroke.width * 1.5
+          : stroke.width * (0.5 + pressure * 0.5);
+
+      paint.color = stroke.isEraser
+          ? (isDarkMode ? const Color(0xFF1E1E1E) : Colors.white)
+          : (isDarkMode
+              ? _invertColorIntelligently(stroke.color).withOpacity(stroke.opacity)
+              : stroke.color.withOpacity(stroke.opacity));
+
+      canvas.drawCircle(point.offset, dotRadius, paint);
+      return;
+    }
+
     // Apply glow effect if enabled (performance setting check)
     if (enableGlowEffects && stroke.enableGlow && !stroke.isEraser) {
       _drawGlowEffect(canvas, stroke);
