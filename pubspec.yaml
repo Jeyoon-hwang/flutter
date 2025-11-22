@@ -30,7 +30,7 @@ dependencies:
   # Google Fonts for Korean fonts
   google_fonts: ^6.1.0
   # Haptic feedback
-  vibration: ^1.8.4
+  vibration: ^3.1.4
 
 dev_dependencies:
   flutter_test:
