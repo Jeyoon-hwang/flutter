@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../providers/drawing_provider.dart';
 import '../utils/app_theme.dart';
 import '../models/planner.dart';
+import '../widgets/study_timer_widget.dart';
 import 'canvas_screen.dart';
 import 'notes_list_screen.dart';
 import 'stats_screen.dart';
@@ -42,31 +43,58 @@ class _HomeDashboardState extends State<HomeDashboard> {
         return Scaffold(
           backgroundColor: backgroundColor,
           body: SafeArea(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            child: Stack(
               children: [
-                // Header with date and settings
-                _buildHeader(context, provider, isDarkMode),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Header with date and settings
+                    _buildHeader(context, provider, isDarkMode),
 
-                // Study stats card (순공 시간, 목표 달성률)
-                _buildStudyStatsCard(provider, isDarkMode),
+                    // Study timer widget (Floating)
+                    Center(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: AppTheme.spaceMd),
+                        child: const StudyTimerWidget(),
+                      ),
+                    ),
 
-                const SizedBox(height: AppTheme.spaceLg),
+                    // Today's study summary card
+                    const TodayStudyCard(),
 
-                // Today's planner
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: AppTheme.spaceLg),
-                  child: Text(
-                    '오늘의 계획',
-                    style: AppTheme.heading2(isDarkMode),
-                  ),
-                ),
+                    const SizedBox(height: AppTheme.spaceLg),
 
-                const SizedBox(height: AppTheme.spaceMd),
+                    // Today's planner
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: AppTheme.spaceLg),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            '오늘의 계획',
+                            style: AppTheme.heading2(isDarkMode),
+                          ),
+                          TextButton.icon(
+                            onPressed: () {
+                              _showAddPlannerItem(context, provider);
+                            },
+                            icon: const Icon(Icons.add, size: 18),
+                            label: const Text('추가'),
+                            style: TextButton.styleFrom(
+                              foregroundColor: AppTheme.primary,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
 
-                // Planner items list
-                Expanded(
-                  child: _buildPlannerList(context, provider, isDarkMode),
+                    const SizedBox(height: AppTheme.spaceMd),
+
+                    // Planner items list
+                    Expanded(
+                      child: _buildPlannerList(context, provider, isDarkMode),
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -134,91 +162,106 @@ class _HomeDashboardState extends State<HomeDashboard> {
     );
   }
 
-  Widget _buildStudyStatsCard(DrawingProvider provider, bool isDarkMode) {
-    final todayStats = provider.studyStatsManager.getTodayStats();
-    final weeklyGoal = provider.studyStatsManager.getWeeklyGoalAchievement();
-    final streak = provider.studyStatsManager.getStudyStreak();
+  void _showAddPlannerItem(BuildContext context, DrawingProvider provider) {
+    final titleController = TextEditingController();
+    final descriptionController = TextEditingController();
+    String? selectedSubject;
 
-    return GestureDetector(
-      onTap: () {
-        // Navigate to detailed stats screen
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (_) => const StatsScreen()),
-        );
-      },
-      child: Container(
-        margin: const EdgeInsets.symmetric(horizontal: AppTheme.spaceLg),
-        padding: const EdgeInsets.all(AppTheme.spaceLg),
-        decoration: BoxDecoration(
-          gradient: AppTheme.primaryGradient,
-          borderRadius: BorderRadius.circular(AppTheme.radiusLg),
-          boxShadow: AppTheme.shadowMd(isDarkMode),
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      builder: (context) => Padding(
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(context).viewInsets.bottom,
         ),
-        child: Row(
-          children: [
-            Expanded(
-              child: _buildStatItem(
-                '오늘 순공',
-                todayStats.formattedDuration,
-                Icons.timer_outlined,
-                Colors.white,
+        child: Container(
+          padding: const EdgeInsets.all(AppTheme.spaceLg),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                '새 계획 추가',
+                style: AppTheme.heading2(provider.isDarkMode),
               ),
-            ),
-            Container(
-              width: 1,
-              height: 40,
-              color: Colors.white.withOpacity(0.3),
-            ),
-            Expanded(
-              child: _buildStatItem(
-                '이번 주 목표',
-                '${weeklyGoal.toStringAsFixed(0)}%',
-                Icons.track_changes,
-                Colors.white,
+              const SizedBox(height: AppTheme.spaceLg),
+
+              // Title field
+              TextField(
+                controller: titleController,
+                decoration: const InputDecoration(
+                  labelText: '제목',
+                  hintText: '할 일을 입력하세요',
+                  border: OutlineInputBorder(),
+                ),
+                autofocus: true,
               ),
-            ),
-            Container(
-              width: 1,
-              height: 40,
-              color: Colors.white.withOpacity(0.3),
-            ),
-            Expanded(
-              child: _buildStatItem(
-                '연속 학습',
-                '$streak일',
-                Icons.local_fire_department,
-                Colors.white,
+
+              const SizedBox(height: AppTheme.spaceMd),
+
+              // Description field
+              TextField(
+                controller: descriptionController,
+                decoration: const InputDecoration(
+                  labelText: '설명 (선택)',
+                  hintText: '세부 내용을 입력하세요',
+                  border: OutlineInputBorder(),
+                ),
+                maxLines: 3,
               ),
-            ),
-          ],
+
+              const SizedBox(height: AppTheme.spaceMd),
+
+              // Subject selector
+              Text('과목', style: AppTheme.bodyMedium(provider.isDarkMode)),
+              const SizedBox(height: AppTheme.spaceSm),
+              Wrap(
+                spacing: AppTheme.spaceSm,
+                children: ['수학', '영어', '국어', '과학', '사회', '기타'].map((subject) {
+                  return ChoiceChip(
+                    label: Text(subject),
+                    selected: selectedSubject == subject,
+                    onSelected: (selected) {
+                      setState(() {
+                        selectedSubject = selected ? subject : null;
+                      });
+                    },
+                  );
+                }).toList(),
+              ),
+
+              const SizedBox(height: AppTheme.spaceLg),
+
+              // Add button
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () {
+                    if (titleController.text.trim().isNotEmpty) {
+                      provider.plannerManager.addItem(
+                        PlannerItem(
+                          id: DateTime.now().millisecondsSinceEpoch.toString(),
+                          title: titleController.text.trim(),
+                          description: descriptionController.text.trim(),
+                          date: DateTime.now(),
+                          subject: selectedSubject,
+                        ),
+                      );
+                      Navigator.pop(context);
+                    }
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppTheme.primary,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                  ),
+                  child: const Text('추가'),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
-    );
-  }
-
-  Widget _buildStatItem(String label, String value, IconData icon, Color color) {
-    return Column(
-      children: [
-        Icon(icon, color: color, size: 24),
-        const SizedBox(height: 8),
-        Text(
-          value,
-          style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-            color: color,
-          ),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 12,
-            color: color.withOpacity(0.9),
-          ),
-        ),
-      ],
     );
   }
 
