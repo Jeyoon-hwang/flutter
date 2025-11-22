@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'providers/drawing_provider.dart';
-import 'screens/home_dashboard.dart';
+import 'screens/splash_screen.dart';
+import 'services/haptic_service.dart';
 
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   // Set preferred orientations
@@ -16,6 +17,9 @@ void main() {
 
   // Hide system UI for immersive experience
   SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
+
+  // Initialize haptic feedback service
+  await hapticService.initialize();
 
   runApp(const MyApp());
 }
@@ -40,7 +44,7 @@ class MyApp extends StatelessWidget {
                 brightness: provider.isDarkMode ? Brightness.dark : Brightness.light,
               ),
             ),
-            home: const HomeDashboard(),
+            home: const SplashScreen(),
           );
         },
       ),

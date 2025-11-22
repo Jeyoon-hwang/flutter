@@ -2,12 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/drawing_provider.dart';
 import '../utils/app_theme.dart';
+import '../utils/page_routes.dart';
 import '../models/planner.dart';
 import '../widgets/study_timer_widget.dart';
+import '../widgets/today_study_card.dart';
+import '../services/haptic_service.dart';
 import 'canvas_screen.dart';
 import 'notes_list_screen.dart';
 import 'stats_screen.dart';
 import 'font_settings_screen.dart';
+import 'gesture_guide_screen.dart';
 
 /// Home dashboard with planner-centric design
 /// "Gong-stagram" aesthetic: minimal, clean, motivating
@@ -30,6 +34,22 @@ class _HomeDashboardState extends State<HomeDashboard> {
       final provider = Provider.of<DrawingProvider>(context, listen: false);
       provider.autoDetectPerformanceSettings(context);
       _performanceInitialized = true;
+
+      // Show gesture guide on first launch
+      _checkAndShowGestureGuide();
+    }
+  }
+
+  Future<void> _checkAndShowGestureGuide() async {
+    final shouldShow = await GestureGuideScreen.shouldShow();
+    if (shouldShow && mounted) {
+      // Small delay for smooth transition
+      await Future.delayed(const Duration(milliseconds: 500));
+      if (mounted) {
+        Navigator.of(context).push(
+          PageRoutes.fade(const GestureGuideScreen()),
+        );
+      }
     }
   }
 
@@ -105,13 +125,15 @@ class _HomeDashboardState extends State<HomeDashboard> {
 
           // FAB for quick note
           floatingActionButton: FloatingActionButton.extended(
-            onPressed: () {
+            onPressed: () async {
+              // Haptic feedback
+              await hapticService.medium();
+
               // Create quick note and navigate to canvas
               provider.createQuickNote();
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const CanvasScreen()),
-              );
+              if (mounted) {
+                context.pushSlideUp(const CanvasScreen());
+              }
             },
             backgroundColor: AppTheme.primary,
             icon: const Icon(Icons.edit),
@@ -334,7 +356,8 @@ class _HomeDashboardState extends State<HomeDashboard> {
               children: [
                 // Checkbox
                 GestureDetector(
-                  onTap: () {
+                  onTap: () async {
+                    await hapticService.toggle();
                     provider.plannerManager.toggleItemCompletion(item.id);
                   },
                   child: Container(
@@ -416,19 +439,15 @@ class _HomeDashboardState extends State<HomeDashboard> {
         unselectedItemColor: isDarkMode ? AppTheme.darkTextSecondary : AppTheme.lightTextSecondary,
         currentIndex: 0,
         type: BottomNavigationBarType.fixed,
-        onTap: (index) {
+        onTap: (index) async {
+          await hapticService.selectionChanged();
+
           if (index == 1) {
             // Navigate to notes list
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => const NotesListScreen()),
-            );
+            context.pushSlideRight(const NotesListScreen());
           } else if (index == 3) {
             // Navigate to stats
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => const StatsScreen()),
-            );
+            context.pushSlideRight(const StatsScreen());
           }
         },
         items: const [

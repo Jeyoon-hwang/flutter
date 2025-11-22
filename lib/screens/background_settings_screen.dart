@@ -5,6 +5,8 @@ import 'package:file_picker/file_picker.dart';
 import '../providers/drawing_provider.dart';
 import '../models/note.dart';
 import '../utils/app_theme.dart';
+import '../services/haptic_service.dart';
+import '../widgets/common/animated_widgets.dart';
 
 /// Background customization screen
 /// 배경 커스터마이징: 이미지, 템플릿, 색상
@@ -234,7 +236,7 @@ class _BackgroundSettingsScreenState extends State<BackgroundSettingsScreen> {
   ) {
     final isSelected = provider.noteService.currentNote?.template == template;
 
-    return GestureDetector(
+    return BouncyButton(
       onTap: () => _setTemplate(provider, template),
       child: Container(
         decoration: BoxDecoration(
@@ -327,6 +329,8 @@ class _BackgroundSettingsScreenState extends State<BackgroundSettingsScreen> {
 
   Future<void> _pickBackgroundImage(DrawingProvider provider) async {
     try {
+      await hapticService.buttonPress();
+
       final result = await FilePicker.platform.pickFiles(
         type: FileType.image,
         allowMultiple: false,
@@ -335,16 +339,20 @@ class _BackgroundSettingsScreenState extends State<BackgroundSettingsScreen> {
       if (result != null && result.files.isNotEmpty) {
         final filePath = result.files.first.path;
         if (filePath != null && mounted) {
+          await hapticService.success();
           provider.noteService.setBackgroundImage(filePath);
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('배경 이미지가 설정되었습니다'),
-              backgroundColor: AppTheme.success,
-            ),
-          );
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('배경 이미지가 설정되었습니다'),
+                backgroundColor: AppTheme.success,
+              ),
+            );
+          }
         }
       }
     } catch (e) {
+      await hapticService.error();
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -356,36 +364,45 @@ class _BackgroundSettingsScreenState extends State<BackgroundSettingsScreen> {
     }
   }
 
-  void _removeBackgroundImage(DrawingProvider provider) {
+  Future<void> _removeBackgroundImage(DrawingProvider provider) async {
+    await hapticService.medium();
     provider.noteService.removeBackgroundImage();
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('배경 이미지가 제거되었습니다'),
-      ),
-    );
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('배경 이미지가 제거되었습니다'),
+        ),
+      );
+    }
   }
 
   void _setImageOpacity(DrawingProvider provider, double opacity) {
     provider.noteService.setBackgroundImageOpacity(opacity);
   }
 
-  void _setTemplate(DrawingProvider provider, NoteTemplate template) {
+  Future<void> _setTemplate(DrawingProvider provider, NoteTemplate template) async {
+    await hapticService.selectionChanged();
     provider.noteService.setTemplate(template);
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('템플릿이 변경되었습니다'),
-        duration: Duration(seconds: 1),
-      ),
-    );
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('템플릿이 변경되었습니다'),
+          duration: Duration(seconds: 1),
+        ),
+      );
+    }
   }
 
-  void _setBackgroundColor(DrawingProvider provider, Color color) {
+  Future<void> _setBackgroundColor(DrawingProvider provider, Color color) async {
+    await hapticService.selectionChanged();
     provider.noteService.setBackgroundColor(color);
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('배경색이 변경되었습니다'),
-        duration: Duration(seconds: 1),
-      ),
-    );
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('배경색이 변경되었습니다'),
+          duration: Duration(seconds: 1),
+        ),
+      );
+    }
   }
 }

@@ -11,6 +11,7 @@ import '../models/page_layout.dart';
 import '../widgets/text_input_dialog.dart';
 import '../services/template_renderer.dart';
 import '../services/hybrid_input_detector.dart';
+import '../services/haptic_service.dart';
 import '../widgets/wrong_answer_clip_dialog.dart';
 
 /// Intelligently inverts colors for dark mode (text version)
@@ -109,9 +110,11 @@ class _DrawingCanvasState extends State<DrawingCanvas> {
                   );
                 }
               },
-              onScaleEnd: (details) {
+              onScaleEnd: (details) async {
                 if (_pointerCount >= 2) {
                   _pointerCount = 0;
+                  // Haptic feedback for gesture completion
+                  await hapticService.gestureComplete();
                 }
               },
               child: Transform(
@@ -132,6 +135,13 @@ class _DrawingCanvasState extends State<DrawingCanvas> {
                 if (_pointerCount == 1) {
                   // Use hybrid input detector for automatic mode switching
                   _hybridDetector?.onPointerDown(event);
+
+                  // Haptic feedback for pen down
+                  if (event.kind == PointerDeviceKind.stylus) {
+                    hapticService.penDown();
+                  } else {
+                    hapticService.light();
+                  }
 
                   // Start drawing with device information
                   provider.startDrawing(
@@ -167,6 +177,7 @@ class _DrawingCanvasState extends State<DrawingCanvas> {
                   if (tapDuration <= _twoFingerTapTimeout) {
                     // Two-finger tap detected! Trigger Undo
                     if (provider.canUndo) {
+                      hapticService.medium();
                       provider.undo();
                     }
                   }

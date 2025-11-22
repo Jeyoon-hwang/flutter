@@ -21,6 +21,7 @@ import '../services/version_manager.dart';
 import '../services/wrong_answer_service.dart';
 import '../services/hybrid_input_detector.dart';
 import '../services/app_state_service.dart';
+import '../services/haptic_service.dart';
 import '../models/practice_session.dart';
 import '../models/planner.dart';
 import '../models/lecture_mode.dart';
@@ -675,9 +676,15 @@ class DrawingProvider extends ChangeNotifier {
 
     // Update current input device
     if (deviceKind != null) {
+      final previousDevice = _currentInputDevice;
+
       switch (deviceKind) {
         case PointerDeviceKind.stylus:
           _currentInputDevice = InputDeviceType.stylus;
+          // Haptic feedback when stylus is first detected
+          if (!_isStylusDetected) {
+            hapticService.stylusDetected();
+          }
           _isStylusDetected = true;
           break;
         case PointerDeviceKind.touch:
