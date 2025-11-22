@@ -65,7 +65,7 @@ class SettingsScreen extends StatelessWidget {
                 trailing: Switch(
                   value: provider.isDarkMode,
                   onChanged: (value) => provider.toggleDarkMode(),
-                  activeTrackColor: const Color(0xFF667EEA),
+                  activeColor: const Color(0xFF667EEA),
                 ),
                 isDarkMode: provider.isDarkMode,
               ),
@@ -77,7 +77,7 @@ class SettingsScreen extends StatelessWidget {
                 trailing: Switch(
                   value: provider.settings.showGridLines,
                   onChanged: (value) => provider.toggleGridLines(),
-                  activeTrackColor: const Color(0xFF667EEA),
+                  activeColor: const Color(0xFF667EEA),
                 ),
                 isDarkMode: provider.isDarkMode,
               ),
@@ -94,7 +94,7 @@ class SettingsScreen extends StatelessWidget {
                 trailing: Switch(
                   value: provider.palmRejection,
                   onChanged: (value) => provider.togglePalmRejection(),
-                  activeTrackColor: const Color(0xFF667EEA),
+                  activeColor: const Color(0xFF667EEA),
                 ),
                 isDarkMode: provider.isDarkMode,
               ),
@@ -106,7 +106,7 @@ class SettingsScreen extends StatelessWidget {
                 trailing: Switch(
                   value: provider.autoShapeEnabled,
                   onChanged: (value) => provider.toggleAutoShape(),
-                  activeTrackColor: const Color(0xFF667EEA),
+                  activeColor: const Color(0xFF667EEA),
                 ),
                 isDarkMode: provider.isDarkMode,
               ),
@@ -126,7 +126,7 @@ class SettingsScreen extends StatelessWidget {
                     min: 0.0,
                     max: 1.0,
                     divisions: 10,
-                    activeTrackColor: const Color(0xFF667EEA),
+                    activeColor: const Color(0xFF667EEA),
                     onChanged: (value) => provider.setPressureStabilization(value),
                   ),
                 ),
@@ -145,7 +145,7 @@ class SettingsScreen extends StatelessWidget {
                 trailing: Switch(
                   value: provider.settings.showPenTool,
                   onChanged: (value) => provider.togglePenTool(),
-                  activeTrackColor: const Color(0xFF667EEA),
+                  activeColor: const Color(0xFF667EEA),
                 ),
                 isDarkMode: provider.isDarkMode,
               ),
@@ -157,7 +157,7 @@ class SettingsScreen extends StatelessWidget {
                 trailing: Switch(
                   value: provider.settings.showEraserTool,
                   onChanged: (value) => provider.toggleEraserTool(),
-                  activeTrackColor: const Color(0xFF667EEA),
+                  activeColor: const Color(0xFF667EEA),
                 ),
                 isDarkMode: provider.isDarkMode,
               ),
@@ -169,7 +169,7 @@ class SettingsScreen extends StatelessWidget {
                 trailing: Switch(
                   value: provider.settings.showSelectTool,
                   onChanged: (value) => provider.toggleSelectTool(),
-                  activeTrackColor: const Color(0xFF667EEA),
+                  activeColor: const Color(0xFF667EEA),
                 ),
                 isDarkMode: provider.isDarkMode,
               ),
@@ -181,7 +181,7 @@ class SettingsScreen extends StatelessWidget {
                 trailing: Switch(
                   value: provider.settings.showShapeTool,
                   onChanged: (value) => provider.toggleShapeTool(),
-                  activeTrackColor: const Color(0xFF667EEA),
+                  activeColor: const Color(0xFF667EEA),
                 ),
                 isDarkMode: provider.isDarkMode,
               ),
@@ -193,7 +193,7 @@ class SettingsScreen extends StatelessWidget {
                 trailing: Switch(
                   value: provider.settings.showTextTool,
                   onChanged: (value) => provider.toggleTextTool(),
-                  activeTrackColor: const Color(0xFF667EEA),
+                  activeColor: const Color(0xFF667EEA),
                 ),
                 isDarkMode: provider.isDarkMode,
               ),
@@ -214,7 +214,7 @@ class SettingsScreen extends StatelessWidget {
                     min: 1,
                     max: 20,
                     divisions: 19,
-                    activeTrackColor: const Color(0xFF667EEA),
+                    activeColor: const Color(0xFF667EEA),
                     onChanged: (value) => provider.setLineWidth(value),
                   ),
                 ),
@@ -232,7 +232,7 @@ class SettingsScreen extends StatelessWidget {
                     min: 0.1,
                     max: 1.0,
                     divisions: 9,
-                    activeTrackColor: const Color(0xFF667EEA),
+                    activeColor: const Color(0xFF667EEA),
                     onChanged: (value) => provider.setOpacity(value),
                   ),
                 ),

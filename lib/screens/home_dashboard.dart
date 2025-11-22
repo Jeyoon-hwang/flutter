@@ -389,26 +389,12 @@ class _HomeDashboardState extends State<HomeDashboard> {
                               ? (isDarkMode ? AppTheme.darkTextSecondary : AppTheme.lightTextSecondary)
                               : null,
                         ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
                       ),
-                      if (item.description.isNotEmpty) ...[
-                        const SizedBox(height: 4),
-                        Text(
-                          item.description,
-                          style: AppTheme.bodySmall(isDarkMode),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ],
                     ],
                   ),
                 ),
-
-                // Subject tag
-                if (item.subject != null)
-                  AppWidgets.badge(
-                    text: item.subject!,
-                    color: _getSubjectColor(item.subject!),
-                  ),
               ],
             ),
           ),
