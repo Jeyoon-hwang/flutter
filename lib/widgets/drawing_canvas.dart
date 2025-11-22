@@ -229,13 +229,6 @@ class _DrawingCanvasState extends State<DrawingCanvas> {
                     enableGlitterEffects: provider.performanceSettings.enableGlitterEffects,
                     enableShadows: provider.performanceSettings.enableShadows,
                   ),
-                  child: Container(
-                    width: double.infinity,
-                    height: double.infinity,
-                    color: provider.isDarkMode
-                        ? const Color(0xFF1E1E1E)
-                        : Colors.white,
-                  ),
                 ),
               ),
             ),
