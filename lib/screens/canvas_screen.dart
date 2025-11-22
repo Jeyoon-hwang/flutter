@@ -7,7 +7,7 @@ import '../widgets/shape_palette.dart';
 import '../widgets/layer_panel.dart';
 import '../widgets/page_navigation.dart';
 import '../widgets/version_control_panel.dart';
-import '../widgets/favorite_pen_bar.dart';
+import '../widgets/advanced_pen_bar.dart';
 import 'package:provider/provider.dart';
 import '../providers/drawing_provider.dart';
 
@@ -70,13 +70,13 @@ class _CanvasScreenState extends State<CanvasScreen> {
                   const PageNavigation(),
                   if (_showVersionControl) const VersionControlPanel(),
 
-                  // Favorite pen bar (always visible, minimal design)
+                  // Advanced pen bar (always visible, minimal design)
                   Positioned(
                     bottom: 20,
                     left: 0,
                     right: 0,
                     child: Center(
-                      child: const FavoritePenBar(),
+                      child: const AdvancedPenBar(),
                     ),
                   ),
                   // Version control toggle button

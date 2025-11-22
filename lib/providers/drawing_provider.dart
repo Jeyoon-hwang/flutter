@@ -24,6 +24,7 @@ import '../models/practice_session.dart';
 import '../models/planner.dart';
 import '../models/lecture_mode.dart';
 import '../models/study_stats.dart';
+import '../models/advanced_pen.dart';
 
 enum DrawingMode { pen, eraser, select, shape, text, wrongAnswerClip }
 
@@ -108,6 +109,12 @@ class DrawingProvider extends ChangeNotifier {
   // App state service for persistence
   final AppStateService _appStateService = AppStateService();
   AppStateService get appStateService => _appStateService;
+
+  // Advanced pen system
+  final List<AdvancedPen> _advancedPens = [];
+  String? _selectedAdvancedPenId;
+  List<AdvancedPen> get advancedPens => List.unmodifiable(_advancedPens);
+  String? get selectedAdvancedPenId => _selectedAdvancedPenId;
 
   // Lecture mode (split view optimization)
   bool _isLectureMode = false;
@@ -286,6 +293,9 @@ class DrawingProvider extends ChangeNotifier {
       ),
     ]);
     _currentLayerIndex = 1; // 필기 레이어가 기본
+
+    // Initialize advanced pens
+    _advancedPens.addAll(AdvancedPen.getDefaultAdvancedPens());
   }
 
   // Getters
@@ -743,12 +753,19 @@ class DrawingProvider extends ChangeNotifier {
       }
 
       if (shapePoints.isNotEmpty) {
+        final penProps = _getAdvancedPenProperties();
         final stroke = DrawingStroke(
           points: shapePoints,
           color: _currentColor,
           width: _lineWidth,
           opacity: _opacity,
           isEraser: false,
+          penType: penProps['penType'],
+          gradientColors: penProps['gradientColors'],
+          enableGlow: penProps['enableGlow'],
+          glitterDensity: penProps['glitterDensity'],
+          smoothing: penProps['smoothing'],
+          tapering: penProps['tapering'],
         );
         // Add stroke to current layer instead of _strokes
         if (_currentLayerIndex >= 0 && _currentLayerIndex < _layers.length) {
@@ -784,21 +801,28 @@ class DrawingProvider extends ChangeNotifier {
 
     if (_currentStroke.isNotEmpty) {
       DrawingStroke stroke;
+      final penProps = _getAdvancedPenProperties();
 
       // Try shape recognition if auto-shape is enabled
       if (_autoShapeEnabled && _mode == DrawingMode.pen) {
         final recognizedShape = _shapeService.recognizeShape(_currentStroke);
-        
+
         if (recognizedShape != null) {
           // Convert recognized shape to stroke
           stroke = DrawingStroke(
-            points: recognizedShape.points.map((offset) => 
+            points: recognizedShape.points.map((offset) =>
               DrawingPoint(offset: offset, pressure: 0.5)
             ).toList(),
             color: _currentColor,
             width: _lineWidth,
             opacity: _opacity,
             isEraser: false,
+            penType: penProps['penType'],
+            gradientColors: penProps['gradientColors'],
+            enableGlow: penProps['enableGlow'],
+            glitterDensity: penProps['glitterDensity'],
+            smoothing: penProps['smoothing'],
+            tapering: penProps['tapering'],
           );
         } else {
           // Use original stroke
@@ -808,6 +832,12 @@ class DrawingProvider extends ChangeNotifier {
             width: _lineWidth,
             opacity: _opacity,
             isEraser: _mode == DrawingMode.eraser,
+            penType: penProps['penType'],
+            gradientColors: penProps['gradientColors'],
+            enableGlow: penProps['enableGlow'],
+            glitterDensity: penProps['glitterDensity'],
+            smoothing: penProps['smoothing'],
+            tapering: penProps['tapering'],
           );
         }
       } else {
@@ -817,6 +847,12 @@ class DrawingProvider extends ChangeNotifier {
           width: _lineWidth,
           opacity: _opacity,
           isEraser: _mode == DrawingMode.eraser,
+          penType: penProps['penType'],
+          gradientColors: penProps['gradientColors'],
+          enableGlow: penProps['enableGlow'],
+          glitterDensity: penProps['glitterDensity'],
+          smoothing: penProps['smoothing'],
+          tapering: penProps['tapering'],
         );
       }
 
@@ -1168,13 +1204,19 @@ class DrawingProvider extends ChangeNotifier {
       if (recognizedShape != null) {
         // Replace with perfect shape
         _strokes[index] = DrawingStroke(
-          points: recognizedShape.points.map((offset) => 
+          points: recognizedShape.points.map((offset) =>
             DrawingPoint(offset: offset, pressure: 0.5)
           ).toList(),
           color: stroke.color,
           width: stroke.width,
           opacity: stroke.opacity,
           isEraser: stroke.isEraser,
+          penType: stroke.penType,
+          gradientColors: stroke.gradientColors,
+          enableGlow: stroke.enableGlow,
+          glitterDensity: stroke.glitterDensity,
+          smoothing: stroke.smoothing,
+          tapering: stroke.tapering,
         );
       }
     }
@@ -1592,6 +1634,97 @@ class DrawingProvider extends ChangeNotifier {
     }).toList();
     _settings = _settings.copyWith(favoritePens: updatedPens);
     notifyListeners();
+  }
+
+  // ============================================================================
+  // ADVANCED PEN MANAGEMENT
+  // ============================================================================
+
+  /// Select an advanced pen
+  void selectAdvancedPen(String penId) {
+    final pen = _advancedPens.firstWhere(
+      (p) => p.id == penId,
+      orElse: () => _advancedPens.first,
+    );
+
+    // Apply pen settings
+    _currentColor = pen.color;
+    _lineWidth = pen.width;
+    _opacity = pen.opacity;
+    _pressureStabilization = 1.0 - pen.pressureSensitivity; // Invert for compatibility
+    _mode = DrawingMode.pen;
+
+    _selectedAdvancedPenId = penId;
+    notifyListeners();
+  }
+
+  /// Get current advanced pen properties for stroke creation
+  Map<String, dynamic> _getAdvancedPenProperties() {
+    final selectedPen = selectedAdvancedPen;
+    if (selectedPen != null) {
+      return {
+        'penType': selectedPen.type,
+        'gradientColors': selectedPen.gradientColors,
+        'enableGlow': selectedPen.enableGlow,
+        'glitterDensity': selectedPen.glitterDensity,
+        'smoothing': selectedPen.smoothing,
+        'tapering': selectedPen.tapering,
+      };
+    }
+    return {
+      'penType': null,
+      'gradientColors': null,
+      'enableGlow': false,
+      'glitterDensity': null,
+      'smoothing': 0.0,
+      'tapering': 0.0,
+    };
+  }
+
+  /// Add a new advanced pen
+  void addAdvancedPen(AdvancedPen pen) {
+    _advancedPens.add(pen);
+    notifyListeners();
+  }
+
+  /// Update an advanced pen
+  void updateAdvancedPen(String penId, AdvancedPen updatedPen) {
+    final index = _advancedPens.indexWhere((p) => p.id == penId);
+    if (index != -1) {
+      _advancedPens[index] = updatedPen;
+
+      // If this is the currently selected pen, update settings
+      if (_selectedAdvancedPenId == penId) {
+        _currentColor = updatedPen.color;
+        _lineWidth = updatedPen.width;
+        _opacity = updatedPen.opacity;
+        _pressureStabilization = 1.0 - updatedPen.pressureSensitivity;
+      }
+
+      notifyListeners();
+    }
+  }
+
+  /// Delete an advanced pen
+  void deleteAdvancedPen(String penId) {
+    _advancedPens.removeWhere((p) => p.id == penId);
+
+    // If deleted pen was selected, select another
+    if (_selectedAdvancedPenId == penId && _advancedPens.isNotEmpty) {
+      selectAdvancedPen(_advancedPens.first.id);
+    }
+
+    notifyListeners();
+  }
+
+  /// Get currently selected advanced pen
+  AdvancedPen? get selectedAdvancedPen {
+    if (_selectedAdvancedPenId == null) return null;
+    try {
+      return _advancedPens.firstWhere((p) => p.id == _selectedAdvancedPenId);
+    } catch (e) {
+      return null;
+    }
   }
 
   // ============================================================================

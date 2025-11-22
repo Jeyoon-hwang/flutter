@@ -456,25 +456,106 @@ class DrawingPainter extends CustomPainter {
       ..strokeJoin = StrokeJoin.round
       ..style = PaintingStyle.stroke;
 
+    // Apply glow effect if enabled
+    if (stroke.enableGlow && !stroke.isEraser) {
+      _drawGlowEffect(canvas, stroke);
+    }
+
     for (int i = 0; i < stroke.points.length - 1; i++) {
       final point1 = stroke.points[i];
       final point2 = stroke.points[i + 1];
 
       final pressure = (point1.pressure + point2.pressure) / 2;
+
+      // Apply tapering (thinner at ends)
+      double taperingFactor = 1.0;
+      if (stroke.tapering > 0) {
+        final progress = i / (stroke.points.length - 1);
+        final distanceFromCenter = (progress - 0.5).abs() * 2;
+        taperingFactor = 1.0 - (distanceFromCenter * stroke.tapering);
+      }
+
       final adjustedWidth = stroke.isEraser
           ? stroke.width * 3
-          : stroke.width * (0.5 + pressure);
+          : stroke.width * (0.5 + pressure) * taperingFactor;
 
-      paint.color = stroke.isEraser
-          ? (isDarkMode
-              ? const Color(0xFF1E1E1E)
-              : Colors.white)
-          : (isDarkMode
-              ? _invertColorIntelligently(stroke.color).withOpacity(stroke.opacity)
-              : stroke.color.withOpacity(stroke.opacity));
+      // Rainbow gradient effect
+      if (stroke.gradientColors != null && stroke.gradientColors!.length > 1) {
+        final progress = i / (stroke.points.length - 1);
+        final colorIndex = (progress * (stroke.gradientColors!.length - 1)).floor();
+        final nextColorIndex = (colorIndex + 1).clamp(0, stroke.gradientColors!.length - 1);
+        final localProgress = (progress * (stroke.gradientColors!.length - 1)) - colorIndex;
+
+        paint.color = Color.lerp(
+          stroke.gradientColors![colorIndex],
+          stroke.gradientColors![nextColorIndex],
+          localProgress,
+        )!.withOpacity(stroke.opacity);
+      } else {
+        paint.color = stroke.isEraser
+            ? (isDarkMode
+                ? const Color(0xFF1E1E1E)
+                : Colors.white)
+            : (isDarkMode
+                ? _invertColorIntelligently(stroke.color).withOpacity(stroke.opacity)
+                : stroke.color.withOpacity(stroke.opacity));
+      }
+
       paint.strokeWidth = adjustedWidth;
-
       canvas.drawLine(point1.offset, point2.offset, paint);
+
+      // Draw glitter particles
+      if (stroke.glitterDensity != null && stroke.glitterDensity! > 0 && !stroke.isEraser) {
+        _drawGlitterParticles(canvas, point1.offset, point2.offset, stroke);
+      }
+    }
+  }
+
+  /// Draw glow effect around stroke
+  void _drawGlowEffect(Canvas canvas, DrawingStroke stroke) {
+    final glowPaint = Paint()
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round
+      ..style = PaintingStyle.stroke
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 8);
+
+    for (int i = 0; i < stroke.points.length - 1; i++) {
+      final point1 = stroke.points[i];
+      final point2 = stroke.points[i + 1];
+
+      final pressure = (point1.pressure + point2.pressure) / 2;
+      final adjustedWidth = stroke.width * (0.5 + pressure) * 2; // Wider for glow
+
+      glowPaint.color = (isDarkMode
+              ? _invertColorIntelligently(stroke.color)
+              : stroke.color)
+          .withOpacity(stroke.opacity * 0.3);
+      glowPaint.strokeWidth = adjustedWidth;
+
+      canvas.drawLine(point1.offset, point2.offset, glowPaint);
+    }
+  }
+
+  /// Draw glitter particles along stroke
+  void _drawGlitterParticles(Canvas canvas, Offset start, Offset end, DrawingStroke stroke) {
+    final particleCount = (stroke.glitterDensity! * 3).toInt();
+    final paint = Paint()
+      ..style = PaintingStyle.fill
+      ..color = Colors.white.withOpacity(0.8);
+
+    for (int i = 0; i < particleCount; i++) {
+      final t = i / particleCount;
+      final position = Offset.lerp(start, end, t)!;
+
+      // Add random offset for sparkle effect
+      final random = (position.dx * position.dy * i).toInt() % 100;
+      final offsetX = (random % 10 - 5) * 0.5;
+      final offsetY = ((random ~/ 10) % 10 - 5) * 0.5;
+
+      final particlePos = position + Offset(offsetX, offsetY);
+      final size = 1.0 + (random % 3);
+
+      canvas.drawCircle(particlePos, size, paint);
     }
   }
 
