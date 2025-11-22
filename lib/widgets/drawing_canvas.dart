@@ -239,6 +239,7 @@ class _DrawingCanvasState extends State<DrawingCanvas> {
                 ),
               ),
             ),
+            ),
             // Text objects overlay
             ...provider.textObjects.map((textObj) => Positioned(
               left: textObj.position.dx,
