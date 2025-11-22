@@ -27,6 +27,8 @@ dependencies:
   audioplayers: ^5.2.1
   # State persistence
   shared_preferences: ^2.2.2
+  # Google Fonts for Korean fonts
+  google_fonts: ^6.1.0
 
 dev_dependencies:
   flutter_test:

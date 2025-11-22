@@ -1,6 +1,7 @@
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter/gestures.dart' show PointerDeviceKind;
 import '../models/drawing_stroke.dart';
 import '../models/text_object.dart';
 import '../models/app_settings.dart';
@@ -55,6 +56,10 @@ class DrawingProvider extends ChangeNotifier {
   bool _isDarkMode = false;
   bool _autoShapeEnabled = false;
   bool _focusMode = false; // 포커스 모드
+
+  // Pen/Stylus detection
+  InputDeviceType _currentInputDevice = InputDeviceType.touch;
+  bool _isStylusDetected = false;
 
   // Recent colors (최근 사용한 색상, 최대 8개)
   final List<Color> _recentColors = [];
@@ -320,6 +325,22 @@ class DrawingProvider extends ChangeNotifier {
   Color get currentColor => _currentColor;
   double get lineWidth => _lineWidth;
   double get opacity => _opacity;
+
+  // Pen/Stylus detection getters
+  InputDeviceType get currentInputDevice => _currentInputDevice;
+  bool get isStylusDetected => _isStylusDetected;
+  String get inputDeviceName {
+    switch (_currentInputDevice) {
+      case InputDeviceType.stylus:
+        return 'S펜/Apple Pencil';
+      case InputDeviceType.touch:
+        return '터치';
+      case InputDeviceType.mouse:
+        return '마우스';
+      case InputDeviceType.unknown:
+        return '알 수 없음';
+    }
+  }
   DrawingMode get mode => _mode;
   bool get isEraser => _mode == DrawingMode.eraser;
   bool get isSelectMode => _mode == DrawingMode.select;
@@ -610,9 +631,35 @@ class DrawingProvider extends ChangeNotifier {
   }
 
   // Drawing methods
-  void startDrawing(Offset offset, double pressure, {bool isPen = false}) {
-    // Palm rejection: ignore if palm rejection is enabled and input is not from pen
-    if (_settings.palmRejection && !isPen && _mode == DrawingMode.pen) {
+  void startDrawing(Offset offset, double pressure, {
+    bool isPen = false,
+    PointerDeviceKind? deviceKind,
+    double? tiltX,
+    double? tiltY,
+  }) {
+    // Detect stylus pen automatically
+    final isStylusPen = deviceKind == PointerDeviceKind.stylus;
+
+    // Update current input device
+    if (deviceKind != null) {
+      switch (deviceKind) {
+        case PointerDeviceKind.stylus:
+          _currentInputDevice = InputDeviceType.stylus;
+          _isStylusDetected = true;
+          break;
+        case PointerDeviceKind.touch:
+          _currentInputDevice = InputDeviceType.touch;
+          break;
+        case PointerDeviceKind.mouse:
+          _currentInputDevice = InputDeviceType.mouse;
+          break;
+        default:
+          _currentInputDevice = InputDeviceType.unknown;
+      }
+    }
+
+    // Palm rejection: ignore if palm rejection is enabled and input is not from pen/stylus
+    if (_settings.palmRejection && !isPen && !isStylusPen && _mode == DrawingMode.pen) {
       return;
     }
 
@@ -648,11 +695,27 @@ class DrawingProvider extends ChangeNotifier {
     }
 
     _currentStroke.clear();
-    _currentStroke.add(DrawingPoint(offset: offset, pressure: pressure));
+
+    // Create drawing point with device type information
+    final point = deviceKind != null
+        ? DrawingPoint.fromPointer(
+            offset: offset,
+            pressure: pressure,
+            kind: deviceKind,
+            tiltX: tiltX,
+            tiltY: tiltY,
+          )
+        : DrawingPoint(offset: offset, pressure: pressure);
+
+    _currentStroke.add(point);
     notifyListeners();
   }
 
-  void updateDrawing(Offset offset, double pressure) {
+  void updateDrawing(Offset offset, double pressure, {
+    PointerDeviceKind? deviceKind,
+    double? tiltX,
+    double? tiltY,
+  }) {
     if ((_mode == DrawingMode.select || _mode == DrawingMode.wrongAnswerClip) &&
         _isSelecting && _selectionStart != null) {
       _selectionRect = Rect.fromPoints(_selectionStart!, offset);
@@ -667,7 +730,18 @@ class DrawingProvider extends ChangeNotifier {
       return;
     }
 
-    _currentStroke.add(DrawingPoint(offset: offset, pressure: pressure));
+    // Create drawing point with device type information
+    final point = deviceKind != null
+        ? DrawingPoint.fromPointer(
+            offset: offset,
+            pressure: pressure,
+            kind: deviceKind,
+            tiltX: tiltX,
+            tiltY: tiltY,
+          )
+        : DrawingPoint(offset: offset, pressure: pressure);
+
+    _currentStroke.add(point);
     notifyListeners();
   }
 

@@ -108,6 +108,15 @@ class _DrawingCanvasState extends State<DrawingCanvas> {
                 if (_pointerCount == 1) {
                   // Use hybrid input detector for automatic mode switching
                   _hybridDetector?.onPointerDown(event);
+
+                  // Start drawing with device information
+                  provider.startDrawing(
+                    event.localPosition,
+                    event.pressure,
+                    deviceKind: event.kind,
+                    tiltX: event.tilt,
+                    tiltY: event.orientation,
+                  );
                 }
               },
               onPointerMove: (event) {
@@ -150,6 +159,9 @@ class _DrawingCanvasState extends State<DrawingCanvas> {
                   provider.updateDrawing(
                     event.localPosition,
                     event.pressure,
+                    deviceKind: event.kind,
+                    tiltX: event.tilt,
+                    tiltY: event.orientation,
                   );
                 }
               },

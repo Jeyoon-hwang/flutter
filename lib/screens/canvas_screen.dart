@@ -8,6 +8,7 @@ import '../widgets/layer_panel.dart';
 import '../widgets/page_navigation.dart';
 import '../widgets/version_control_panel.dart';
 import '../widgets/advanced_pen_bar.dart';
+import '../widgets/pen_status_indicator.dart';
 import 'package:provider/provider.dart';
 import '../providers/drawing_provider.dart';
 
@@ -69,6 +70,14 @@ class _CanvasScreenState extends State<CanvasScreen> {
                   const LayerPanel(),
                   const PageNavigation(),
                   if (_showVersionControl) const VersionControlPanel(),
+
+                  // Pen status indicator (top right corner)
+                  if (!provider.focusMode)
+                    const Positioned(
+                      top: 70,
+                      right: 20,
+                      child: PenStatusIndicator(),
+                    ),
 
                   // Advanced pen bar (always visible, minimal design)
                   Positioned(
