@@ -224,7 +224,7 @@ class DrawingProvider extends ChangeNotifier {
         final pageIndex = lastNote['pageIndex'] as int;
 
         // Try to load the note
-        final note = _noteService.notes.firstWhere(
+        final note = _noteService.allNotes.firstWhere(
           (n) => n.id == noteId,
           orElse: () => _noteService.currentNote!,
         );
@@ -1377,7 +1377,7 @@ class DrawingProvider extends ChangeNotifier {
     }
 
     if (selectedIndices.isNotEmpty) {
-      _saveState();
+      // State changes are tracked through HistoryManager
       clearSelection();
       notifyListeners();
     }

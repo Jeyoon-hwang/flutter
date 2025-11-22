@@ -77,7 +77,7 @@ class OCRService {
             text: textBlock.text,
             position: Offset(blockRect.left, blockRect.top),
             size: blockRect.size,
-            confidence: textBlock.confidence ?? 1.0,
+            confidence: 1.0, // ML Kit doesn't provide confidence scores
           ));
         }
       }

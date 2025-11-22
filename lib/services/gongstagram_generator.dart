@@ -397,7 +397,7 @@ class WeeklyReportGenerator {
       final day = summary.dailySummaries[i];
       final hours = day.studyTime.inMinutes / 60;
 
-      final barHeight = maxHours > 0 ? (hours / maxHours) * chartHeight : 0;
+      final barHeight = maxHours > 0 ? (hours / maxHours) * chartHeight : 0.0;
 
       final x = size.width * 0.05 + i * (barWidth + barSpacing);
 

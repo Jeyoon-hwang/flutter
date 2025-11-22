@@ -285,7 +285,7 @@ class _HomeDashboardState extends State<HomeDashboard> {
   }
 
   Widget _buildPlannerList(BuildContext context, DrawingProvider provider, bool isDarkMode) {
-    final plannerItems = provider.plannerManager.getTodayItems();
+    final plannerItems = provider.plannerManager.todayTodos;
 
     if (plannerItems.isEmpty) {
       return Center(
@@ -327,7 +327,7 @@ class _HomeDashboardState extends State<HomeDashboard> {
   Widget _buildPlannerCard(
     BuildContext context,
     DrawingProvider provider,
-    PlannerItem item,
+    TodoItem item,
     bool isDarkMode,
   ) {
     return Container(
@@ -355,7 +355,7 @@ class _HomeDashboardState extends State<HomeDashboard> {
                 GestureDetector(
                   onTap: () async {
                     await hapticService.toggle();
-                    provider.plannerManager.toggleItemCompletion(item.id);
+                    provider.plannerManager.toggleComplete(item.id);
                   },
                   child: Container(
                     width: 24,

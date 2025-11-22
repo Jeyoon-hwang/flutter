@@ -376,7 +376,7 @@ class _PenCustomizerState extends State<PenCustomizer> {
           min: 0.0,
           max: 1.0,
           divisions: 10,
-          icon: Icons.touchpad,
+          icon: Icons.touch_app,
           onChanged: (value) {
             _updatePen(_currentPen.copyWith(pressureSensitivity: value));
           },

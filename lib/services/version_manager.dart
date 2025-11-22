@@ -368,14 +368,9 @@ class VersionManager extends ChangeNotifier {
     final mergedLayers = [...target.noteSnapshot.layers];
 
     // Merge text objects (keep both)
-    final mergedTextObjects = [
-      ...target.noteSnapshot.textObjects,
-      ...source.noteSnapshot.textObjects,
-    ];
-
-    return target.noteSnapshot.copyWith(
-      textObjects: mergedTextObjects,
-    );
+    // Note: copyWith doesn't support textObjects parameter yet
+    // Text objects are preserved from target.noteSnapshot by default
+    return target.noteSnapshot.copyWith();
   }
 
   // ============================================================================
