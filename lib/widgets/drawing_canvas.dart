@@ -11,6 +11,7 @@ import '../models/page_layout.dart';
 import '../widgets/text_input_dialog.dart';
 import '../services/template_renderer.dart';
 import '../services/hybrid_input_detector.dart';
+import '../services/haptic_service.dart';
 import '../widgets/wrong_answer_clip_dialog.dart';
 
 /// Intelligently inverts colors for dark mode (text version)
@@ -40,10 +41,11 @@ class DrawingCanvas extends StatefulWidget {
 }
 
 class _DrawingCanvasState extends State<DrawingCanvas> {
-  Offset? _twoFingerStartPosition;
   int _pointerCount = 0;
   HybridInputDetector? _hybridDetector;
   bool _clipDialogShown = false;
+  DateTime? _twoFingerTapTime;
+  static const Duration _twoFingerTapTimeout = Duration(milliseconds: 300);
 
   @override
   Widget build(BuildContext context) {
@@ -91,66 +93,96 @@ class _DrawingCanvasState extends State<DrawingCanvas> {
 
         return Stack(
           children: [
-            Listener(
-              onPointerDown: (event) {
+            // GestureDetector for zoom & pan (필기앱 필수 기능)
+            GestureDetector(
+              onScaleStart: (details) {
+                // 두 손가락 이상일 때만 확대/축소 모드
+                if (details.pointerCount >= 2) {
+                  _pointerCount = details.pointerCount;
+                }
+              },
+              onScaleUpdate: (details) {
+                // 두 손가락 확대/축소 및 이동
+                if (_pointerCount >= 2) {
+                  provider.updateTransform(
+                    provider.scale * details.scale,
+                    provider.offset + details.focalPointDelta,
+                  );
+                }
+              },
+              onScaleEnd: (details) async {
+                if (_pointerCount >= 2) {
+                  _pointerCount = 0;
+                  // Haptic feedback for gesture completion
+                  await hapticService.gestureComplete();
+                }
+              },
+              child: Transform(
+                transform: Matrix4.identity()
+                  ..translate(provider.offset.dx, provider.offset.dy)
+                  ..scale(provider.scale),
+                child: Listener(
+                  onPointerDown: (event) {
                 _pointerCount++;
 
-                // Track two-finger gesture start position
+                // Track two-finger tap for undo
                 if (_pointerCount == 2) {
-                  _twoFingerStartPosition = event.localPosition;
+                  _twoFingerTapTime = DateTime.now();
                   return; // Don't start drawing with two fingers
                 }
 
-                // Only start drawing with one finger
+                // Only start drawing with one finger/pen
                 if (_pointerCount == 1) {
                   // Use hybrid input detector for automatic mode switching
                   _hybridDetector?.onPointerDown(event);
+
+                  // Haptic feedback for pen down
+                  if (event.kind == PointerDeviceKind.stylus) {
+                    hapticService.penDown();
+                  } else {
+                    hapticService.light();
+                  }
+
+                  // Start drawing with device information
+                  provider.startDrawing(
+                    event.localPosition,
+                    event.pressure,
+                    deviceKind: event.kind,
+                    tiltX: event.tilt,
+                    tiltY: event.orientation,
+                  );
                 }
               },
               onPointerMove: (event) {
-                // Handle two-finger swipe gesture
-                if (_pointerCount == 2 && _twoFingerStartPosition != null) {
-                  final delta = event.localPosition - _twoFingerStartPosition!;
-                  final threshold = 50.0;
-
-                  // Check if swipe distance exceeds threshold
-                  if (delta.dx.abs() > threshold || delta.dy.abs() > threshold) {
-                    // Determine primary direction
-                    if (delta.dx.abs() > delta.dy.abs()) {
-                      // Horizontal swipe
-                      if (delta.dx > 0) {
-                        // Right swipe: Select mode
-                        provider.setMode(DrawingMode.select);
-                      } else {
-                        // Left swipe: Shape mode
-                        provider.setMode(DrawingMode.shape);
-                      }
-                    } else {
-                      // Vertical swipe
-                      if (delta.dy < 0) {
-                        // Up swipe: Pen mode
-                        provider.setMode(DrawingMode.pen);
-                      } else {
-                        // Down swipe: Eraser mode
-                        provider.setMode(DrawingMode.eraser);
-                      }
-                    }
-
-                    // Reset to prevent multiple triggers
-                    _twoFingerStartPosition = null;
-                  }
+                // Skip if two fingers (handled by GestureDetector for zoom/pan)
+                if (_pointerCount >= 2) {
                   return;
                 }
 
-                // Only update drawing with one finger
+                // Only update drawing with one finger/pen
                 if (_pointerCount == 1) {
                   provider.updateDrawing(
                     event.localPosition,
                     event.pressure,
+                    deviceKind: event.kind,
+                    tiltX: event.tilt,
+                    tiltY: event.orientation,
                   );
                 }
               },
               onPointerUp: (event) {
+                // Check for two-finger tap (Undo gesture)
+                if (_pointerCount == 2 && _twoFingerTapTime != null) {
+                  final tapDuration = DateTime.now().difference(_twoFingerTapTime!);
+                  if (tapDuration <= _twoFingerTapTimeout) {
+                    // Two-finger tap detected! Trigger Undo
+                    if (provider.canUndo) {
+                      hapticService.medium();
+                      provider.undo();
+                    }
+                  }
+                }
+
                 _pointerCount--;
 
                 if (_pointerCount < 0) _pointerCount = 0;
@@ -158,9 +190,9 @@ class _DrawingCanvasState extends State<DrawingCanvas> {
                 // Notify hybrid detector
                 _hybridDetector?.onPointerUp(event);
 
-                // Reset two-finger tracking
+                // Reset two-finger tap tracking
                 if (_pointerCount < 2) {
-                  _twoFingerStartPosition = null;
+                  _twoFingerTapTime = null;
                 }
 
                 // End drawing only if no fingers remain
@@ -171,7 +203,7 @@ class _DrawingCanvasState extends State<DrawingCanvas> {
               onPointerCancel: (event) {
                 _pointerCount--;
                 if (_pointerCount < 0) _pointerCount = 0;
-                _twoFingerStartPosition = null;
+                _twoFingerTapTime = null;
               },
               child: RepaintBoundary(
                 key: widget.repaintBoundaryKey,
@@ -189,8 +221,13 @@ class _DrawingCanvasState extends State<DrawingCanvas> {
                     noteTemplate: provider.noteService.currentNote?.template ?? NoteTemplate.blank,
                     backgroundColor: provider.noteService.currentNote?.backgroundColor ??
                         (provider.isDarkMode ? const Color(0xFF1E1E1E) : Colors.white),
+                    backgroundImagePath: provider.noteService.currentNote?.backgroundImagePath,
+                    backgroundImageOpacity: provider.noteService.currentNote?.backgroundImageOpacity ?? 1.0,
                     pages: provider.pageManager.pages,
                     currentPageIndex: provider.pageManager.currentPageIndex,
+                    enableGlowEffects: provider.performanceSettings.enableGlowEffects,
+                    enableGlitterEffects: provider.performanceSettings.enableGlitterEffects,
+                    enableShadows: provider.performanceSettings.enableShadows,
                   ),
                   child: Container(
                     width: double.infinity,
@@ -199,6 +236,9 @@ class _DrawingCanvasState extends State<DrawingCanvas> {
                         ? const Color(0xFF1E1E1E)
                         : Colors.white,
                   ),
+                ),
+              ),
+            ),
                 ),
               ),
             ),
@@ -275,8 +315,13 @@ class DrawingPainter extends CustomPainter {
   final bool showGridLines;
   final NoteTemplate noteTemplate;
   final Color backgroundColor;
+  final String? backgroundImagePath;
+  final double backgroundImageOpacity;
   final List<NotePage> pages;
   final int currentPageIndex;
+  final bool enableGlowEffects;
+  final bool enableGlitterEffects;
+  final bool enableShadows;
 
   DrawingPainter({
     required this.strokes,
@@ -290,8 +335,13 @@ class DrawingPainter extends CustomPainter {
     this.showGridLines = false,
     this.noteTemplate = NoteTemplate.blank,
     required this.backgroundColor,
+    this.backgroundImagePath,
+    this.backgroundImageOpacity = 1.0,
     this.pages = const [],
     this.currentPageIndex = 0,
+    this.enableGlowEffects = true,
+    this.enableGlitterEffects = true,
+    this.enableShadows = true,
   });
 
   @override
@@ -367,9 +417,12 @@ class DrawingPainter extends CustomPainter {
       ..strokeWidth = 2.0
       ..style = PaintingStyle.stroke;
 
-    final shadowPaint = Paint()
-      ..color = Colors.black.withOpacity(0.1)
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 8);
+    // Only draw shadows if performance allows
+    final shadowPaint = enableShadows
+        ? (Paint()
+          ..color = Colors.black.withOpacity(0.1)
+          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 8))
+        : null;
 
     final currentPageHighlightPaint = Paint()
       ..color = isDarkMode
@@ -381,14 +434,16 @@ class DrawingPainter extends CustomPainter {
       final page = pages[i];
       final bounds = page.bounds;
 
-      // Draw page shadow (behind page)
-      canvas.drawRRect(
-        RRect.fromRectAndRadius(
-          bounds.shift(const Offset(4, 4)),
-          const Radius.circular(8),
-        ),
-        shadowPaint,
-      );
+      // Draw page shadow (behind page) if enabled
+      if (shadowPaint != null) {
+        canvas.drawRRect(
+          RRect.fromRectAndRadius(
+            bounds.shift(const Offset(4, 4)),
+            const Radius.circular(8),
+          ),
+          shadowPaint,
+        );
+      }
 
       // Highlight current page
       if (i == currentPageIndex) {
@@ -441,25 +496,124 @@ class DrawingPainter extends CustomPainter {
       ..strokeJoin = StrokeJoin.round
       ..style = PaintingStyle.stroke;
 
+    // Draw single point as a dot (for immediate feedback when user starts drawing)
+    if (stroke.points.length == 1) {
+      final point = stroke.points[0];
+      final pressure = point.pressure;
+      final dotRadius = stroke.isEraser
+          ? stroke.width * 1.5
+          : stroke.width * (0.5 + pressure * 0.5);
+
+      paint.color = stroke.isEraser
+          ? (isDarkMode ? const Color(0xFF1E1E1E) : Colors.white)
+          : (isDarkMode
+              ? _invertColorIntelligently(stroke.color).withOpacity(stroke.opacity)
+              : stroke.color.withOpacity(stroke.opacity));
+
+      canvas.drawCircle(point.offset, dotRadius, paint);
+      return;
+    }
+
+    // Apply glow effect if enabled (performance setting check)
+    if (enableGlowEffects && stroke.enableGlow && !stroke.isEraser) {
+      _drawGlowEffect(canvas, stroke);
+    }
+
     for (int i = 0; i < stroke.points.length - 1; i++) {
       final point1 = stroke.points[i];
       final point2 = stroke.points[i + 1];
 
       final pressure = (point1.pressure + point2.pressure) / 2;
+
+      // Apply tapering (thinner at ends)
+      double taperingFactor = 1.0;
+      if (stroke.tapering > 0) {
+        final progress = i / (stroke.points.length - 1);
+        final distanceFromCenter = (progress - 0.5).abs() * 2;
+        taperingFactor = 1.0 - (distanceFromCenter * stroke.tapering);
+      }
+
       final adjustedWidth = stroke.isEraser
           ? stroke.width * 3
-          : stroke.width * (0.5 + pressure);
+          : stroke.width * (0.5 + pressure) * taperingFactor;
 
-      paint.color = stroke.isEraser
-          ? (isDarkMode
-              ? const Color(0xFF1E1E1E)
-              : Colors.white)
-          : (isDarkMode
-              ? _invertColorIntelligently(stroke.color).withOpacity(stroke.opacity)
-              : stroke.color.withOpacity(stroke.opacity));
+      // Rainbow gradient effect
+      if (stroke.gradientColors != null && stroke.gradientColors!.length > 1) {
+        final progress = i / (stroke.points.length - 1);
+        final colorIndex = (progress * (stroke.gradientColors!.length - 1)).floor();
+        final nextColorIndex = (colorIndex + 1).clamp(0, stroke.gradientColors!.length - 1);
+        final localProgress = (progress * (stroke.gradientColors!.length - 1)) - colorIndex;
+
+        paint.color = Color.lerp(
+          stroke.gradientColors![colorIndex],
+          stroke.gradientColors![nextColorIndex],
+          localProgress,
+        )!.withOpacity(stroke.opacity);
+      } else {
+        paint.color = stroke.isEraser
+            ? (isDarkMode
+                ? const Color(0xFF1E1E1E)
+                : Colors.white)
+            : (isDarkMode
+                ? _invertColorIntelligently(stroke.color).withOpacity(stroke.opacity)
+                : stroke.color.withOpacity(stroke.opacity));
+      }
+
       paint.strokeWidth = adjustedWidth;
-
       canvas.drawLine(point1.offset, point2.offset, paint);
+
+      // Draw glitter particles (performance setting check)
+      if (enableGlitterEffects && stroke.glitterDensity != null && stroke.glitterDensity! > 0 && !stroke.isEraser) {
+        _drawGlitterParticles(canvas, point1.offset, point2.offset, stroke);
+      }
+    }
+  }
+
+  /// Draw glow effect around stroke
+  void _drawGlowEffect(Canvas canvas, DrawingStroke stroke) {
+    final glowPaint = Paint()
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round
+      ..style = PaintingStyle.stroke
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 8);
+
+    for (int i = 0; i < stroke.points.length - 1; i++) {
+      final point1 = stroke.points[i];
+      final point2 = stroke.points[i + 1];
+
+      final pressure = (point1.pressure + point2.pressure) / 2;
+      final adjustedWidth = stroke.width * (0.5 + pressure) * 2; // Wider for glow
+
+      glowPaint.color = (isDarkMode
+              ? _invertColorIntelligently(stroke.color)
+              : stroke.color)
+          .withOpacity(stroke.opacity * 0.3);
+      glowPaint.strokeWidth = adjustedWidth;
+
+      canvas.drawLine(point1.offset, point2.offset, glowPaint);
+    }
+  }
+
+  /// Draw glitter particles along stroke
+  void _drawGlitterParticles(Canvas canvas, Offset start, Offset end, DrawingStroke stroke) {
+    final particleCount = (stroke.glitterDensity! * 3).toInt();
+    final paint = Paint()
+      ..style = PaintingStyle.fill
+      ..color = Colors.white.withOpacity(0.8);
+
+    for (int i = 0; i < particleCount; i++) {
+      final t = i / particleCount;
+      final position = Offset.lerp(start, end, t)!;
+
+      // Add random offset for sparkle effect
+      final random = (position.dx * position.dy * i).toInt() % 100;
+      final offsetX = (random % 10 - 5) * 0.5;
+      final offsetY = ((random ~/ 10) % 10 - 5) * 0.5;
+
+      final particlePos = position + Offset(offsetX, offsetY);
+      final size = 1.0 + (random % 3);
+
+      canvas.drawCircle(particlePos, size, paint);
     }
   }
 

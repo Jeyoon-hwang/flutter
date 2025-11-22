@@ -1,6 +1,7 @@
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter/gestures.dart' show PointerDeviceKind;
 import '../models/drawing_stroke.dart';
 import '../models/text_object.dart';
 import '../models/app_settings.dart';
@@ -8,6 +9,7 @@ import '../models/layer.dart';
 import '../models/note.dart';
 import '../models/history_action.dart';
 import '../models/page_layout.dart';
+import '../models/favorite_pen.dart';
 import 'dart:typed_data';
 import 'package:gal/gal.dart';
 import '../services/ocr_service.dart';
@@ -17,9 +19,16 @@ import '../services/audio_recording_service.dart';
 import '../services/note_service.dart';
 import '../services/version_manager.dart';
 import '../services/wrong_answer_service.dart';
+import '../services/hybrid_input_detector.dart';
+import '../services/app_state_service.dart';
+import '../services/haptic_service.dart';
 import '../models/practice_session.dart';
 import '../models/planner.dart';
 import '../models/lecture_mode.dart';
+import '../models/study_stats.dart';
+import '../models/advanced_pen.dart';
+import '../models/performance_settings.dart';
+import '../models/study_timer.dart';
 
 enum DrawingMode { pen, eraser, select, shape, text, wrongAnswerClip }
 
@@ -48,6 +57,16 @@ class DrawingProvider extends ChangeNotifier {
   bool _isDarkMode = false;
   bool _autoShapeEnabled = false;
   bool _focusMode = false; // 포커스 모드
+
+  // Pen/Stylus detection
+  InputDeviceType _currentInputDevice = InputDeviceType.touch;
+  bool _isStylusDetected = false;
+
+  // Canvas transform (zoom & pan) - 필기앱 필수 기능
+  double _scale = 1.0;
+  Offset _offset = Offset.zero;
+  static const double _minScale = 0.5;
+  static const double _maxScale = 5.0;
 
   // Recent colors (최근 사용한 색상, 최대 8개)
   final List<Color> _recentColors = [];
@@ -97,11 +116,36 @@ class DrawingProvider extends ChangeNotifier {
   final PlannerManager _plannerManager = PlannerManager();
   PlannerManager get plannerManager => _plannerManager;
 
+  // Study stats manager
+  final StudyStatsManager _studyStatsManager = StudyStatsManager();
+  StudyStatsManager get studyStatsManager => _studyStatsManager;
+
+  // App state service for persistence
+  final AppStateService _appStateService = AppStateService();
+  AppStateService get appStateService => _appStateService;
+
+  // Advanced pen system
+  final List<AdvancedPen> _advancedPens = [];
+  String? _selectedAdvancedPenId;
+  List<AdvancedPen> get advancedPens => List.unmodifiable(_advancedPens);
+  String? get selectedAdvancedPenId => _selectedAdvancedPenId;
+
   // Lecture mode (split view optimization)
   bool _isLectureMode = false;
   final List<LectureScreenshot> _lectureScreenshots = [];
   bool get isLectureMode => _isLectureMode;
   List<LectureScreenshot> get lectureScreenshots => List.unmodifiable(_lectureScreenshots);
+
+  // Hybrid input detector (lazy initialization)
+  HybridInputDetector? _hybridInputDetector;
+
+  // Performance settings for optimization
+  PerformanceSettings _performanceSettings = PerformanceSettings.balanced;
+  PerformanceSettings get performanceSettings => _performanceSettings;
+
+  // Study timer manager (열품타 스타일)
+  final StudyTimerManager _studyTimerManager = StudyTimerManager();
+  StudyTimerManager get studyTimerManager => _studyTimerManager;
 
   // Shape drawing
   ShapeType2D _selectedShape2D = ShapeType2D.circle;
@@ -115,17 +159,92 @@ class DrawingProvider extends ChangeNotifier {
   // Constructor - Initialize default layers and load notes
   DrawingProvider() {
     _initializeLayers();
-    _initializeNoteService();
+    _initializeApp();
+  }
+
+  /// Initialize app - load saved state and notes
+  Future<void> _initializeApp() async {
+    // Increment launch count
+    await _appStateService.incrementLaunchCount();
+
+    // Load saved settings
+    await _loadSavedSettings();
+
+    // Initialize note service
+    await _initializeNoteService();
+
+    // Restore last opened note if exists
+    await _restoreLastSession();
+  }
+
+  /// Load saved settings from persistence
+  Future<void> _loadSavedSettings() async {
+    try {
+      // Load theme
+      final savedTheme = await _appStateService.getThemeType();
+      if (savedTheme != null) {
+        final themeType = AppThemeType.values.firstWhere(
+          (t) => t.name == savedTheme,
+          orElse: () => AppThemeType.ivory,
+        );
+        _settings = _settings.copyWith(themeType: themeType);
+        _isDarkMode = themeType == AppThemeType.darkMode;
+      }
+
+      // Load custom font
+      final savedFont = await _appStateService.getCustomFont();
+      if (savedFont != null) {
+        _settings = _settings.copyWith(customFontFamily: savedFont);
+      }
+
+      // Load favorite pens
+      final savedPens = await _appStateService.getFavoritePens();
+      if (savedPens != null && savedPens.isNotEmpty) {
+        // Convert to FavoritePen objects
+        // (Implementation depends on FavoritePen.fromJson)
+      }
+    } catch (e) {
+      print('Error loading saved settings: $e');
+    }
   }
 
   Future<void> _initializeNoteService() async {
     await _noteService.loadNotesFromDisk();
 
-    // If no notes exist or no current note, create a quick note
+    // If no notes exist or no current note, we'll create one later if needed
+  }
+
+  /// Restore last opened note and page
+  Future<void> _restoreLastSession() async {
+    try {
+      final lastNote = await _appStateService.getLastOpenedNote();
+
+      if (lastNote != null) {
+        final noteId = lastNote['noteId'] as String;
+        final pageIndex = lastNote['pageIndex'] as int;
+
+        // Try to load the note
+        final note = _noteService.notes.firstWhere(
+          (n) => n.id == noteId,
+          orElse: () => _noteService.currentNote!,
+        );
+
+        if (note != null) {
+          _loadNoteData(note);
+          _pageManager.goToPage(pageIndex);
+          print('Restored last session: note=$noteId, page=$pageIndex');
+          notifyListeners();
+          return;
+        }
+      }
+    } catch (e) {
+      print('Error restoring last session: $e');
+    }
+
+    // Fallback: create quick note if no current note
     if (_noteService.currentNote == null) {
       createQuickNote();
     } else {
-      // Load current note's layers and data
       _loadNoteData(_noteService.currentNote!);
     }
   }
@@ -196,6 +315,9 @@ class DrawingProvider extends ChangeNotifier {
       ),
     ]);
     _currentLayerIndex = 1; // 필기 레이어가 기본
+
+    // Initialize advanced pens
+    _advancedPens.addAll(AdvancedPen.getDefaultAdvancedPens());
   }
 
   // Getters
@@ -210,6 +332,26 @@ class DrawingProvider extends ChangeNotifier {
   Color get currentColor => _currentColor;
   double get lineWidth => _lineWidth;
   double get opacity => _opacity;
+
+  // Pen/Stylus detection getters
+  InputDeviceType get currentInputDevice => _currentInputDevice;
+  bool get isStylusDetected => _isStylusDetected;
+  String get inputDeviceName {
+    switch (_currentInputDevice) {
+      case InputDeviceType.stylus:
+        return 'S펜/Apple Pencil';
+      case InputDeviceType.touch:
+        return '터치';
+      case InputDeviceType.mouse:
+        return '마우스';
+      case InputDeviceType.unknown:
+        return '알 수 없음';
+    }
+  }
+
+  // Canvas transform getters
+  double get scale => _scale;
+  Offset get offset => _offset;
   DrawingMode get mode => _mode;
   bool get isEraser => _mode == DrawingMode.eraser;
   bool get isSelectMode => _mode == DrawingMode.select;
@@ -271,6 +413,29 @@ class DrawingProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  // Canvas transform methods (필기앱 필수 기능)
+  void setScale(double newScale) {
+    _scale = newScale.clamp(_minScale, _maxScale);
+    notifyListeners();
+  }
+
+  void setOffset(Offset newOffset) {
+    _offset = newOffset;
+    notifyListeners();
+  }
+
+  void updateTransform(double newScale, Offset newOffset) {
+    _scale = newScale.clamp(_minScale, _maxScale);
+    _offset = newOffset;
+    notifyListeners();
+  }
+
+  void resetTransform() {
+    _scale = 1.0;
+    _offset = Offset.zero;
+    notifyListeners();
+  }
+
   void toggleDarkMode() {
     _isDarkMode = !_isDarkMode;
     notifyListeners();
@@ -283,6 +448,37 @@ class DrawingProvider extends ChangeNotifier {
 
   void toggleFocusMode() {
     _focusMode = !_focusMode;
+    notifyListeners();
+  }
+
+  /// Set performance settings based on device capability
+  void setPerformanceSettings(PerformanceSettings settings) {
+    _performanceSettings = settings;
+    notifyListeners();
+  }
+
+  /// Auto-detect and set appropriate performance settings
+  void autoDetectPerformanceSettings(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final devicePixelRatio = MediaQuery.of(context).devicePixelRatio;
+
+    // TV/Desktop - High quality
+    if (screenWidth > 1200) {
+      _performanceSettings = PerformanceSettings.tv;
+    }
+    // Tablet - Balanced
+    else if (screenWidth > 600) {
+      _performanceSettings = PerformanceSettings.balanced;
+    }
+    // Phone with high DPI - Quality
+    else if (devicePixelRatio > 2.5) {
+      _performanceSettings = PerformanceSettings.quality;
+    }
+    // Phone with low DPI - Performance
+    else {
+      _performanceSettings = PerformanceSettings.highPerformance;
+    }
+
     notifyListeners();
   }
 
@@ -469,9 +665,41 @@ class DrawingProvider extends ChangeNotifier {
   }
 
   // Drawing methods
-  void startDrawing(Offset offset, double pressure, {bool isPen = false}) {
-    // Palm rejection: ignore if palm rejection is enabled and input is not from pen
-    if (_settings.palmRejection && !isPen && _mode == DrawingMode.pen) {
+  void startDrawing(Offset offset, double pressure, {
+    bool isPen = false,
+    PointerDeviceKind? deviceKind,
+    double? tiltX,
+    double? tiltY,
+  }) {
+    // Detect stylus pen automatically
+    final isStylusPen = deviceKind == PointerDeviceKind.stylus;
+
+    // Update current input device
+    if (deviceKind != null) {
+      final previousDevice = _currentInputDevice;
+
+      switch (deviceKind) {
+        case PointerDeviceKind.stylus:
+          _currentInputDevice = InputDeviceType.stylus;
+          // Haptic feedback when stylus is first detected
+          if (!_isStylusDetected) {
+            hapticService.stylusDetected();
+          }
+          _isStylusDetected = true;
+          break;
+        case PointerDeviceKind.touch:
+          _currentInputDevice = InputDeviceType.touch;
+          break;
+        case PointerDeviceKind.mouse:
+          _currentInputDevice = InputDeviceType.mouse;
+          break;
+        default:
+          _currentInputDevice = InputDeviceType.unknown;
+      }
+    }
+
+    // Palm rejection: ignore if palm rejection is enabled and input is not from pen/stylus
+    if (_settings.palmRejection && !isPen && !isStylusPen && _mode == DrawingMode.pen) {
       return;
     }
 
@@ -507,11 +735,27 @@ class DrawingProvider extends ChangeNotifier {
     }
 
     _currentStroke.clear();
-    _currentStroke.add(DrawingPoint(offset: offset, pressure: pressure));
+
+    // Create drawing point with device type information
+    final point = deviceKind != null
+        ? DrawingPoint.fromPointer(
+            offset: offset,
+            pressure: pressure,
+            kind: deviceKind,
+            tiltX: tiltX,
+            tiltY: tiltY,
+          )
+        : DrawingPoint(offset: offset, pressure: pressure);
+
+    _currentStroke.add(point);
     notifyListeners();
   }
 
-  void updateDrawing(Offset offset, double pressure) {
+  void updateDrawing(Offset offset, double pressure, {
+    PointerDeviceKind? deviceKind,
+    double? tiltX,
+    double? tiltY,
+  }) {
     if ((_mode == DrawingMode.select || _mode == DrawingMode.wrongAnswerClip) &&
         _isSelecting && _selectionStart != null) {
       _selectionRect = Rect.fromPoints(_selectionStart!, offset);
@@ -526,7 +770,18 @@ class DrawingProvider extends ChangeNotifier {
       return;
     }
 
-    _currentStroke.add(DrawingPoint(offset: offset, pressure: pressure));
+    // Create drawing point with device type information
+    final point = deviceKind != null
+        ? DrawingPoint.fromPointer(
+            offset: offset,
+            pressure: pressure,
+            kind: deviceKind,
+            tiltX: tiltX,
+            tiltY: tiltY,
+          )
+        : DrawingPoint(offset: offset, pressure: pressure);
+
+    _currentStroke.add(point);
     notifyListeners();
   }
 
@@ -653,12 +908,19 @@ class DrawingProvider extends ChangeNotifier {
       }
 
       if (shapePoints.isNotEmpty) {
+        final penProps = _getAdvancedPenProperties();
         final stroke = DrawingStroke(
           points: shapePoints,
           color: _currentColor,
           width: _lineWidth,
           opacity: _opacity,
           isEraser: false,
+          penType: penProps['penType'],
+          gradientColors: penProps['gradientColors'],
+          enableGlow: penProps['enableGlow'],
+          glitterDensity: penProps['glitterDensity'],
+          smoothing: penProps['smoothing'],
+          tapering: penProps['tapering'],
         );
         // Add stroke to current layer instead of _strokes
         if (_currentLayerIndex >= 0 && _currentLayerIndex < _layers.length) {
@@ -694,21 +956,28 @@ class DrawingProvider extends ChangeNotifier {
 
     if (_currentStroke.isNotEmpty) {
       DrawingStroke stroke;
+      final penProps = _getAdvancedPenProperties();
 
       // Try shape recognition if auto-shape is enabled
       if (_autoShapeEnabled && _mode == DrawingMode.pen) {
         final recognizedShape = _shapeService.recognizeShape(_currentStroke);
-        
+
         if (recognizedShape != null) {
           // Convert recognized shape to stroke
           stroke = DrawingStroke(
-            points: recognizedShape.points.map((offset) => 
+            points: recognizedShape.points.map((offset) =>
               DrawingPoint(offset: offset, pressure: 0.5)
             ).toList(),
             color: _currentColor,
             width: _lineWidth,
             opacity: _opacity,
             isEraser: false,
+            penType: penProps['penType'],
+            gradientColors: penProps['gradientColors'],
+            enableGlow: penProps['enableGlow'],
+            glitterDensity: penProps['glitterDensity'],
+            smoothing: penProps['smoothing'],
+            tapering: penProps['tapering'],
           );
         } else {
           // Use original stroke
@@ -718,6 +987,12 @@ class DrawingProvider extends ChangeNotifier {
             width: _lineWidth,
             opacity: _opacity,
             isEraser: _mode == DrawingMode.eraser,
+            penType: penProps['penType'],
+            gradientColors: penProps['gradientColors'],
+            enableGlow: penProps['enableGlow'],
+            glitterDensity: penProps['glitterDensity'],
+            smoothing: penProps['smoothing'],
+            tapering: penProps['tapering'],
           );
         }
       } else {
@@ -727,6 +1002,12 @@ class DrawingProvider extends ChangeNotifier {
           width: _lineWidth,
           opacity: _opacity,
           isEraser: _mode == DrawingMode.eraser,
+          penType: penProps['penType'],
+          gradientColors: penProps['gradientColors'],
+          enableGlow: penProps['enableGlow'],
+          glitterDensity: penProps['glitterDensity'],
+          smoothing: penProps['smoothing'],
+          tapering: penProps['tapering'],
         );
       }
 
@@ -1078,13 +1359,19 @@ class DrawingProvider extends ChangeNotifier {
       if (recognizedShape != null) {
         // Replace with perfect shape
         _strokes[index] = DrawingStroke(
-          points: recognizedShape.points.map((offset) => 
+          points: recognizedShape.points.map((offset) =>
             DrawingPoint(offset: offset, pressure: 0.5)
           ).toList(),
           color: stroke.color,
           width: stroke.width,
           opacity: stroke.opacity,
           isEraser: stroke.isEraser,
+          penType: stroke.penType,
+          gradientColors: stroke.gradientColors,
+          enableGlow: stroke.enableGlow,
+          glitterDensity: stroke.glitterDensity,
+          smoothing: stroke.smoothing,
+          tapering: stroke.tapering,
         );
       }
     }
@@ -1451,6 +1738,182 @@ class DrawingProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  // ============================================================================
+  // FAVORITE PEN MANAGEMENT
+  // ============================================================================
+
+  /// Select a favorite pen by ID
+  void selectFavoritePen(String penId) {
+    final pen = _settings.favoritePens.firstWhere(
+      (p) => p.id == penId,
+      orElse: () => _settings.favoritePens.first,
+    );
+
+    // Apply pen settings
+    _currentColor = pen.color;
+    _lineWidth = pen.width;
+    _opacity = pen.opacity;
+    _mode = DrawingMode.pen;
+
+    // Update selected pen in settings
+    _settings = _settings.copyWith(selectedFavoritePenId: penId);
+
+    notifyListeners();
+  }
+
+  /// Add a new favorite pen
+  void addFavoritePen(FavoritePen pen) {
+    final updatedPens = List<FavoritePen>.from(_settings.favoritePens);
+
+    // Limit to 5 favorite pens
+    if (updatedPens.length >= 5) {
+      updatedPens.removeLast();
+    }
+
+    updatedPens.add(pen);
+    _settings = _settings.copyWith(favoritePens: updatedPens);
+    notifyListeners();
+  }
+
+  /// Remove a favorite pen
+  void removeFavoritePen(String penId) {
+    final updatedPens = _settings.favoritePens.where((p) => p.id != penId).toList();
+    _settings = _settings.copyWith(favoritePens: updatedPens);
+    notifyListeners();
+  }
+
+  /// Update a favorite pen's settings
+  void updateFavoritePen(String penId, FavoritePen updatedPen) {
+    final updatedPens = _settings.favoritePens.map((p) {
+      return p.id == penId ? updatedPen : p;
+    }).toList();
+    _settings = _settings.copyWith(favoritePens: updatedPens);
+    notifyListeners();
+  }
+
+  // ============================================================================
+  // ADVANCED PEN MANAGEMENT
+  // ============================================================================
+
+  /// Select an advanced pen
+  void selectAdvancedPen(String penId) {
+    final pen = _advancedPens.firstWhere(
+      (p) => p.id == penId,
+      orElse: () => _advancedPens.first,
+    );
+
+    // Apply pen settings
+    _currentColor = pen.color;
+    _lineWidth = pen.width;
+    _opacity = pen.opacity;
+    _pressureStabilization = 1.0 - pen.pressureSensitivity; // Invert for compatibility
+    _mode = DrawingMode.pen;
+
+    _selectedAdvancedPenId = penId;
+    notifyListeners();
+  }
+
+  /// Get current advanced pen properties for stroke creation
+  Map<String, dynamic> _getAdvancedPenProperties() {
+    final selectedPen = selectedAdvancedPen;
+    if (selectedPen != null) {
+      return {
+        'penType': selectedPen.type,
+        'gradientColors': selectedPen.gradientColors,
+        'enableGlow': selectedPen.enableGlow,
+        'glitterDensity': selectedPen.glitterDensity,
+        'smoothing': selectedPen.smoothing,
+        'tapering': selectedPen.tapering,
+      };
+    }
+    return {
+      'penType': null,
+      'gradientColors': null,
+      'enableGlow': false,
+      'glitterDensity': null,
+      'smoothing': 0.0,
+      'tapering': 0.0,
+    };
+  }
+
+  /// Add a new advanced pen
+  void addAdvancedPen(AdvancedPen pen) {
+    _advancedPens.add(pen);
+    notifyListeners();
+  }
+
+  /// Update an advanced pen
+  void updateAdvancedPen(String penId, AdvancedPen updatedPen) {
+    final index = _advancedPens.indexWhere((p) => p.id == penId);
+    if (index != -1) {
+      _advancedPens[index] = updatedPen;
+
+      // If this is the currently selected pen, update settings
+      if (_selectedAdvancedPenId == penId) {
+        _currentColor = updatedPen.color;
+        _lineWidth = updatedPen.width;
+        _opacity = updatedPen.opacity;
+        _pressureStabilization = 1.0 - updatedPen.pressureSensitivity;
+      }
+
+      notifyListeners();
+    }
+  }
+
+  /// Delete an advanced pen
+  void deleteAdvancedPen(String penId) {
+    _advancedPens.removeWhere((p) => p.id == penId);
+
+    // If deleted pen was selected, select another
+    if (_selectedAdvancedPenId == penId && _advancedPens.isNotEmpty) {
+      selectAdvancedPen(_advancedPens.first.id);
+    }
+
+    notifyListeners();
+  }
+
+  /// Get currently selected advanced pen
+  AdvancedPen? get selectedAdvancedPen {
+    if (_selectedAdvancedPenId == null) return null;
+    try {
+      return _advancedPens.firstWhere((p) => p.id == _selectedAdvancedPenId);
+    } catch (e) {
+      return null;
+    }
+  }
+
+  // ============================================================================
+  // THEME MANAGEMENT
+  // ============================================================================
+
+  /// Set app theme type
+  void setThemeType(AppThemeType themeType) {
+    _settings = _settings.copyWith(themeType: themeType);
+
+    // Update dark mode based on theme
+    _isDarkMode = themeType == AppThemeType.darkMode;
+
+    // Save to persistence
+    _appStateService.saveThemeType(themeType.name);
+
+    notifyListeners();
+  }
+
+  /// Get current background color based on theme
+  Color getBackgroundColor() {
+    return _settings.getBackgroundColor();
+  }
+
+  /// Set custom font family
+  void setCustomFont(String? fontFamily) {
+    _settings = _settings.copyWith(customFontFamily: fontFamily);
+
+    // Save to persistence
+    _appStateService.saveCustomFont(fontFamily);
+
+    notifyListeners();
+  }
+
   // Audio recording methods
   Future<bool> startAudioRecording() async {
     final result = await _audioService.startRecording();
@@ -1487,6 +1950,9 @@ class DrawingProvider extends ChangeNotifier {
     _noteService.switchToNote(noteId);
     if (_noteService.currentNote != null) {
       _loadNoteData(_noteService.currentNote!);
+
+      // Save as last opened note
+      _saveCurrentSession();
     }
   }
 
@@ -1513,7 +1979,21 @@ class DrawingProvider extends ChangeNotifier {
   /// Navigate to specific page
   void goToPage(int pageIndex) {
     _pageManager.goToPage(pageIndex);
+
+    // Save current session
+    _saveCurrentSession();
+
     notifyListeners();
+  }
+
+  /// Save current session (note + page)
+  void _saveCurrentSession() {
+    if (_noteService.currentNote != null) {
+      _appStateService.saveLastOpenedNote(
+        noteId: _noteService.currentNote!.id,
+        pageIndex: _pageManager.currentPageIndex,
+      );
+    }
   }
 
   /// Add a new page
@@ -1526,6 +2006,12 @@ class DrawingProvider extends ChangeNotifier {
   void deletePage(int pageIndex) {
     _pageManager.deletePage(pageIndex);
     notifyListeners();
+  }
+
+  /// Get or create hybrid input detector
+  HybridInputDetector getHybridInputDetector(GlobalKey repaintBoundaryKey) {
+    _hybridInputDetector ??= HybridInputDetector(this, repaintBoundaryKey);
+    return _hybridInputDetector!;
   }
 
   @override
