@@ -14,7 +14,7 @@ class TodayStudyCard extends StatelessWidget {
     return Consumer<DrawingProvider>(
       builder: (context, provider, child) {
         final isDarkMode = provider.isDarkMode;
-        final stats = provider.studyStats;
+        final stats = provider.studyStatsManager;
         final todayStats = stats.getTodayStats();
 
         return FadeInWidget(

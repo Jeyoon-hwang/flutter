@@ -4,9 +4,9 @@ import 'package:vibration/vibration.dart';
 /// Haptic feedback service for enhanced tactile UX
 /// Provides different levels of haptic feedback for various interactions
 class HapticService {
-  static const HapticService _instance = HapticService._internal();
+  static final HapticService _instance = HapticService._internal();
   factory HapticService() => _instance;
-  const HapticService._internal();
+  HapticService._internal();
 
   bool _isEnabled = true;
   bool? _hasVibrator;

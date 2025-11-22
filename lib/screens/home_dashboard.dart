@@ -4,7 +4,8 @@ import '../providers/drawing_provider.dart';
 import '../utils/app_theme.dart';
 import '../utils/page_routes.dart';
 import '../models/planner.dart';
-import '../widgets/study_timer_widget.dart';
+import '../models/app_settings.dart';
+import '../widgets/study_timer_widget.dart' hide TodayStudyCard;
 import '../widgets/today_study_card.dart';
 import '../services/haptic_service.dart';
 import 'canvas_screen.dart';
@@ -260,14 +261,10 @@ class _HomeDashboardState extends State<HomeDashboard> {
                 child: ElevatedButton(
                   onPressed: () {
                     if (titleController.text.trim().isNotEmpty) {
-                      provider.plannerManager.addItem(
-                        PlannerItem(
-                          id: DateTime.now().millisecondsSinceEpoch.toString(),
-                          title: titleController.text.trim(),
-                          description: descriptionController.text.trim(),
-                          date: DateTime.now(),
-                          subject: selectedSubject,
-                        ),
+                      provider.plannerManager.createTodo(
+                        title: titleController.text.trim(),
+                        dueDate: DateTime.now(),
+                        priority: Priority.medium,
                       );
                       Navigator.pop(context);
                     }
