@@ -23,7 +23,7 @@ dependencies:
   syncfusion_flutter_pdfviewer: ^31.2.0
   file_picker: ^8.0.0
   # Audio recording and playback
-  record: ^5.0.4
+  record: ^6.1.0
   audioplayers: ^5.2.1
   # State persistence
   shared_preferences: ^2.2.2
