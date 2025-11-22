@@ -234,6 +234,21 @@ class _LayerItem extends StatelessWidget {
     required this.isDarkMode,
   });
 
+  /// Get display name for layer with "N회독" format for writing layers
+  String _getLayerDisplayName(Layer layer) {
+    if (layer.type == LayerType.writing) {
+      // Extract number from layer name
+      final match = RegExp(r'필기\s*(\d+)').firstMatch(layer.name);
+      if (match != null) {
+        final number = match.group(1);
+        return '$number회독';
+      }
+      // If no number found, default to layer name
+      return layer.name;
+    }
+    return layer.name;
+  }
+
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
@@ -284,20 +299,38 @@ class _LayerItem extends StatelessWidget {
                 ),
                 SizedBox(width: isTablet ? 12 : 8),
 
-                // Layer name
+                // Layer name with "N회독" format for writing layers
                 Expanded(
-                  child: Text(
-                    layer.name,
-                    style: TextStyle(
-                      fontSize: isTablet ? 15 : 13,
-                      fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-                      color: isSelected
-                          ? Colors.white
-                          : (isDarkMode
-                              ? Colors.white.withOpacity(0.8)
-                              : Colors.black.withOpacity(0.7)),
-                    ),
-                    overflow: TextOverflow.ellipsis,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        _getLayerDisplayName(layer),
+                        style: TextStyle(
+                          fontSize: isTablet ? 15 : 13,
+                          fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                          color: isSelected
+                              ? Colors.white
+                              : (isDarkMode
+                                  ? Colors.white.withOpacity(0.8)
+                                  : Colors.black.withOpacity(0.7)),
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      // Show stroke count
+                      if (layer.strokes.isNotEmpty)
+                        Text(
+                          '${layer.strokes.length}개 획',
+                          style: TextStyle(
+                            fontSize: isTablet ? 11 : 9,
+                            color: isSelected
+                                ? Colors.white.withOpacity(0.7)
+                                : (isDarkMode
+                                    ? Colors.white.withOpacity(0.5)
+                                    : Colors.black.withOpacity(0.5)),
+                          ),
+                        ),
+                    ],
                   ),
                 ),
 

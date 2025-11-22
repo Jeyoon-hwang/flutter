@@ -1,3 +1,16 @@
+import 'package:flutter/material.dart';
+import 'favorite_pen.dart';
+
+/// App theme type for "Gong-stagram" aesthetic
+enum AppThemeType {
+  ivory, // 아이보리 종이 테마 (기본)
+  pastelPink, // 파스텔 핑크
+  pastelBlue, // 파스텔 블루
+  pastelGreen, // 파스텔 그린
+  minimalist, // 순백 미니멀
+  darkMode, // 다크 모드
+}
+
 class AppSettings {
   bool palmRejection;
   bool isDarkMode;
@@ -20,6 +33,14 @@ class AppSettings {
   bool showShapeTool;
   bool showTextTool;
 
+  // Favorite pens (3~5 quick access pens)
+  List<FavoritePen> favoritePens;
+  String? selectedFavoritePenId; // Currently selected favorite pen
+
+  // Theme settings
+  AppThemeType themeType;
+  String? customFontFamily; // Custom font loaded by user
+
   AppSettings({
     this.palmRejection = false,
     this.isDarkMode = false,
@@ -33,7 +54,11 @@ class AppSettings {
     this.showSelectTool = true,
     this.showShapeTool = true,
     this.showTextTool = true,
-  });
+    List<FavoritePen>? favoritePens,
+    this.selectedFavoritePenId,
+    this.themeType = AppThemeType.ivory,
+    this.customFontFamily,
+  }) : favoritePens = favoritePens ?? FavoritePen.getDefaultFavorites();
 
   AppSettings copyWith({
     bool? palmRejection,
@@ -48,6 +73,10 @@ class AppSettings {
     bool? showSelectTool,
     bool? showShapeTool,
     bool? showTextTool,
+    List<FavoritePen>? favoritePens,
+    String? selectedFavoritePenId,
+    AppThemeType? themeType,
+    String? customFontFamily,
   }) {
     return AppSettings(
       palmRejection: palmRejection ?? this.palmRejection,
@@ -62,6 +91,36 @@ class AppSettings {
       showSelectTool: showSelectTool ?? this.showSelectTool,
       showShapeTool: showShapeTool ?? this.showShapeTool,
       showTextTool: showTextTool ?? this.showTextTool,
+      favoritePens: favoritePens ?? this.favoritePens,
+      selectedFavoritePenId: selectedFavoritePenId ?? this.selectedFavoritePenId,
+      themeType: themeType ?? this.themeType,
+      customFontFamily: customFontFamily ?? this.customFontFamily,
     );
   }
+
+  /// Get background color for current theme
+  Color getBackgroundColor() {
+    switch (themeType) {
+      case AppThemeType.ivory:
+        return const Color(0xFFFFFAF0); // 아이보리 (크림색 종이)
+      case AppThemeType.pastelPink:
+        return const Color(0xFFFFF0F5); // 라벤더 블러시
+      case AppThemeType.pastelBlue:
+        return const Color(0xFFF0F8FF); // 앨리스 블루
+      case AppThemeType.pastelGreen:
+        return const Color(0xFFF0FFF0); // 허니듀
+      case AppThemeType.minimalist:
+        return Colors.white; // 순백
+      case AppThemeType.darkMode:
+        return const Color(0xFF1E1E1E); // 다크 그레이
+    }
+  }
+
+  /// Get primary text color for theme
+  Color getTextColor() {
+    return themeType == AppThemeType.darkMode
+        ? Colors.white
+        : const Color(0xFF1C1C1E);
+  }
 }
+

@@ -44,6 +44,8 @@ class _DrawingCanvasState extends State<DrawingCanvas> {
   int _pointerCount = 0;
   HybridInputDetector? _hybridDetector;
   bool _clipDialogShown = false;
+  DateTime? _twoFingerTapTime;
+  static const Duration _twoFingerTapTimeout = Duration(milliseconds: 300);
 
   @override
   Widget build(BuildContext context) {
@@ -98,6 +100,7 @@ class _DrawingCanvasState extends State<DrawingCanvas> {
                 // Track two-finger gesture start position
                 if (_pointerCount == 2) {
                   _twoFingerStartPosition = event.localPosition;
+                  _twoFingerTapTime = DateTime.now();
                   return; // Don't start drawing with two fingers
                 }
 
@@ -151,6 +154,17 @@ class _DrawingCanvasState extends State<DrawingCanvas> {
                 }
               },
               onPointerUp: (event) {
+                // Check for two-finger tap (Undo gesture)
+                if (_pointerCount == 2 && _twoFingerTapTime != null) {
+                  final tapDuration = DateTime.now().difference(_twoFingerTapTime!);
+                  if (tapDuration <= _twoFingerTapTimeout) {
+                    // Two-finger tap detected! Trigger Undo
+                    if (provider.canUndo) {
+                      provider.undo();
+                    }
+                  }
+                }
+
                 _pointerCount--;
 
                 if (_pointerCount < 0) _pointerCount = 0;
@@ -161,6 +175,7 @@ class _DrawingCanvasState extends State<DrawingCanvas> {
                 // Reset two-finger tracking
                 if (_pointerCount < 2) {
                   _twoFingerStartPosition = null;
+                  _twoFingerTapTime = null;
                 }
 
                 // End drawing only if no fingers remain

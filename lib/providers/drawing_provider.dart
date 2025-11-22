@@ -8,6 +8,7 @@ import '../models/layer.dart';
 import '../models/note.dart';
 import '../models/history_action.dart';
 import '../models/page_layout.dart';
+import '../models/favorite_pen.dart';
 import 'dart:typed_data';
 import 'package:gal/gal.dart';
 import '../services/ocr_service.dart';
@@ -17,6 +18,7 @@ import '../services/audio_recording_service.dart';
 import '../services/note_service.dart';
 import '../services/version_manager.dart';
 import '../services/wrong_answer_service.dart';
+import '../services/hybrid_input_detector.dart';
 import '../models/practice_session.dart';
 import '../models/planner.dart';
 import '../models/lecture_mode.dart';
@@ -102,6 +104,9 @@ class DrawingProvider extends ChangeNotifier {
   final List<LectureScreenshot> _lectureScreenshots = [];
   bool get isLectureMode => _isLectureMode;
   List<LectureScreenshot> get lectureScreenshots => List.unmodifiable(_lectureScreenshots);
+
+  // Hybrid input detector (lazy initialization)
+  HybridInputDetector? _hybridInputDetector;
 
   // Shape drawing
   ShapeType2D _selectedShape2D = ShapeType2D.circle;
@@ -1451,6 +1456,84 @@ class DrawingProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  // ============================================================================
+  // FAVORITE PEN MANAGEMENT
+  // ============================================================================
+
+  /// Select a favorite pen by ID
+  void selectFavoritePen(String penId) {
+    final pen = _settings.favoritePens.firstWhere(
+      (p) => p.id == penId,
+      orElse: () => _settings.favoritePens.first,
+    );
+
+    // Apply pen settings
+    _currentColor = pen.color;
+    _lineWidth = pen.width;
+    _opacity = pen.opacity;
+    _mode = DrawingMode.pen;
+
+    // Update selected pen in settings
+    _settings = _settings.copyWith(selectedFavoritePenId: penId);
+
+    notifyListeners();
+  }
+
+  /// Add a new favorite pen
+  void addFavoritePen(FavoritePen pen) {
+    final updatedPens = List<FavoritePen>.from(_settings.favoritePens);
+
+    // Limit to 5 favorite pens
+    if (updatedPens.length >= 5) {
+      updatedPens.removeLast();
+    }
+
+    updatedPens.add(pen);
+    _settings = _settings.copyWith(favoritePens: updatedPens);
+    notifyListeners();
+  }
+
+  /// Remove a favorite pen
+  void removeFavoritePen(String penId) {
+    final updatedPens = _settings.favoritePens.where((p) => p.id != penId).toList();
+    _settings = _settings.copyWith(favoritePens: updatedPens);
+    notifyListeners();
+  }
+
+  /// Update a favorite pen's settings
+  void updateFavoritePen(String penId, FavoritePen updatedPen) {
+    final updatedPens = _settings.favoritePens.map((p) {
+      return p.id == penId ? updatedPen : p;
+    }).toList();
+    _settings = _settings.copyWith(favoritePens: updatedPens);
+    notifyListeners();
+  }
+
+  // ============================================================================
+  // THEME MANAGEMENT
+  // ============================================================================
+
+  /// Set app theme type
+  void setThemeType(AppThemeType themeType) {
+    _settings = _settings.copyWith(themeType: themeType);
+
+    // Update dark mode based on theme
+    _isDarkMode = themeType == AppThemeType.darkMode;
+
+    notifyListeners();
+  }
+
+  /// Get current background color based on theme
+  Color getBackgroundColor() {
+    return _settings.getBackgroundColor();
+  }
+
+  /// Set custom font family
+  void setCustomFont(String? fontFamily) {
+    _settings = _settings.copyWith(customFontFamily: fontFamily);
+    notifyListeners();
+  }
+
   // Audio recording methods
   Future<bool> startAudioRecording() async {
     final result = await _audioService.startRecording();
@@ -1526,6 +1609,12 @@ class DrawingProvider extends ChangeNotifier {
   void deletePage(int pageIndex) {
     _pageManager.deletePage(pageIndex);
     notifyListeners();
+  }
+
+  /// Get or create hybrid input detector
+  HybridInputDetector getHybridInputDetector(GlobalKey repaintBoundaryKey) {
+    _hybridInputDetector ??= HybridInputDetector(this, repaintBoundaryKey);
+    return _hybridInputDetector!;
   }
 
   @override

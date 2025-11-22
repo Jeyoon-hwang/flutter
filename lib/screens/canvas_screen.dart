@@ -7,6 +7,7 @@ import '../widgets/shape_palette.dart';
 import '../widgets/layer_panel.dart';
 import '../widgets/page_navigation.dart';
 import '../widgets/version_control_panel.dart';
+import '../widgets/favorite_pen_bar.dart';
 import 'package:provider/provider.dart';
 import '../providers/drawing_provider.dart';
 
@@ -56,13 +57,28 @@ class _CanvasScreenState extends State<CanvasScreen> {
               child: Stack(
                 children: [
                   DrawingCanvas(repaintBoundaryKey: _repaintBoundaryKey),
-                  AppHeader(repaintBoundaryKey: _repaintBoundaryKey),
-                  FloatingToolbar(repaintBoundaryKey: _repaintBoundaryKey),
+
+                  // Show header and toolbar only when not in focus mode
+                  if (!provider.focusMode) ...[
+                    AppHeader(repaintBoundaryKey: _repaintBoundaryKey),
+                    FloatingToolbar(repaintBoundaryKey: _repaintBoundaryKey),
+                  ],
+
                   const SliderPanel(),
                   const ShapePalette(),
                   const LayerPanel(),
                   const PageNavigation(),
                   if (_showVersionControl) const VersionControlPanel(),
+
+                  // Favorite pen bar (always visible, minimal design)
+                  Positioned(
+                    bottom: 20,
+                    left: 0,
+                    right: 0,
+                    child: Center(
+                      child: const FavoritePenBar(),
+                    ),
+                  ),
                   // Version control toggle button
                   Positioned(
                     right: 20,
