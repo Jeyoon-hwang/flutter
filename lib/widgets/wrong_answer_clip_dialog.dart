@@ -1,5 +1,6 @@
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:provider/provider.dart';
 import '../providers/drawing_provider.dart';
 import '../models/wrong_answer.dart';
@@ -473,8 +474,8 @@ class _WrongAnswerClipDialogState extends State<WrongAnswerClipDialog> {
         widget.selectionBounds.height.toInt(),
       );
 
-      // Get current page number
-      final currentPage = provider.pageManager.currentPageNumber;
+      // Get current page number (1-indexed)
+      final currentPage = provider.pageManager.currentPageIndex + 1;
 
       // Clip wrong answer
       final wrongAnswer = await provider.wrongAnswerService.clipWrongAnswer(
