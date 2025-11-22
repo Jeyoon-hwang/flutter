@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'drawing_stroke.dart';
 import 'text_object.dart';
 import 'layer.dart';
 
@@ -141,7 +140,7 @@ class Note {
         'modifiedAt': modifiedAt.toIso8601String(),
         'tags': tags,
         'template': template.index,
-        'backgroundColor': backgroundColor.value,
+        'backgroundColor': backgroundColor.toARGB32(),
         'audioPath': audioPath,
         'pdfPath': pdfPath,
         'backgroundImagePath': backgroundImagePath,
@@ -157,7 +156,7 @@ class Note {
         modifiedAt: DateTime.parse(json['modifiedAt']),
         tags: List<String>.from(json['tags'] ?? []),
         template: NoteTemplate.values[json['template'] ?? 0],
-        backgroundColor: Color(json['backgroundColor'] ?? Colors.white.value),
+        backgroundColor: Color(json['backgroundColor'] ?? Colors.white.toARGB32()),
         audioPath: json['audioPath'],
         pdfPath: json['pdfPath'],
         backgroundImagePath: json['backgroundImagePath'],

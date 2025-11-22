@@ -13,7 +13,6 @@ class TodayStudyCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer<DrawingProvider>(
       builder: (context, provider, child) {
-        final isDarkMode = provider.isDarkMode;
         final stats = provider.studyStatsManager;
         final todayStats = stats.getTodayStats();
 

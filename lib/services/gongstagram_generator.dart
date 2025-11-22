@@ -2,7 +2,6 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import '../models/templates.dart';
-import '../models/study_timer.dart';
 
 /// Gongstagram report image generator
 /// Creates beautiful study report images for social media sharing

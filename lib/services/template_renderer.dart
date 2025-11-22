@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'dart:ui' as ui;
-import 'dart:math' as math;
 import '../models/note.dart';
 
 /// Service for rendering note templates (lined, grid, dots, cornell, music)

@@ -18,8 +18,6 @@ class BackgroundSettingsScreen extends StatefulWidget {
 }
 
 class _BackgroundSettingsScreenState extends State<BackgroundSettingsScreen> {
-  double _imageOpacity = 1.0;
-
   @override
   Widget build(BuildContext context) {
     return Consumer<DrawingProvider>(
