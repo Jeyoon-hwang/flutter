@@ -189,9 +189,6 @@ class StatsScreen extends StatelessWidget {
   }
 
   Widget _buildWeeklyBarChart(DrawingProvider provider, bool isDarkMode) {
-    final statsManager = StudyStatsManager();
-    final weekStats = statsManager.getWeekStats();
-
     // Sample data (replace with real data)
     final weekdays = ['월', '화', '수', '목', '금', '토', '일'];
     final sampleData = [2.5, 3.2, 1.8, 4.1, 2.9, 3.5, 2.0]; // hours

@@ -365,8 +365,6 @@ class VersionManager extends ChangeNotifier {
     // Simple merge: take all strokes and text from both versions
     // In production, would do intelligent 3-way merge
 
-    final mergedLayers = [...target.noteSnapshot.layers];
-
     // Merge text objects (keep both)
     // Note: copyWith doesn't support textObjects parameter yet
     // Text objects are preserved from target.noteSnapshot by default

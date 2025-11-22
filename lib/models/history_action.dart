@@ -1,7 +1,4 @@
 import 'package:flutter/material.dart';
-import 'drawing_stroke.dart';
-import 'text_object.dart';
-import 'layer.dart';
 
 /// Type of history action for granular undo/redo
 enum HistoryActionType {

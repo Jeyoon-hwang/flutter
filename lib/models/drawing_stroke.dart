@@ -1,5 +1,4 @@
 import 'dart:ui';
-import 'package:flutter/gestures.dart' show PointerDeviceKind;
 import 'advanced_pen.dart';
 
 /// Represents input device type for drawing

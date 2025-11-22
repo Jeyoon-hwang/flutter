@@ -229,13 +229,11 @@ class DrawingProvider extends ChangeNotifier {
           orElse: () => _noteService.currentNote!,
         );
 
-        if (note != null) {
-          _loadNoteData(note);
-          _pageManager.goToPage(pageIndex);
-          print('Restored last session: note=$noteId, page=$pageIndex');
-          notifyListeners();
-          return;
-        }
+        _loadNoteData(note);
+        _pageManager.goToPage(pageIndex);
+        print('Restored last session: note=$noteId, page=$pageIndex');
+        notifyListeners();
+        return;
       }
     } catch (e) {
       print('Error restoring last session: $e');
@@ -289,9 +287,6 @@ class DrawingProvider extends ChangeNotifier {
     if (_noteService.currentNote == null) return;
 
     // Update the note's layers with current state
-    final currentNote = _noteService.currentNote!;
-
-    // Copy all strokes to note's layers (they're already in layers)
     // The layers are already being modified in place, so just mark as modified
     _noteService.markCurrentNoteAsModified();
   }
@@ -603,11 +598,6 @@ class DrawingProvider extends ChangeNotifier {
     _autoSelectLayerForContent(app_layer.LayerType.decoration);
   }
 
-  /// Prepare layer for background content (PDFs, background images)
-  void _prepareForBackground() {
-    _autoSelectLayerForContent(app_layer.LayerType.background);
-  }
-
   void deleteLayer(int index) {
     if (index >= 0 && index < _layers.length && _layers.length > 1) {
       final removedLayer = _layers[index];
@@ -676,8 +666,6 @@ class DrawingProvider extends ChangeNotifier {
 
     // Update current input device
     if (deviceKind != null) {
-      final previousDevice = _currentInputDevice;
-
       switch (deviceKind) {
         case PointerDeviceKind.stylus:
           _currentInputDevice = InputDeviceType.stylus;

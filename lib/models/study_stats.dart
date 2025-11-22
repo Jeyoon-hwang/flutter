@@ -1,5 +1,3 @@
-import 'package:flutter/material.dart';
-
 /// Study statistics model for tracking learning progress
 class StudyStats {
   final DateTime date;

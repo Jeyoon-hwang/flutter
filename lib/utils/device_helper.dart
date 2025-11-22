@@ -89,7 +89,6 @@ class DeviceHelper {
   /// Get pixel ratio for rendering
   static double getPixelRatio(BuildContext context) {
     final devicePixelRatio = MediaQuery.of(context).devicePixelRatio;
-    final type = getDeviceType(context);
 
     // Limit pixel ratio on low-end devices to save memory
     if (shouldUsePerformanceMode(context)) {

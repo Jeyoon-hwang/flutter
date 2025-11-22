@@ -459,19 +459,6 @@ class _HomeDashboardState extends State<HomeDashboard> {
     );
   }
 
-  Color _getSubjectColor(String subject) {
-    // Map subjects to colors
-    final subjectColors = {
-      '수학': const Color(0xFF007AFF),
-      '영어': const Color(0xFF34C759),
-      '국어': const Color(0xFFFF3B30),
-      '과학': const Color(0xFF5E5CE6),
-      '사회': const Color(0xFFFF9500),
-    };
-
-    return subjectColors[subject] ?? AppTheme.primary;
-  }
-
   void _showThemeSelector(BuildContext context, DrawingProvider provider) {
     showModalBottomSheet(
       context: context,

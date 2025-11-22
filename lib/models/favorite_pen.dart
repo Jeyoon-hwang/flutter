@@ -45,7 +45,7 @@ class FavoritePen {
     return {
       'id': id,
       'name': name,
-      'color': color.value,
+      'color': color.toARGB32(),
       'width': width,
       'opacity': opacity,
       'isHighlighter': isHighlighter,

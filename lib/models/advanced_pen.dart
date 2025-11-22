@@ -309,7 +309,7 @@ class AdvancedPen {
       'id': id,
       'name': name,
       'type': type.name,
-      'color': color.value,
+      'color': color.toARGB32(),
       'width': width,
       'opacity': opacity,
       'tipShape': tipShape.name,
@@ -320,7 +320,7 @@ class AdvancedPen {
       'velocityBased': velocityBased,
       'enableGlow': enableGlow,
       'enableShadow': enableShadow,
-      'gradientColors': gradientColors?.map((c) => c.value).toList(),
+      'gradientColors': gradientColors?.map((c) => c.toARGB32()).toList(),
       'glitterDensity': glitterDensity,
     };
   }

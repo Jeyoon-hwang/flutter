@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'layer.dart';
 
 /// Represents a practice session (N회독)
 /// Each session has its own layer for strokes

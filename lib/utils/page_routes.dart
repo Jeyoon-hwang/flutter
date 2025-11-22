@@ -130,12 +130,6 @@ class PageRoutes {
       transitionsBuilder: (context, animation, secondaryAnimation, child) {
         const curve = Curves.easeInOutCubic;
 
-        // Exit animation
-        var exitOffset = Tween(begin: Offset.zero, end: const Offset(-0.3, 0.0))
-            .chain(CurveTween(curve: curve));
-        var exitFade =
-            Tween(begin: 1.0, end: 0.0).chain(CurveTween(curve: curve));
-
         // Enter animation
         var enterOffset = Tween(begin: const Offset(0.3, 0.0), end: Offset.zero)
             .chain(CurveTween(curve: curve));
