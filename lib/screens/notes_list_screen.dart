@@ -209,7 +209,7 @@ class _NotesListScreenState extends State<NotesListScreen> {
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(isDarkMode ? 0.3 : 0.05),
+            color: Colors.black.withValues(alpha: isDarkMode ? 0.3 : 0.05),
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),
@@ -279,7 +279,7 @@ class _NotesListScreenState extends State<NotesListScreen> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF667EEA).withOpacity(0.2),
+                  color: const Color(0xFF667EEA).withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: const Text(
@@ -344,10 +344,10 @@ class _NotesListScreenState extends State<NotesListScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: const Color(0xFF667EEA).withOpacity(0.1),
+        color: const Color(0xFF667EEA).withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(8),
         border: Border.all(
-          color: const Color(0xFF667EEA).withOpacity(0.3),
+          color: const Color(0xFF667EEA).withValues(alpha: 0.3),
         ),
       ),
       child: Text(

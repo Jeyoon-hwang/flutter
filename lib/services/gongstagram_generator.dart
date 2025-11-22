@@ -114,7 +114,7 @@ class GongstagramGenerator {
       // Time bar
       final barWidth = (entry.value.inMinutes / report.totalStudyTime.inMinutes) * (size.width * 0.5);
       final barPaint = Paint()
-        ..color = const Color(0xFF667EEA).withOpacity(0.3)
+        ..color = const Color(0xFF667EEA).withValues(alpha: 0.3)
         ..style = PaintingStyle.fill;
 
       canvas.drawRRect(
@@ -397,13 +397,13 @@ class WeeklyReportGenerator {
       final day = summary.dailySummaries[i];
       final hours = day.studyTime.inMinutes / 60;
 
-      final barHeight = maxHours > 0 ? (hours / maxHours) * chartHeight : 0;
+      final barHeight = maxHours > 0 ? (hours / maxHours) * chartHeight : 0.0;
 
       final x = size.width * 0.05 + i * (barWidth + barSpacing);
 
       // Bar
       final barPaint = Paint()
-        ..color = const Color(0xFF667EEA).withOpacity(0.7)
+        ..color = const Color(0xFF667EEA).withValues(alpha: 0.7)
         ..style = PaintingStyle.fill;
 
       canvas.drawRRect(

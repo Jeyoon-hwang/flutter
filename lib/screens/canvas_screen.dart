@@ -104,16 +104,16 @@ class _CanvasScreenState extends State<CanvasScreen> {
                           color: _showVersionControl
                               ? const Color(0xFF667EEA)
                               : provider.isDarkMode
-                                  ? Colors.black.withOpacity(0.7)
-                                  : Colors.white.withOpacity(0.7),
+                                  ? Colors.black.withValues(alpha: 0.7)
+                                  : Colors.white.withValues(alpha: 0.7),
                           shape: BoxShape.circle,
                           border: Border.all(
-                            color: const Color(0xFF667EEA).withOpacity(0.5),
+                            color: const Color(0xFF667EEA).withValues(alpha: 0.5),
                             width: 2,
                           ),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withOpacity(0.2),
+                              color: Colors.black.withValues(alpha: 0.2),
                               blurRadius: 15,
                               offset: const Offset(0, 5),
                             ),
@@ -150,7 +150,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
           decoration: BoxDecoration(
-            color: const Color(0xFF667EEA).withOpacity(0.95),
+            color: const Color(0xFF667EEA).withValues(alpha: 0.95),
             borderRadius: BorderRadius.circular(20),
           ),
           child: const Text(
@@ -175,7 +175,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
           decoration: BoxDecoration(
-            color: const Color(0xFF34C759).withOpacity(0.95),
+            color: const Color(0xFF34C759).withValues(alpha: 0.95),
             borderRadius: BorderRadius.circular(20),
           ),
           child: const Text(
@@ -198,7 +198,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
         decoration: BoxDecoration(
-          color: const Color(0xFF667EEA).withOpacity(0.95),
+          color: const Color(0xFF667EEA).withValues(alpha: 0.95),
           borderRadius: BorderRadius.circular(20),
         ),
         child: const Text(

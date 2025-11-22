@@ -41,25 +41,25 @@ class AppHeader extends StatelessWidget {
                   end: Alignment.bottomCenter,
                   colors: provider.isDarkMode
                       ? [
-                          Colors.black.withOpacity(0.8),
-                          Colors.black.withOpacity(0.6),
+                          Colors.black.withValues(alpha: 0.8),
+                          Colors.black.withValues(alpha: 0.6),
                         ]
                       : [
-                          Colors.white.withOpacity(0.8),
-                          Colors.white.withOpacity(0.6),
+                          Colors.white.withValues(alpha: 0.8),
+                          Colors.white.withValues(alpha: 0.6),
                         ],
                 ),
                 border: Border(
                   bottom: BorderSide(
                     color: provider.isDarkMode
-                        ? Colors.white.withOpacity(0.1)
-                        : Colors.black.withOpacity(0.1),
+                        ? Colors.white.withValues(alpha: 0.1)
+                        : Colors.black.withValues(alpha: 0.1),
                     width: 1,
                   ),
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
+                    color: Colors.black.withValues(alpha: 0.05),
                     blurRadius: 10,
                     offset: const Offset(0, 2),
                   ),
@@ -81,7 +81,7 @@ class AppHeader extends StatelessWidget {
                             borderRadius: BorderRadius.circular(12),
                             boxShadow: [
                               BoxShadow(
-                                color: const Color(0xFF667EEA).withOpacity(0.3),
+                                color: const Color(0xFF667EEA).withValues(alpha: 0.3),
                                 blurRadius: 8,
                                 offset: const Offset(0, 2),
                               ),
@@ -219,7 +219,7 @@ class AppHeader extends StatelessWidget {
   void _showClearDialog(BuildContext context, DrawingProvider provider) {
     showDialog(
       context: context,
-      barrierColor: Colors.black.withOpacity(0.5),
+      barrierColor: Colors.black.withValues(alpha: 0.5),
       builder: (context) => BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
         child: AlertDialog(
@@ -232,7 +232,7 @@ class AppHeader extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFFF3B30).withOpacity(0.1),
+                  color: const Color(0xFFFF3B30).withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: const Icon(
@@ -328,7 +328,7 @@ class _QuickNoteButton extends StatelessWidget {
           borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFF667EEA).withOpacity(0.3),
+              color: const Color(0xFF667EEA).withValues(alpha: 0.3),
               blurRadius: 8,
               offset: const Offset(0, 2),
             ),
@@ -386,17 +386,17 @@ class _ModernIconButton extends StatelessWidget {
           height: 44,
           decoration: BoxDecoration(
             color: isRecording
-                ? Colors.red.withOpacity(0.2)
+                ? Colors.red.withValues(alpha: 0.2)
                 : (isDarkMode
-                    ? Colors.white.withOpacity(0.1)
-                    : Colors.black.withOpacity(0.05)),
+                    ? Colors.white.withValues(alpha: 0.1)
+                    : Colors.black.withValues(alpha: 0.05)),
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
               color: isRecording
-                  ? Colors.red.withOpacity(0.5)
+                  ? Colors.red.withValues(alpha: 0.5)
                   : (isDarkMode
-                      ? Colors.white.withOpacity(0.1)
-                      : Colors.black.withOpacity(0.05)),
+                      ? Colors.white.withValues(alpha: 0.1)
+                      : Colors.black.withValues(alpha: 0.05)),
               width: isRecording ? 2 : 1,
             ),
           ),
@@ -405,7 +405,7 @@ class _ModernIconButton extends StatelessWidget {
             size: 20,
             color: isRecording
                 ? Colors.red
-                : (isDarkMode ? Colors.white.withOpacity(0.9) : Colors.black.withOpacity(0.7)),
+                : (isDarkMode ? Colors.white.withValues(alpha: 0.9) : Colors.black.withValues(alpha: 0.7)),
           ),
         ),
       ),

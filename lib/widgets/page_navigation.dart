@@ -41,24 +41,24 @@ class PageNavigation extends StatelessWidget {
                     end: Alignment.bottomRight,
                     colors: isDarkMode
                         ? [
-                            const Color(0xFF2A2A2A).withOpacity(0.9),
-                            const Color(0xFF1E1E1E).withOpacity(0.9),
+                            const Color(0xFF2A2A2A).withValues(alpha: 0.9),
+                            const Color(0xFF1E1E1E).withValues(alpha: 0.9),
                           ]
                         : [
-                            Colors.white.withOpacity(0.9),
-                            Colors.white.withOpacity(0.85),
+                            Colors.white.withValues(alpha: 0.9),
+                            Colors.white.withValues(alpha: 0.85),
                           ],
                   ),
                   borderRadius: BorderRadius.circular(24),
                   border: Border.all(
                     color: isDarkMode
-                        ? Colors.white.withOpacity(0.1)
-                        : Colors.black.withOpacity(0.1),
+                        ? Colors.white.withValues(alpha: 0.1)
+                        : Colors.black.withValues(alpha: 0.1),
                     width: 1.5,
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(isDarkMode ? 0.3 : 0.1),
+                      color: Colors.black.withValues(alpha: isDarkMode ? 0.3 : 0.1),
                       blurRadius: 20,
                       offset: const Offset(0, 8),
                     ),
@@ -83,8 +83,8 @@ class PageNavigation extends StatelessWidget {
                       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                       decoration: BoxDecoration(
                         color: isDarkMode
-                            ? Colors.white.withOpacity(0.1)
-                            : Colors.black.withOpacity(0.05),
+                            ? Colors.white.withValues(alpha: 0.1)
+                            : Colors.black.withValues(alpha: 0.05),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Text(
@@ -117,14 +117,14 @@ class PageNavigation extends StatelessWidget {
                         gradient: LinearGradient(
                           colors: isDarkMode
                               ? [
-                                  Colors.white.withOpacity(0),
-                                  Colors.white.withOpacity(0.2),
-                                  Colors.white.withOpacity(0),
+                                  Colors.white.withValues(alpha: 0),
+                                  Colors.white.withValues(alpha: 0.2),
+                                  Colors.white.withValues(alpha: 0),
                                 ]
                               : [
-                                  Colors.black.withOpacity(0),
-                                  Colors.black.withOpacity(0.1),
-                                  Colors.black.withOpacity(0),
+                                  Colors.black.withValues(alpha: 0),
+                                  Colors.black.withValues(alpha: 0.1),
+                                  Colors.black.withValues(alpha: 0),
                                 ],
                         ),
                       ),
@@ -223,8 +223,8 @@ class PageNavigation extends StatelessWidget {
         padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
           color: isSelected
-              ? const Color(0xFF667EEA).withOpacity(0.15)
-              : (isDarkMode ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.03)),
+              ? const Color(0xFF667EEA).withValues(alpha: 0.15)
+              : (isDarkMode ? Colors.white.withValues(alpha: 0.05) : Colors.black.withValues(alpha: 0.03)),
           borderRadius: BorderRadius.circular(8),
         ),
         child: Icon(
@@ -290,15 +290,15 @@ class _NavButton extends StatelessWidget {
             color: isSpecial
                 ? null
                 : (isDarkMode
-                    ? Colors.white.withOpacity(0.1)
-                    : Colors.black.withOpacity(0.05)),
+                    ? Colors.white.withValues(alpha: 0.1)
+                    : Colors.black.withValues(alpha: 0.05)),
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
               color: isSpecial
                   ? Colors.transparent
                   : (isDarkMode
-                      ? Colors.white.withOpacity(0.1)
-                      : Colors.black.withOpacity(0.05)),
+                      ? Colors.white.withValues(alpha: 0.1)
+                      : Colors.black.withValues(alpha: 0.05)),
               width: 1,
             ),
           ),
@@ -307,7 +307,7 @@ class _NavButton extends StatelessWidget {
             size: 20,
             color: isSpecial
                 ? Colors.white
-                : (isDarkMode ? Colors.white.withOpacity(0.9) : Colors.black.withOpacity(0.7)),
+                : (isDarkMode ? Colors.white.withValues(alpha: 0.9) : Colors.black.withValues(alpha: 0.7)),
           ),
         ),
       ),

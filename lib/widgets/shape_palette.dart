@@ -32,12 +32,12 @@ class _ShapePaletteState extends State<ShapePalette> {
             constraints: const BoxConstraints(maxHeight: 500),
             decoration: BoxDecoration(
               color: provider.isDarkMode
-                  ? Colors.black.withOpacity(0.95)
-                  : Colors.white.withOpacity(0.95),
+                  ? Colors.black.withValues(alpha: 0.95)
+                  : Colors.white.withValues(alpha: 0.95),
               borderRadius: BorderRadius.circular(20),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.2),
+                  color: Colors.black.withValues(alpha: 0.2),
                   blurRadius: 30,
                   offset: const Offset(0, 10),
                 ),
@@ -284,10 +284,10 @@ class _TabButton extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         decoration: BoxDecoration(
-          color: isActive ? Colors.white.withOpacity(0.3) : Colors.transparent,
+          color: isActive ? Colors.white.withValues(alpha: 0.3) : Colors.transparent,
           borderRadius: BorderRadius.circular(8),
           border: Border.all(
-            color: isActive ? Colors.white : Colors.white.withOpacity(0.3),
+            color: isActive ? Colors.white : Colors.white.withValues(alpha: 0.3),
             width: 1,
           ),
         ),
@@ -342,7 +342,7 @@ class _ShapeButton extends StatelessWidget {
           boxShadow: isSelected
               ? [
                   BoxShadow(
-                    color: const Color(0xFF667EEA).withOpacity(0.4),
+                    color: const Color(0xFF667EEA).withValues(alpha: 0.4),
                     blurRadius: 12,
                     offset: const Offset(0, 4),
                   ),
@@ -407,10 +407,10 @@ class _AngleControl extends StatelessWidget {
           data: SliderTheme.of(context).copyWith(
             activeTrackColor: const Color(0xFF667EEA),
             inactiveTrackColor: isDarkMode
-                ? Colors.white.withOpacity(0.2)
-                : Colors.black.withOpacity(0.1),
+                ? Colors.white.withValues(alpha: 0.2)
+                : Colors.black.withValues(alpha: 0.1),
             thumbColor: const Color(0xFF667EEA),
-            overlayColor: const Color(0xFF667EEA).withOpacity(0.2),
+            overlayColor: const Color(0xFF667EEA).withValues(alpha: 0.2),
             trackHeight: 4,
           ),
           child: Slider(

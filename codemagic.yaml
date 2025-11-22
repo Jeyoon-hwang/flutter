@@ -103,6 +103,9 @@ workflows:
         - pattern: 'main'
           include: true
           source: true
+        - pattern: 'claude/*'
+          include: true
+          source: true
         - pattern: 'release/*'
           include: true
           source: true

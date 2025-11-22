@@ -66,7 +66,7 @@ class _StudyTimerWidgetState extends State<StudyTimerWidget> {
           borderRadius: BorderRadius.circular(24 * scaleFactor),
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFF667EEA).withOpacity(0.3),
+              color: const Color(0xFF667EEA).withValues(alpha: 0.3),
               blurRadius: 12,
               offset: const Offset(0, 4),
             ),
@@ -110,8 +110,8 @@ class _StudyTimerWidgetState extends State<StudyTimerWidget> {
       ),
       decoration: BoxDecoration(
         color: isDarkMode
-            ? AppTheme.darkSurface.withOpacity(0.95)
-            : Colors.white.withOpacity(0.95),
+            ? AppTheme.darkSurface.withValues(alpha: 0.95)
+            : Colors.white.withValues(alpha: 0.95),
         borderRadius: BorderRadius.circular(24 * scaleFactor),
         border: Border.all(
           color: const Color(0xFF667EEA),
@@ -119,7 +119,7 @@ class _StudyTimerWidgetState extends State<StudyTimerWidget> {
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withValues(alpha: 0.1),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
@@ -132,7 +132,7 @@ class _StudyTimerWidgetState extends State<StudyTimerWidget> {
           Container(
             padding: EdgeInsets.all(6 * scaleFactor),
             decoration: BoxDecoration(
-              color: const Color(0xFF667EEA).withOpacity(0.1),
+              color: const Color(0xFF667EEA).withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
             child: Icon(
@@ -320,17 +320,17 @@ class TodayStudyCard extends StatelessWidget {
               end: Alignment.bottomRight,
               colors: isDarkMode
                   ? [
-                      const Color(0xFF667EEA).withOpacity(0.2),
-                      const Color(0xFF764BA2).withOpacity(0.2),
+                      const Color(0xFF667EEA).withValues(alpha: 0.2),
+                      const Color(0xFF764BA2).withValues(alpha: 0.2),
                     ]
                   : [
-                      const Color(0xFF667EEA).withOpacity(0.1),
-                      const Color(0xFF764BA2).withOpacity(0.1),
+                      const Color(0xFF667EEA).withValues(alpha: 0.1),
+                      const Color(0xFF764BA2).withValues(alpha: 0.1),
                     ],
             ),
             borderRadius: BorderRadius.circular(AppTheme.radiusLg * scaleFactor),
             border: Border.all(
-              color: const Color(0xFF667EEA).withOpacity(0.3),
+              color: const Color(0xFF667EEA).withValues(alpha: 0.3),
               width: 1,
             ),
           ),
@@ -371,7 +371,7 @@ class TodayStudyCard extends StatelessWidget {
 
               if (subjectTimes.isNotEmpty) ...[
                 SizedBox(height: AppTheme.spaceMd * scaleFactor),
-                Divider(color: const Color(0xFF667EEA).withOpacity(0.2)),
+                Divider(color: const Color(0xFF667EEA).withValues(alpha: 0.2)),
                 SizedBox(height: AppTheme.spaceSm * scaleFactor),
 
                 // Subject breakdown

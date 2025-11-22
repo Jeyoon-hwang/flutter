@@ -23,7 +23,7 @@ class PenStatusIndicator extends StatelessWidget {
             borderRadius: BorderRadius.circular(20),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.1),
+                color: Colors.black.withValues(alpha: 0.1),
                 blurRadius: 4,
                 offset: const Offset(0, 2),
               ),
@@ -100,12 +100,12 @@ class PenStatusDetailedIndicator extends StatelessWidget {
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
             color: isStylusActive
-                ? const Color(0xFF34C759).withOpacity(0.9)
-                : Colors.grey.withOpacity(0.8),
+                ? const Color(0xFF34C759).withValues(alpha: 0.9)
+                : Colors.grey.withValues(alpha: 0.8),
             borderRadius: BorderRadius.circular(12),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.2),
+                color: Colors.black.withValues(alpha: 0.2),
                 blurRadius: 8,
                 offset: const Offset(0, 2),
               ),
@@ -153,7 +153,7 @@ class PenStatusDetailedIndicator extends StatelessWidget {
                       width: 60,
                       height: 4,
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.3),
+                        color: Colors.white.withValues(alpha: 0.3),
                         borderRadius: BorderRadius.circular(2),
                       ),
                       child: FractionallySizedBox(

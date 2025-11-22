@@ -48,7 +48,7 @@ class _TextInputDialogState extends State<TextInputDialog> with SingleTickerProv
           borderRadius: BorderRadius.circular(24),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.3),
+              color: Colors.black.withValues(alpha: 0.3),
               blurRadius: 40,
               offset: const Offset(0, 20),
             ),
@@ -93,7 +93,7 @@ class _TextInputDialogState extends State<TextInputDialog> with SingleTickerProv
                   TabBar(
                     controller: _tabController,
                     indicator: BoxDecoration(
-                      color: Colors.white.withOpacity(0.2),
+                      color: Colors.white.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     indicatorPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
@@ -172,7 +172,7 @@ class _TextInputDialogState extends State<TextInputDialog> with SingleTickerProv
                             : const Color(0xFFFAFAFA),
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
-                          color: const Color(0xFF667EEA).withOpacity(0.3),
+                          color: const Color(0xFF667EEA).withValues(alpha: 0.3),
                           width: 2,
                         ),
                       ),

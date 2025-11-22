@@ -145,7 +145,7 @@ class _FontSettingsScreenState extends State<FontSettingsScreen> {
         padding: const EdgeInsets.all(AppTheme.spaceLg),
         decoration: BoxDecoration(
           color: isSelected
-              ? AppTheme.primary.withOpacity(0.1)
+              ? AppTheme.primary.withValues(alpha: 0.1)
               : (isDarkMode ? AppTheme.darkSurface : AppTheme.lightSurface),
           borderRadius: BorderRadius.circular(AppTheme.radiusMd),
           border: Border.all(
@@ -275,10 +275,10 @@ class _FontSettingsScreenState extends State<FontSettingsScreen> {
     return Container(
       padding: const EdgeInsets.all(AppTheme.spaceLg),
       decoration: BoxDecoration(
-        color: AppTheme.info.withOpacity(0.1),
+        color: AppTheme.info.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(AppTheme.radiusMd),
         border: Border.all(
-          color: AppTheme.info.withOpacity(0.3),
+          color: AppTheme.info.withValues(alpha: 0.3),
           width: 1,
         ),
       ),

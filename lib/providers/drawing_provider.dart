@@ -5,7 +5,7 @@ import 'package:flutter/gestures.dart' show PointerDeviceKind;
 import '../models/drawing_stroke.dart';
 import '../models/text_object.dart';
 import '../models/app_settings.dart';
-import '../models/layer.dart';
+import '../models/layer.dart' as app_layer;
 import '../models/note.dart';
 import '../models/history_action.dart';
 import '../models/page_layout.dart';
@@ -34,7 +34,7 @@ enum DrawingMode { pen, eraser, select, shape, text, wrongAnswerClip }
 
 class DrawingProvider extends ChangeNotifier {
   // Layer system
-  final List<Layer> _layers = [];
+  final List<app_layer.Layer> _layers = [];
   int _currentLayerIndex = 1; // Default to writing layer
 
   final List<DrawingStroke> _strokes = [];
@@ -224,7 +224,7 @@ class DrawingProvider extends ChangeNotifier {
         final pageIndex = lastNote['pageIndex'] as int;
 
         // Try to load the note
-        final note = _noteService.notes.firstWhere(
+        final note = _noteService.allNotes.firstWhere(
           (n) => n.id == noteId,
           orElse: () => _noteService.currentNote!,
         );
@@ -298,17 +298,17 @@ class DrawingProvider extends ChangeNotifier {
 
   void _initializeLayers() {
     _layers.addAll([
-      Layer(
+      app_layer.Layer(
         id: 'background_0',
         name: '배경',
         type: LayerType.background,
       ),
-      Layer(
+      app_layer.Layer(
         id: 'writing_1',
         name: '필기',
         type: LayerType.writing,
       ),
-      Layer(
+      app_layer.Layer(
         id: 'decoration_2',
         name: '꾸미기',
         type: LayerType.decoration,
@@ -321,8 +321,8 @@ class DrawingProvider extends ChangeNotifier {
   }
 
   // Getters
-  List<Layer> get layers => _layers;
-  Layer get currentLayer => _layers[_currentLayerIndex];
+  List<app_layer.Layer> get layers => _layers;
+  app_layer.Layer get currentLayer => _layers[_currentLayerIndex];
   int get currentLayerIndex => _currentLayerIndex;
   List<DrawingStroke> get strokes => _getAllVisibleStrokes();
   double get pressureStabilization => _pressureStabilization;
@@ -525,7 +525,7 @@ class DrawingProvider extends ChangeNotifier {
 
   void addLayer(LayerType type) {
     final newId = '${type.name}_${DateTime.now().millisecondsSinceEpoch}';
-    final newLayer = Layer(
+    final newLayer = app_layer.Layer(
       id: newId,
       name: '${type == LayerType.background ? '배경' : type == LayerType.writing ? '필기' : '꾸미기'} ${_layers.length + 1}',
       type: type,
@@ -1211,8 +1211,8 @@ class DrawingProvider extends ChangeNotifier {
 
       case HistoryActionType.removeLayer:
         // Re-add the removed layer
-        if (action.data is Layer && action.index != null) {
-          _layers.insert(action.index!, action.data as Layer);
+        if (action.data is app_layer.Layer && action.index != null) {
+          _layers.insert(action.index!, action.data as app_layer.Layer);
         }
         break;
 
@@ -1293,8 +1293,8 @@ class DrawingProvider extends ChangeNotifier {
 
       case HistoryActionType.addLayer:
         // Re-add the layer
-        if (action.data is Layer && action.index != null) {
-          _layers.insert(action.index!, action.data as Layer);
+        if (action.data is app_layer.Layer && action.index != null) {
+          _layers.insert(action.index!, action.data as app_layer.Layer);
         }
         break;
 
@@ -1377,7 +1377,7 @@ class DrawingProvider extends ChangeNotifier {
     }
 
     if (selectedIndices.isNotEmpty) {
-      _saveState();
+      // State changes are tracked through HistoryManager
       clearSelection();
       notifyListeners();
     }

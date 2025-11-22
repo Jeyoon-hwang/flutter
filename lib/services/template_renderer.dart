@@ -19,8 +19,8 @@ class TemplateRenderer {
 
     // Template line color
     final lineColor = isDarkMode
-        ? Colors.white.withOpacity(0.1)
-        : Colors.black.withOpacity(0.08);
+        ? Colors.white.withValues(alpha: 0.1)
+        : Colors.black.withValues(alpha: 0.08);
 
     switch (template) {
       case NoteTemplate.blank:
@@ -70,7 +70,7 @@ class TemplateRenderer {
 
     // Draw left margin line
     final marginPaint = Paint()
-      ..color = lineColor.withOpacity(0.3)
+      ..color = lineColor.withValues(alpha: 0.3)
       ..strokeWidth = 2.0
       ..style = PaintingStyle.stroke;
 
@@ -110,7 +110,7 @@ class TemplateRenderer {
 
     // Draw thicker lines every 5 cells
     final thickPaint = Paint()
-      ..color = lineColor.withOpacity(1.5)
+      ..color = lineColor.withValues(alpha: 1.5)
       ..strokeWidth = 2.0
       ..style = PaintingStyle.stroke;
 
@@ -149,7 +149,7 @@ class TemplateRenderer {
 
     // Draw slightly larger dots every 5 positions
     final largeDotPaint = Paint()
-      ..color = lineColor.withOpacity(1.5)
+      ..color = lineColor.withValues(alpha: 1.5)
       ..style = PaintingStyle.fill;
 
     for (double x = dotSpacing * 5; x < size.width; x += dotSpacing * 5) {
@@ -172,7 +172,7 @@ class TemplateRenderer {
       ..style = PaintingStyle.stroke;
 
     final thickPaint = Paint()
-      ..color = lineColor.withOpacity(1.5)
+      ..color = lineColor.withValues(alpha: 1.5)
       ..strokeWidth = 2.0
       ..style = PaintingStyle.stroke;
 
@@ -254,7 +254,7 @@ class TemplateRenderer {
 
       // Draw bar line at the start
       final barPaint = Paint()
-        ..color = lineColor.withOpacity(1.5)
+        ..color = lineColor.withValues(alpha: 1.5)
         ..strokeWidth = 2.0
         ..style = PaintingStyle.stroke;
 
@@ -279,7 +279,7 @@ class TemplateRenderer {
     final textSpan = TextSpan(
       text: text,
       style: TextStyle(
-        color: color.withOpacity(0.5),
+        color: color.withValues(alpha: 0.5),
         fontSize: 12,
         fontWeight: FontWeight.w600,
       ),

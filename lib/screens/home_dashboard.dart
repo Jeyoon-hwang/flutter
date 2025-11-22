@@ -4,7 +4,8 @@ import '../providers/drawing_provider.dart';
 import '../utils/app_theme.dart';
 import '../utils/page_routes.dart';
 import '../models/planner.dart';
-import '../widgets/study_timer_widget.dart';
+import '../models/app_settings.dart';
+import '../widgets/study_timer_widget.dart' hide TodayStudyCard;
 import '../widgets/today_study_card.dart';
 import '../services/haptic_service.dart';
 import 'canvas_screen.dart';
@@ -260,14 +261,10 @@ class _HomeDashboardState extends State<HomeDashboard> {
                 child: ElevatedButton(
                   onPressed: () {
                     if (titleController.text.trim().isNotEmpty) {
-                      provider.plannerManager.addItem(
-                        PlannerItem(
-                          id: DateTime.now().millisecondsSinceEpoch.toString(),
-                          title: titleController.text.trim(),
-                          description: descriptionController.text.trim(),
-                          date: DateTime.now(),
-                          subject: selectedSubject,
-                        ),
+                      provider.plannerManager.createTodo(
+                        title: titleController.text.trim(),
+                        dueDate: DateTime.now(),
+                        priority: Priority.medium,
                       );
                       Navigator.pop(context);
                     }
@@ -288,7 +285,7 @@ class _HomeDashboardState extends State<HomeDashboard> {
   }
 
   Widget _buildPlannerList(BuildContext context, DrawingProvider provider, bool isDarkMode) {
-    final plannerItems = provider.plannerManager.getTodayItems();
+    final plannerItems = provider.plannerManager.todayTodos;
 
     if (plannerItems.isEmpty) {
       return Center(
@@ -330,7 +327,7 @@ class _HomeDashboardState extends State<HomeDashboard> {
   Widget _buildPlannerCard(
     BuildContext context,
     DrawingProvider provider,
-    PlannerItem item,
+    TodoItem item,
     bool isDarkMode,
   ) {
     return Container(
@@ -358,7 +355,7 @@ class _HomeDashboardState extends State<HomeDashboard> {
                 GestureDetector(
                   onTap: () async {
                     await hapticService.toggle();
-                    provider.plannerManager.toggleItemCompletion(item.id);
+                    provider.plannerManager.toggleComplete(item.id);
                   },
                   child: Container(
                     width: 24,
@@ -426,7 +423,7 @@ class _HomeDashboardState extends State<HomeDashboard> {
         color: isDarkMode ? AppTheme.darkSurface : Colors.white,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withValues(alpha: 0.1),
             blurRadius: 10,
             offset: const Offset(0, -2),
           ),
@@ -561,7 +558,7 @@ class _HomeDashboardState extends State<HomeDashboard> {
           color: color,
           borderRadius: BorderRadius.circular(AppTheme.radiusMd),
           border: Border.all(
-            color: isSelected ? AppTheme.primary : Colors.grey.withOpacity(0.3),
+            color: isSelected ? AppTheme.primary : Colors.grey.withValues(alpha: 0.3),
             width: isSelected ? 3 : 1,
           ),
         ),

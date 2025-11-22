@@ -65,24 +65,24 @@ class FloatingToolbar extends StatelessWidget {
                       end: Alignment.bottomRight,
                       colors: provider.isDarkMode
                           ? [
-                              Colors.black.withOpacity(0.7),
-                              Colors.black.withOpacity(0.5),
+                              Colors.black.withValues(alpha: 0.7),
+                              Colors.black.withValues(alpha: 0.5),
                             ]
                           : [
-                              Colors.white.withOpacity(0.7),
-                              Colors.white.withOpacity(0.5),
+                              Colors.white.withValues(alpha: 0.7),
+                              Colors.white.withValues(alpha: 0.5),
                             ],
                     ),
                     borderRadius: BorderRadius.circular(30),
                     border: Border.all(
                       color: provider.isDarkMode
-                          ? Colors.white.withOpacity(0.1)
-                          : Colors.black.withOpacity(0.1),
+                          ? Colors.white.withValues(alpha: 0.1)
+                          : Colors.black.withValues(alpha: 0.1),
                       width: 1.5,
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
+                        color: Colors.black.withValues(alpha: 0.1),
                         blurRadius: 30,
                         offset: const Offset(0, 10),
                       ),
@@ -185,14 +185,14 @@ class FloatingToolbar extends StatelessWidget {
                                 end: Alignment.bottomCenter,
                                 colors: provider.isDarkMode
                                     ? [
-                                        Colors.white.withOpacity(0),
-                                        Colors.white.withOpacity(0.2),
-                                        Colors.white.withOpacity(0),
+                                        Colors.white.withValues(alpha: 0),
+                                        Colors.white.withValues(alpha: 0.2),
+                                        Colors.white.withValues(alpha: 0),
                                       ]
                                     : [
-                                        Colors.black.withOpacity(0),
-                                        Colors.black.withOpacity(0.2),
-                                        Colors.black.withOpacity(0),
+                                        Colors.black.withValues(alpha: 0),
+                                        Colors.black.withValues(alpha: 0.2),
+                                        Colors.black.withValues(alpha: 0),
                                       ],
                               ),
                             ),
@@ -257,14 +257,14 @@ class FloatingToolbar extends StatelessWidget {
                                 end: Alignment.bottomCenter,
                                 colors: provider.isDarkMode
                                     ? [
-                                        Colors.white.withOpacity(0),
-                                        Colors.white.withOpacity(0.2),
-                                        Colors.white.withOpacity(0),
+                                        Colors.white.withValues(alpha: 0),
+                                        Colors.white.withValues(alpha: 0.2),
+                                        Colors.white.withValues(alpha: 0),
                                       ]
                                     : [
-                                        Colors.black.withOpacity(0),
-                                        Colors.black.withOpacity(0.2),
-                                        Colors.black.withOpacity(0),
+                                        Colors.black.withValues(alpha: 0),
+                                        Colors.black.withValues(alpha: 0.2),
+                                        Colors.black.withValues(alpha: 0),
                                       ],
                               ),
                             ),
@@ -278,8 +278,8 @@ class FloatingToolbar extends StatelessWidget {
                               fontSize: isTablet ? 13 : 11,
                               fontWeight: FontWeight.w600,
                               color: provider.isDarkMode
-                                  ? Colors.white.withOpacity(0.7)
-                                  : Colors.black.withOpacity(0.7),
+                                  ? Colors.white.withValues(alpha: 0.7)
+                                  : Colors.black.withValues(alpha: 0.7),
                             ),
                           ),
                           SizedBox(width: spacing),
@@ -305,14 +305,14 @@ class FloatingToolbar extends StatelessWidget {
                                 end: Alignment.bottomCenter,
                                 colors: provider.isDarkMode
                                     ? [
-                                        Colors.white.withOpacity(0),
-                                        Colors.white.withOpacity(0.2),
-                                        Colors.white.withOpacity(0),
+                                        Colors.white.withValues(alpha: 0),
+                                        Colors.white.withValues(alpha: 0.2),
+                                        Colors.white.withValues(alpha: 0),
                                       ]
                                     : [
-                                        Colors.black.withOpacity(0),
-                                        Colors.black.withOpacity(0.2),
-                                        Colors.black.withOpacity(0),
+                                        Colors.black.withValues(alpha: 0),
+                                        Colors.black.withValues(alpha: 0.2),
+                                        Colors.black.withValues(alpha: 0),
                                       ],
                               ),
                             ),
@@ -346,14 +346,14 @@ class FloatingToolbar extends StatelessWidget {
                                 end: Alignment.bottomCenter,
                                 colors: provider.isDarkMode
                                     ? [
-                                        Colors.white.withOpacity(0),
-                                        Colors.white.withOpacity(0.2),
-                                        Colors.white.withOpacity(0),
+                                        Colors.white.withValues(alpha: 0),
+                                        Colors.white.withValues(alpha: 0.2),
+                                        Colors.white.withValues(alpha: 0),
                                       ]
                                     : [
-                                        Colors.black.withOpacity(0),
-                                        Colors.black.withOpacity(0.2),
-                                        Colors.black.withOpacity(0),
+                                        Colors.black.withValues(alpha: 0),
+                                        Colors.black.withValues(alpha: 0.2),
+                                        Colors.black.withValues(alpha: 0),
                                       ],
                               ),
                             ),
@@ -414,7 +414,7 @@ class FloatingToolbar extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.2),
+                  color: Colors.white.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: const Icon(Icons.check_circle, color: Colors.white, size: 20),
@@ -478,12 +478,12 @@ class _ModernToolButton extends StatelessWidget {
               : null,
           color: isActive
               ? null
-              : (isDarkMode ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.05)),
+              : (isDarkMode ? Colors.white.withValues(alpha: 0.1) : Colors.black.withValues(alpha: 0.05)),
           borderRadius: BorderRadius.circular(14),
           boxShadow: isActive
               ? [
                   BoxShadow(
-                    color: const Color(0xFF667EEA).withOpacity(0.4),
+                    color: const Color(0xFF667EEA).withValues(alpha: 0.4),
                     blurRadius: 12,
                     offset: const Offset(0, 4),
                   ),
@@ -495,7 +495,7 @@ class _ModernToolButton extends StatelessWidget {
           size: iconSize,
           color: isActive
               ? Colors.white
-              : (isDarkMode ? Colors.white.withOpacity(0.8) : Colors.black.withOpacity(0.7)),
+              : (isDarkMode ? Colors.white.withValues(alpha: 0.8) : Colors.black.withValues(alpha: 0.7)),
         ),
       ),
     );
@@ -539,13 +539,13 @@ class _ModernActionButton extends StatelessWidget {
             end: Alignment.bottomRight,
             colors: [
               color,
-              color.withOpacity(0.8),
+              color.withValues(alpha: 0.8),
             ],
           ),
           borderRadius: BorderRadius.circular(14),
           boxShadow: [
             BoxShadow(
-              color: color.withOpacity(0.3),
+              color: color.withValues(alpha: 0.3),
               blurRadius: 8,
               offset: const Offset(0, 4),
             ),
@@ -616,14 +616,14 @@ class _ModernColorButton extends StatelessWidget {
           boxShadow: isSelected
               ? [
                   BoxShadow(
-                    color: color.withOpacity(0.4),
+                    color: color.withValues(alpha: 0.4),
                     blurRadius: 12,
                     offset: const Offset(0, 4),
                   ),
                 ]
               : [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
+                    color: Colors.black.withValues(alpha: 0.1),
                     blurRadius: 4,
                     offset: const Offset(0, 2),
                   ),

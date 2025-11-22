@@ -94,7 +94,7 @@ class AppTheme {
 
   static List<BoxShadow> shadowSm(bool isDarkMode) => [
         BoxShadow(
-          color: Colors.black.withOpacity(isDarkMode ? 0.3 : 0.1),
+          color: Colors.black.withValues(alpha: isDarkMode ? 0.3 : 0.1),
           blurRadius: 10,
           offset: const Offset(0, 2),
         ),
@@ -102,7 +102,7 @@ class AppTheme {
 
   static List<BoxShadow> shadowMd(bool isDarkMode) => [
         BoxShadow(
-          color: Colors.black.withOpacity(isDarkMode ? 0.4 : 0.15),
+          color: Colors.black.withValues(alpha: isDarkMode ? 0.4 : 0.15),
           blurRadius: 20,
           offset: const Offset(0, 5),
         ),
@@ -110,7 +110,7 @@ class AppTheme {
 
   static List<BoxShadow> shadowLg(bool isDarkMode) => [
         BoxShadow(
-          color: Colors.black.withOpacity(isDarkMode ? 0.5 : 0.2),
+          color: Colors.black.withValues(alpha: isDarkMode ? 0.5 : 0.2),
           blurRadius: 30,
           offset: const Offset(0, 10),
         ),
@@ -127,19 +127,19 @@ class AppTheme {
         end: Alignment.bottomRight,
         colors: isDarkMode
             ? [
-                Colors.black.withOpacity(0.7),
-                Colors.black.withOpacity(0.5),
+                Colors.black.withValues(alpha: 0.7),
+                Colors.black.withValues(alpha: 0.5),
               ]
             : [
-                Colors.white.withOpacity(0.7),
-                Colors.white.withOpacity(0.5),
+                Colors.white.withValues(alpha: 0.7),
+                Colors.white.withValues(alpha: 0.5),
               ],
       ),
       borderRadius: BorderRadius.circular(radius),
       border: Border.all(
         color: isDarkMode
-            ? Colors.white.withOpacity(0.1)
-            : Colors.black.withOpacity(0.1),
+            ? Colors.white.withValues(alpha: 0.1)
+            : Colors.black.withValues(alpha: 0.1),
         width: 1.5,
       ),
       boxShadow: shadowLg(isDarkMode),
@@ -222,8 +222,8 @@ class AppTheme {
 
   static ButtonStyle secondaryButton(bool isDarkMode) => ElevatedButton.styleFrom(
     backgroundColor: isDarkMode
-        ? Colors.white.withOpacity(0.1)
-        : Colors.black.withOpacity(0.05),
+        ? Colors.white.withValues(alpha: 0.1)
+        : Colors.black.withValues(alpha: 0.05),
     foregroundColor: isDarkMode ? darkText : lightText,
     padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
     shape: RoundedRectangleBorder(
@@ -362,7 +362,7 @@ class AppWidgets {
         vertical: AppTheme.spaceXs,
       ),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.2),
+        color: color.withValues(alpha: 0.2),
         borderRadius: BorderRadius.circular(AppTheme.radiusSm),
         border: Border.all(color: color, width: 1.5),
       ),
@@ -432,8 +432,8 @@ class AppWidgets {
               icon,
               size: AppTheme.iconXl * 1.5,
               color: isDarkMode
-                  ? AppTheme.darkTextSecondary.withOpacity(0.5)
-                  : AppTheme.lightTextSecondary.withOpacity(0.5),
+                  ? AppTheme.darkTextSecondary.withValues(alpha: 0.5)
+                  : AppTheme.lightTextSecondary.withValues(alpha: 0.5),
             ),
             const SizedBox(height: AppTheme.spaceLg),
             Text(

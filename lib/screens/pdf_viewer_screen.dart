@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
 import 'package:file_picker/file_picker.dart';
@@ -122,7 +123,7 @@ class _PdfViewerScreenState extends State<PdfViewerScreen> {
               : Stack(
                   children: [
                     SfPdfViewer.file(
-                      _pdfPath!,
+                      File(_pdfPath!),
                       controller: _pdfViewerController,
                       // Progressive rendering with page load callback
                       onPageChanged: (PdfPageChangedDetails details) {
@@ -145,7 +146,7 @@ class _PdfViewerScreenState extends State<PdfViewerScreen> {
                     // Loading indicator for page transitions
                     if (_isLoading)
                       Container(
-                        color: Colors.black.withOpacity(0.3),
+                        color: Colors.black.withValues(alpha: 0.3),
                         child: const Center(
                           child: CircularProgressIndicator(),
                         ),

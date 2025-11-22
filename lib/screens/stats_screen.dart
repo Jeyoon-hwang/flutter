@@ -101,7 +101,7 @@ class StatsScreen extends StatelessWidget {
               Container(
                 width: 1,
                 height: 40,
-                color: Colors.white.withOpacity(0.3),
+                color: Colors.white.withValues(alpha: 0.3),
               ),
               _buildStatColumn(
                 '이번 주 달성',
@@ -111,7 +111,7 @@ class StatsScreen extends StatelessWidget {
               Container(
                 width: 1,
                 height: 40,
-                color: Colors.white.withOpacity(0.3),
+                color: Colors.white.withValues(alpha: 0.3),
               ),
               _buildStatColumn(
                 '연속 학습',
@@ -131,7 +131,7 @@ class StatsScreen extends StatelessWidget {
                   Text(
                     '주간 목표',
                     style: TextStyle(
-                      color: Colors.white.withOpacity(0.9),
+                      color: Colors.white.withValues(alpha: 0.9),
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
                     ),
@@ -151,7 +151,7 @@ class StatsScreen extends StatelessWidget {
                 borderRadius: BorderRadius.circular(10),
                 child: LinearProgressIndicator(
                   value: (weeklyGoal / 100).clamp(0.0, 1.0),
-                  backgroundColor: Colors.white.withOpacity(0.3),
+                  backgroundColor: Colors.white.withValues(alpha: 0.3),
                   valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
                   minHeight: 10,
                 ),
@@ -181,7 +181,7 @@ class StatsScreen extends StatelessWidget {
           label,
           style: TextStyle(
             fontSize: 12,
-            color: Colors.white.withOpacity(0.9),
+            color: Colors.white.withValues(alpha: 0.9),
           ),
         ),
       ],
@@ -237,7 +237,7 @@ class StatsScreen extends StatelessWidget {
                             begin: Alignment.topCenter,
                             end: Alignment.bottomCenter,
                             colors: [
-                              AppTheme.primary.withOpacity(0.7),
+                              AppTheme.primary.withValues(alpha: 0.7),
                               AppTheme.primary,
                             ],
                           ),
@@ -387,7 +387,7 @@ class StatsScreen extends StatelessWidget {
       padding: const EdgeInsets.all(AppTheme.spaceMd),
       decoration: BoxDecoration(
         color: isUnlocked
-            ? badge.color.withOpacity(0.1)
+            ? badge.color.withValues(alpha: 0.1)
             : (isDarkMode
                 ? AppTheme.darkSurface
                 : AppTheme.lightSurface),
@@ -440,7 +440,7 @@ class StatsScreen extends StatelessWidget {
               margin: const EdgeInsets.only(top: 8),
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               decoration: BoxDecoration(
-                color: Colors.grey.withOpacity(0.3),
+                color: Colors.grey.withValues(alpha: 0.3),
                 borderRadius: BorderRadius.circular(4),
               ),
               child: const Text(

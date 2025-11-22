@@ -146,7 +146,7 @@ class _SplashScreenState extends State<SplashScreen>
                   end: Alignment.bottomRight,
                   colors: [
                     AppTheme.primary,
-                    AppTheme.primary.withOpacity(0.8),
+                    AppTheme.primary.withValues(alpha: 0.8),
                   ],
                 ),
               ),
@@ -170,7 +170,7 @@ class _SplashScreenState extends State<SplashScreen>
                                 shape: BoxShape.circle,
                                 boxShadow: [
                                   BoxShadow(
-                                    color: Colors.black.withOpacity(0.15),
+                                    color: Colors.black.withValues(alpha: 0.15),
                                     blurRadius: 30,
                                     offset: const Offset(0, 10),
                                   ),
@@ -195,7 +195,7 @@ class _SplashScreenState extends State<SplashScreen>
                     AnimatedBuilder(
                       animation: _textController,
                       builder: (context, child) {
-                        return Transform.translate(
+                        return Transform.offset(
                           offset: Offset(0, _textSlideAnimation.value),
                           child: Opacity(
                             opacity: _textOpacityAnimation.value,
@@ -216,7 +216,7 @@ class _SplashScreenState extends State<SplashScreen>
                                   style: TextStyle(
                                     fontSize: 16,
                                     fontWeight: FontWeight.w500,
-                                    color: Colors.white.withOpacity(0.9),
+                                    color: Colors.white.withValues(alpha: 0.9),
                                     letterSpacing: 2.0,
                                   ),
                                 ),
@@ -225,7 +225,7 @@ class _SplashScreenState extends State<SplashScreen>
                                   '오늘도 화이팅!',
                                   style: TextStyle(
                                     fontSize: 14,
-                                    color: Colors.white.withOpacity(0.7),
+                                    color: Colors.white.withValues(alpha: 0.7),
                                   ),
                                 ),
                               ],

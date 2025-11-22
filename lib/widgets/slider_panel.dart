@@ -21,12 +21,12 @@ class SliderPanel extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 20),
             decoration: BoxDecoration(
               color: provider.isDarkMode
-                  ? Colors.black.withOpacity(0.95)
-                  : Colors.white.withOpacity(0.95),
+                  ? Colors.black.withValues(alpha: 0.95)
+                  : Colors.white.withValues(alpha: 0.95),
               borderRadius: BorderRadius.circular(20),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.15),
+                  color: Colors.black.withValues(alpha: 0.15),
                   blurRadius: 40,
                   offset: const Offset(0, 10),
                 ),
@@ -99,7 +99,7 @@ class _SliderGroup extends StatelessWidget {
                 activeTrackColor: const Color(0xFF764BA2),
                 inactiveTrackColor: const Color(0xFF667EEA),
                 thumbColor: Colors.white,
-                overlayColor: const Color(0xFF667EEA).withOpacity(0.3),
+                overlayColor: const Color(0xFF667EEA).withValues(alpha: 0.3),
                 trackHeight: 6,
                 thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 8),
               ),
