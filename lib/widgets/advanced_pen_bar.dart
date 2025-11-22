@@ -384,7 +384,7 @@ class _AdvancedPenBarState extends State<AdvancedPenBar>
                             HapticFeedback.selectionClick();
                           },
                           style: AppTheme.primaryButton.copyWith(
-                            minimumSize: MaterialStateProperty.all(
+                            minimumSize: WidgetStateProperty.all(
                               Size.fromHeight(DeviceHelper.getTouchTargetSize(context)),
                             ),
                           ),
