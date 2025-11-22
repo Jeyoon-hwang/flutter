@@ -26,6 +26,7 @@ import '../models/lecture_mode.dart';
 import '../models/study_stats.dart';
 import '../models/advanced_pen.dart';
 import '../models/performance_settings.dart';
+import '../models/study_timer.dart';
 
 enum DrawingMode { pen, eraser, select, shape, text, wrongAnswerClip }
 
@@ -129,6 +130,10 @@ class DrawingProvider extends ChangeNotifier {
   // Performance settings for optimization
   PerformanceSettings _performanceSettings = PerformanceSettings.balanced;
   PerformanceSettings get performanceSettings => _performanceSettings;
+
+  // Study timer manager (열품타 스타일)
+  final StudyTimerManager _studyTimerManager = StudyTimerManager();
+  StudyTimerManager get studyTimerManager => _studyTimerManager;
 
   // Shape drawing
   ShapeType2D _selectedShape2D = ShapeType2D.circle;
