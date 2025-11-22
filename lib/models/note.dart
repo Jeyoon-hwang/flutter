@@ -33,6 +33,12 @@ class Note {
   // PDF background (if any)
   String? pdfPath;
 
+  // Custom background image path (사진 배경)
+  String? backgroundImagePath;
+
+  // Background image opacity (0.0 ~ 1.0)
+  double backgroundImageOpacity;
+
   Note({
     required this.id,
     required this.title,
@@ -45,6 +51,8 @@ class Note {
     List<TextObject>? textObjects,
     this.audioPath,
     this.pdfPath,
+    this.backgroundImagePath,
+    this.backgroundImageOpacity = 1.0,
   })  : layers = layers ?? _createDefaultLayers(),
         textObjects = textObjects ?? [];
 
@@ -105,6 +113,8 @@ class Note {
     Color? backgroundColor,
     String? audioPath,
     String? pdfPath,
+    String? backgroundImagePath,
+    double? backgroundImageOpacity,
   }) {
     return Note(
       id: id,
@@ -118,6 +128,8 @@ class Note {
       textObjects: textObjects,
       audioPath: audioPath ?? this.audioPath,
       pdfPath: pdfPath ?? this.pdfPath,
+      backgroundImagePath: backgroundImagePath ?? this.backgroundImagePath,
+      backgroundImageOpacity: backgroundImageOpacity ?? this.backgroundImageOpacity,
     );
   }
 

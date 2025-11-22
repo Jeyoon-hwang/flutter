@@ -362,4 +362,108 @@ class NoteService extends ChangeNotifier {
 
     return jsonEncode(note.toJson());
   }
+
+  // ===== 배경 커스터마이징 메서드 =====
+
+  /// Set background image for current note
+  void setBackgroundImage(String imagePath, {double opacity = 1.0}) {
+    if (_currentNote == null) return;
+
+    _currentNote = _currentNote!.copyWith(
+      backgroundImagePath: imagePath,
+      backgroundImageOpacity: opacity,
+    );
+
+    final index = _allNotes.indexWhere((n) => n.id == _currentNote!.id);
+    if (index >= 0) {
+      _allNotes[index] = _currentNote!;
+    }
+
+    notifyListeners();
+
+    if (_autoSaveEnabled) {
+      _autoSaveNote(_currentNote!);
+    }
+  }
+
+  /// Remove background image from current note
+  void removeBackgroundImage() {
+    if (_currentNote == null) return;
+
+    _currentNote = _currentNote!.copyWith(
+      backgroundImagePath: null,
+      backgroundImageOpacity: 1.0,
+    );
+
+    final index = _allNotes.indexWhere((n) => n.id == _currentNote!.id);
+    if (index >= 0) {
+      _allNotes[index] = _currentNote!;
+    }
+
+    notifyListeners();
+
+    if (_autoSaveEnabled) {
+      _autoSaveNote(_currentNote!);
+    }
+  }
+
+  /// Set background image opacity
+  void setBackgroundImageOpacity(double opacity) {
+    if (_currentNote == null || _currentNote!.backgroundImagePath == null) return;
+
+    _currentNote = _currentNote!.copyWith(
+      backgroundImageOpacity: opacity.clamp(0.0, 1.0),
+    );
+
+    final index = _allNotes.indexWhere((n) => n.id == _currentNote!.id);
+    if (index >= 0) {
+      _allNotes[index] = _currentNote!;
+    }
+
+    notifyListeners();
+
+    if (_autoSaveEnabled) {
+      _autoSaveNote(_currentNote!);
+    }
+  }
+
+  /// Set template for current note
+  void setTemplate(NoteTemplate template) {
+    if (_currentNote == null) return;
+
+    _currentNote = _currentNote!.copyWith(
+      template: template,
+    );
+
+    final index = _allNotes.indexWhere((n) => n.id == _currentNote!.id);
+    if (index >= 0) {
+      _allNotes[index] = _currentNote!;
+    }
+
+    notifyListeners();
+
+    if (_autoSaveEnabled) {
+      _autoSaveNote(_currentNote!);
+    }
+  }
+
+  /// Set background color for current note
+  void setBackgroundColor(Color color) {
+    if (_currentNote == null) return;
+
+    _currentNote = _currentNote!.copyWith(
+      backgroundColor: color,
+    );
+
+    final index = _allNotes.indexWhere((n) => n.id == _currentNote!.id);
+    if (index >= 0) {
+      _allNotes[index] = _currentNote!;
+    }
+
+    notifyListeners();
+
+    if (_autoSaveEnabled) {
+      _autoSaveNote(_currentNote!);
+    }
+  }
 }
