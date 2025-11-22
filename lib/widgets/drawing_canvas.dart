@@ -206,6 +206,9 @@ class _DrawingCanvasState extends State<DrawingCanvas> {
                         (provider.isDarkMode ? const Color(0xFF1E1E1E) : Colors.white),
                     pages: provider.pageManager.pages,
                     currentPageIndex: provider.pageManager.currentPageIndex,
+                    enableGlowEffects: provider.performanceSettings.enableGlowEffects,
+                    enableGlitterEffects: provider.performanceSettings.enableGlitterEffects,
+                    enableShadows: provider.performanceSettings.enableShadows,
                   ),
                   child: Container(
                     width: double.infinity,
@@ -292,6 +295,9 @@ class DrawingPainter extends CustomPainter {
   final Color backgroundColor;
   final List<NotePage> pages;
   final int currentPageIndex;
+  final bool enableGlowEffects;
+  final bool enableGlitterEffects;
+  final bool enableShadows;
 
   DrawingPainter({
     required this.strokes,
@@ -307,6 +313,9 @@ class DrawingPainter extends CustomPainter {
     required this.backgroundColor,
     this.pages = const [],
     this.currentPageIndex = 0,
+    this.enableGlowEffects = true,
+    this.enableGlitterEffects = true,
+    this.enableShadows = true,
   });
 
   @override
@@ -382,9 +391,12 @@ class DrawingPainter extends CustomPainter {
       ..strokeWidth = 2.0
       ..style = PaintingStyle.stroke;
 
-    final shadowPaint = Paint()
-      ..color = Colors.black.withOpacity(0.1)
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 8);
+    // Only draw shadows if performance allows
+    final shadowPaint = enableShadows
+        ? (Paint()
+          ..color = Colors.black.withOpacity(0.1)
+          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 8))
+        : null;
 
     final currentPageHighlightPaint = Paint()
       ..color = isDarkMode
@@ -396,14 +408,16 @@ class DrawingPainter extends CustomPainter {
       final page = pages[i];
       final bounds = page.bounds;
 
-      // Draw page shadow (behind page)
-      canvas.drawRRect(
-        RRect.fromRectAndRadius(
-          bounds.shift(const Offset(4, 4)),
-          const Radius.circular(8),
-        ),
-        shadowPaint,
-      );
+      // Draw page shadow (behind page) if enabled
+      if (shadowPaint != null) {
+        canvas.drawRRect(
+          RRect.fromRectAndRadius(
+            bounds.shift(const Offset(4, 4)),
+            const Radius.circular(8),
+          ),
+          shadowPaint,
+        );
+      }
 
       // Highlight current page
       if (i == currentPageIndex) {
@@ -456,8 +470,8 @@ class DrawingPainter extends CustomPainter {
       ..strokeJoin = StrokeJoin.round
       ..style = PaintingStyle.stroke;
 
-    // Apply glow effect if enabled
-    if (stroke.enableGlow && !stroke.isEraser) {
+    // Apply glow effect if enabled (performance setting check)
+    if (enableGlowEffects && stroke.enableGlow && !stroke.isEraser) {
       _drawGlowEffect(canvas, stroke);
     }
 
@@ -504,8 +518,8 @@ class DrawingPainter extends CustomPainter {
       paint.strokeWidth = adjustedWidth;
       canvas.drawLine(point1.offset, point2.offset, paint);
 
-      // Draw glitter particles
-      if (stroke.glitterDensity != null && stroke.glitterDensity! > 0 && !stroke.isEraser) {
+      // Draw glitter particles (performance setting check)
+      if (enableGlitterEffects && stroke.glitterDensity != null && stroke.glitterDensity! > 0 && !stroke.isEraser) {
         _drawGlitterParticles(canvas, point1.offset, point2.offset, stroke);
       }
     }

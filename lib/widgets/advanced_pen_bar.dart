@@ -4,10 +4,12 @@ import 'package:provider/provider.dart';
 import '../models/advanced_pen.dart';
 import '../providers/drawing_provider.dart';
 import '../utils/app_theme.dart';
+import '../utils/device_helper.dart';
 import 'pen_customizer.dart';
 
 /// Advanced pen bar with customization support
 /// "Gong-stagram" aesthetic: minimal, beautiful, functional
+/// Responsive design for TV and large screens
 class AdvancedPenBar extends StatefulWidget {
   const AdvancedPenBar({Key? key}) : super(key: key);
 
@@ -45,42 +47,49 @@ class _AdvancedPenBarState extends State<AdvancedPenBar>
       builder: (context, provider, child) {
         final advancedPens = provider.advancedPens;
         final isDarkMode = provider.isDarkMode;
+        final scaleFactor = DeviceHelper.getScaleFactor(context);
+        final isLargeScreen = DeviceHelper.isLargeScreen(context);
 
         return AnimatedContainer(
-          duration: AppTheme.animationNormal,
+          duration: provider.performanceSettings.enableAnimations
+              ? AppTheme.animationNormal
+              : Duration.zero,
           curve: AppTheme.animationCurve,
           padding: EdgeInsets.symmetric(
-            horizontal: provider.focusMode ? 0 : AppTheme.spaceMd,
-            vertical: AppTheme.spaceSm,
+            horizontal: provider.focusMode ? 0 : AppTheme.spaceMd * scaleFactor,
+            vertical: AppTheme.spaceSm * scaleFactor,
           ),
           decoration: BoxDecoration(
             color: isDarkMode
                 ? AppTheme.darkSurface.withOpacity(0.95)
                 : Colors.white.withOpacity(0.95),
-            borderRadius: BorderRadius.circular(AppTheme.radiusLg),
-            boxShadow: AppTheme.shadowMd(isDarkMode),
+            borderRadius: BorderRadius.circular(AppTheme.radiusLg * scaleFactor),
+            boxShadow: provider.performanceSettings.enableShadows
+                ? AppTheme.shadowMd(isDarkMode)
+                : null,
             border: Border.all(
               color: isDarkMode ? AppTheme.darkBorder : AppTheme.lightBorder,
-              width: 1.5,
+              width: 1.5 * scaleFactor,
             ),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // Advanced pens
-              ...advancedPens.take(5).map((pen) => _buildPenButton(
+              // Advanced pens - show more on large screens
+              ...advancedPens.take(isLargeScreen ? 8 : 5).map((pen) => _buildPenButton(
                     context,
                     provider,
                     pen,
                     isSelected: pen.id == _selectedPenId,
                     isDarkMode: isDarkMode,
+                    scaleFactor: scaleFactor,
                   )),
 
               // Divider
               Container(
-                width: 1.5,
-                height: 32,
-                margin: const EdgeInsets.symmetric(horizontal: AppTheme.spaceSm),
+                width: 1.5 * scaleFactor,
+                height: 32 * scaleFactor,
+                margin: EdgeInsets.symmetric(horizontal: AppTheme.spaceSm * scaleFactor),
                 color: isDarkMode ? AppTheme.darkBorder : AppTheme.lightBorder,
               ),
 
@@ -96,6 +105,7 @@ class _AdvancedPenBarState extends State<AdvancedPenBar>
                   provider.setMode(DrawingMode.eraser);
                 },
                 isDarkMode: isDarkMode,
+                scaleFactor: scaleFactor,
               ),
 
               _buildToolButton(
@@ -112,6 +122,7 @@ class _AdvancedPenBarState extends State<AdvancedPenBar>
                     : null,
                 isDarkMode: isDarkMode,
                 isEnabled: provider.canUndo,
+                scaleFactor: scaleFactor,
               ),
 
               _buildToolButton(
@@ -128,6 +139,7 @@ class _AdvancedPenBarState extends State<AdvancedPenBar>
                     : null,
                 isDarkMode: isDarkMode,
                 isEnabled: provider.canRedo,
+                scaleFactor: scaleFactor,
               ),
 
               // Add pen button
@@ -139,6 +151,7 @@ class _AdvancedPenBarState extends State<AdvancedPenBar>
                 isSelected: false,
                 onTap: () => _showPenLibrary(context, provider),
                 isDarkMode: isDarkMode,
+                scaleFactor: scaleFactor,
               ),
             ],
           ),
@@ -153,7 +166,10 @@ class _AdvancedPenBarState extends State<AdvancedPenBar>
     AdvancedPen pen, {
     required bool isSelected,
     required bool isDarkMode,
+    double scaleFactor = 1.0,
   }) {
+    final touchTargetSize = DeviceHelper.getTouchTargetSize(context);
+
     return Tooltip(
       message: '${pen.name}\n${pen.getTypeName()}',
       child: GestureDetector(
@@ -161,69 +177,78 @@ class _AdvancedPenBarState extends State<AdvancedPenBar>
           setState(() => _selectedPenId = pen.id);
           provider.selectAdvancedPen(pen.id);
           HapticFeedback.lightImpact();
-          _animationController.forward().then((_) {
-            _animationController.reverse();
-          });
+          if (provider.performanceSettings.enableAnimations) {
+            _animationController.forward().then((_) {
+              _animationController.reverse();
+            });
+          }
         },
         onLongPress: () {
           HapticFeedback.heavyImpact();
           _showPenCustomizer(context, provider, pen);
         },
-        child: ScaleTransition(
-          scale: isSelected ? _scaleAnimation : const AlwaysStoppedAnimation(1.0),
-          child: AnimatedContainer(
-            duration: AppTheme.animationFast,
-            curve: AppTheme.animationCurve,
-            margin: const EdgeInsets.symmetric(horizontal: 4),
-            padding: const EdgeInsets.all(8),
+        child: provider.performanceSettings.enableAnimations
+            ? ScaleTransition(
+                scale: isSelected ? _scaleAnimation : const AlwaysStoppedAnimation(1.0),
+                child: _buildPenButtonContent(pen, isSelected, scaleFactor, touchTargetSize),
+              )
+            : _buildPenButtonContent(pen, isSelected, scaleFactor, touchTargetSize),
+      ),
+    );
+  }
+
+  Widget _buildPenButtonContent(AdvancedPen pen, bool isSelected, double scaleFactor, double touchTargetSize) {
+    return AnimatedContainer(
+      duration: AppTheme.animationFast,
+      curve: AppTheme.animationCurve,
+      margin: EdgeInsets.symmetric(horizontal: 4 * scaleFactor),
+      padding: EdgeInsets.all(8 * scaleFactor),
+      constraints: BoxConstraints(minWidth: touchTargetSize, minHeight: touchTargetSize),
+      decoration: BoxDecoration(
+        color: isSelected
+            ? pen.color.withOpacity(0.2)
+            : Colors.transparent,
+        borderRadius: BorderRadius.circular(AppTheme.radiusSm * scaleFactor),
+        border: isSelected
+            ? Border.all(color: pen.color, width: 2 * scaleFactor)
+            : null,
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Pen icon with glow effect for neon
+          Stack(
+            alignment: Alignment.center,
+            children: [
+              if (pen.enableGlow)
+                Icon(
+                  pen.getIcon(),
+                  color: pen.color.withOpacity(0.5),
+                  size: 28 * scaleFactor,
+                ),
+              Icon(
+                pen.getIcon(),
+                color: pen.color,
+                size: 24 * scaleFactor,
+              ),
+            ],
+          ),
+          SizedBox(height: 2 * scaleFactor),
+          // Width indicator with gradient for rainbow
+          Container(
+            width: pen.width.clamp(2.0, 16.0) * scaleFactor,
+            height: 3 * scaleFactor,
             decoration: BoxDecoration(
-              color: isSelected
-                  ? pen.color.withOpacity(0.2)
-                  : Colors.transparent,
-              borderRadius: BorderRadius.circular(AppTheme.radiusSm),
-              border: isSelected
-                  ? Border.all(color: pen.color, width: 2)
+              gradient: pen.gradientColors != null
+                  ? LinearGradient(colors: pen.gradientColors!)
                   : null,
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // Pen icon with glow effect for neon
-                Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    if (pen.enableGlow)
-                      Icon(
-                        pen.getIcon(),
-                        color: pen.color.withOpacity(0.5),
-                        size: 28,
-                      ),
-                    Icon(
-                      pen.getIcon(),
-                      color: pen.color,
-                      size: 24,
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 2),
-                // Width indicator with gradient for rainbow
-                Container(
-                  width: pen.width.clamp(2.0, 16.0),
-                  height: 3,
-                  decoration: BoxDecoration(
-                    gradient: pen.gradientColors != null
-                        ? LinearGradient(colors: pen.gradientColors!)
-                        : null,
-                    color: pen.gradientColors == null
-                        ? pen.color.withOpacity(pen.opacity)
-                        : null,
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
-              ],
+              color: pen.gradientColors == null
+                  ? pen.color.withOpacity(pen.opacity)
+                  : null,
+              borderRadius: BorderRadius.circular(2 * scaleFactor),
             ),
           ),
-        ),
+        ],
       ),
     );
   }
@@ -237,7 +262,10 @@ class _AdvancedPenBarState extends State<AdvancedPenBar>
     required VoidCallback? onTap,
     required bool isDarkMode,
     bool isEnabled = true,
+    double scaleFactor = 1.0,
   }) {
+    final touchTargetSize = DeviceHelper.getTouchTargetSize(context);
+
     return Tooltip(
       message: label,
       child: GestureDetector(
@@ -245,15 +273,16 @@ class _AdvancedPenBarState extends State<AdvancedPenBar>
         child: AnimatedContainer(
           duration: AppTheme.animationFast,
           curve: AppTheme.animationCurve,
-          margin: const EdgeInsets.symmetric(horizontal: 4),
-          padding: const EdgeInsets.all(8),
+          margin: EdgeInsets.symmetric(horizontal: 4 * scaleFactor),
+          padding: EdgeInsets.all(8 * scaleFactor),
+          constraints: BoxConstraints(minWidth: touchTargetSize, minHeight: touchTargetSize),
           decoration: BoxDecoration(
             color: isSelected
                 ? AppTheme.primary.withOpacity(0.2)
                 : Colors.transparent,
-            borderRadius: BorderRadius.circular(AppTheme.radiusSm),
+            borderRadius: BorderRadius.circular(AppTheme.radiusSm * scaleFactor),
             border: isSelected
-                ? Border.all(color: AppTheme.primary, width: 2)
+                ? Border.all(color: AppTheme.primary, width: 2 * scaleFactor)
                 : null,
           ),
           child: Icon(
@@ -263,7 +292,7 @@ class _AdvancedPenBarState extends State<AdvancedPenBar>
                 : (isDarkMode
                     ? AppTheme.darkTextSecondary
                     : AppTheme.lightTextSecondary),
-            size: 24,
+            size: 24 * scaleFactor,
           ),
         ),
       ),
@@ -295,7 +324,7 @@ class _AdvancedPenBarState extends State<AdvancedPenBar>
           child: SingleChildScrollView(
             controller: scrollController,
             child: Padding(
-              padding: const EdgeInsets.all(AppTheme.spaceLg),
+              padding: EdgeInsets.all(AppTheme.spaceLg * DeviceHelper.getScaleFactor(context)),
               child: Column(
                 children: [
                   // Drag handle
@@ -341,6 +370,7 @@ class _AdvancedPenBarState extends State<AdvancedPenBar>
                           style: ElevatedButton.styleFrom(
                             backgroundColor: AppTheme.error,
                             foregroundColor: Colors.white,
+                            minimumSize: Size.fromHeight(DeviceHelper.getTouchTargetSize(context)),
                           ),
                           child: const Text('삭제'),
                         ),
@@ -353,7 +383,11 @@ class _AdvancedPenBarState extends State<AdvancedPenBar>
                             Navigator.pop(context);
                             HapticFeedback.selectionClick();
                           },
-                          style: AppTheme.primaryButton,
+                          style: AppTheme.primaryButton.copyWith(
+                            minimumSize: MaterialStateProperty.all(
+                              Size.fromHeight(DeviceHelper.getTouchTargetSize(context)),
+                            ),
+                          ),
                           child: const Text('완료'),
                         ),
                       ),
@@ -370,11 +404,12 @@ class _AdvancedPenBarState extends State<AdvancedPenBar>
 
   void _showPenLibrary(BuildContext context, DrawingProvider provider) {
     HapticFeedback.mediumImpact();
+    final scaleFactor = DeviceHelper.getScaleFactor(context);
 
     showModalBottomSheet(
       context: context,
       builder: (context) => Container(
-        padding: const EdgeInsets.all(AppTheme.spaceLg),
+        padding: EdgeInsets.all(AppTheme.spaceLg * scaleFactor),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -383,15 +418,15 @@ class _AdvancedPenBarState extends State<AdvancedPenBar>
               '펜 라이브러리',
               style: AppTheme.heading2(provider.isDarkMode),
             ),
-            const SizedBox(height: AppTheme.spaceMd),
+            SizedBox(height: AppTheme.spaceMd * scaleFactor),
             Text(
               '추가할 펜 종류를 선택하세요',
               style: AppTheme.bodyMedium(provider.isDarkMode),
             ),
-            const SizedBox(height: AppTheme.spaceLg),
+            SizedBox(height: AppTheme.spaceLg * scaleFactor),
             Wrap(
-              spacing: AppTheme.spaceMd,
-              runSpacing: AppTheme.spaceMd,
+              spacing: AppTheme.spaceMd * scaleFactor,
+              runSpacing: AppTheme.spaceMd * scaleFactor,
               children: PenType.values.map((type) {
                 final testPen = AdvancedPen.fromType(
                   id: 'pen_${DateTime.now().millisecondsSinceEpoch}',
@@ -407,13 +442,13 @@ class _AdvancedPenBarState extends State<AdvancedPenBar>
                     HapticFeedback.lightImpact();
                   },
                   child: Container(
-                    width: 100,
-                    padding: const EdgeInsets.all(AppTheme.spaceMd),
+                    width: 100 * scaleFactor,
+                    padding: EdgeInsets.all(AppTheme.spaceMd * scaleFactor),
                     decoration: BoxDecoration(
                       color: provider.isDarkMode
                           ? AppTheme.darkSurface
                           : AppTheme.lightSurface,
-                      borderRadius: BorderRadius.circular(AppTheme.radiusMd),
+                      borderRadius: BorderRadius.circular(AppTheme.radiusMd * scaleFactor),
                       border: Border.all(
                         color: provider.isDarkMode
                             ? AppTheme.darkBorder
@@ -422,11 +457,11 @@ class _AdvancedPenBarState extends State<AdvancedPenBar>
                     ),
                     child: Column(
                       children: [
-                        Icon(testPen.getIcon(), size: 32),
-                        const SizedBox(height: 8),
+                        Icon(testPen.getIcon(), size: 32 * scaleFactor),
+                        SizedBox(height: 8 * scaleFactor),
                         Text(
                           testPen.getTypeName(),
-                          style: const TextStyle(fontSize: 12),
+                          style: TextStyle(fontSize: 12 * DeviceHelper.getFontScale(context)),
                           textAlign: TextAlign.center,
                         ),
                       ],

@@ -10,8 +10,27 @@ import 'font_settings_screen.dart';
 
 /// Home dashboard with planner-centric design
 /// "Gong-stagram" aesthetic: minimal, clean, motivating
-class HomeDashboard extends StatelessWidget {
+class HomeDashboard extends StatefulWidget {
   const HomeDashboard({Key? key}) : super(key: key);
+
+  @override
+  State<HomeDashboard> createState() => _HomeDashboardState();
+}
+
+class _HomeDashboardState extends State<HomeDashboard> {
+  bool _performanceInitialized = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    // Auto-detect performance settings once
+    if (!_performanceInitialized) {
+      final provider = Provider.of<DrawingProvider>(context, listen: false);
+      provider.autoDetectPerformanceSettings(context);
+      _performanceInitialized = true;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {

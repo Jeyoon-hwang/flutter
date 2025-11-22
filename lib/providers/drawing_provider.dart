@@ -25,6 +25,7 @@ import '../models/planner.dart';
 import '../models/lecture_mode.dart';
 import '../models/study_stats.dart';
 import '../models/advanced_pen.dart';
+import '../models/performance_settings.dart';
 
 enum DrawingMode { pen, eraser, select, shape, text, wrongAnswerClip }
 
@@ -124,6 +125,10 @@ class DrawingProvider extends ChangeNotifier {
 
   // Hybrid input detector (lazy initialization)
   HybridInputDetector? _hybridInputDetector;
+
+  // Performance settings for optimization
+  PerformanceSettings _performanceSettings = PerformanceSettings.balanced;
+  PerformanceSettings get performanceSettings => _performanceSettings;
 
   // Shape drawing
   ShapeType2D _selectedShape2D = ShapeType2D.circle;
@@ -383,6 +388,37 @@ class DrawingProvider extends ChangeNotifier {
 
   void toggleFocusMode() {
     _focusMode = !_focusMode;
+    notifyListeners();
+  }
+
+  /// Set performance settings based on device capability
+  void setPerformanceSettings(PerformanceSettings settings) {
+    _performanceSettings = settings;
+    notifyListeners();
+  }
+
+  /// Auto-detect and set appropriate performance settings
+  void autoDetectPerformanceSettings(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final devicePixelRatio = MediaQuery.of(context).devicePixelRatio;
+
+    // TV/Desktop - High quality
+    if (screenWidth > 1200) {
+      _performanceSettings = PerformanceSettings.tv;
+    }
+    // Tablet - Balanced
+    else if (screenWidth > 600) {
+      _performanceSettings = PerformanceSettings.balanced;
+    }
+    // Phone with high DPI - Quality
+    else if (devicePixelRatio > 2.5) {
+      _performanceSettings = PerformanceSettings.quality;
+    }
+    // Phone with low DPI - Performance
+    else {
+      _performanceSettings = PerformanceSettings.highPerformance;
+    }
+
     notifyListeners();
   }
 
