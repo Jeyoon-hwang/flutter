@@ -5,6 +5,8 @@ import '../utils/app_theme.dart';
 import '../models/planner.dart';
 import 'canvas_screen.dart';
 import 'notes_list_screen.dart';
+import 'stats_screen.dart';
+import 'font_settings_screen.dart';
 
 /// Home dashboard with planner-centric design
 /// "Gong-stagram" aesthetic: minimal, clean, motivating
@@ -114,51 +116,64 @@ class HomeDashboard extends StatelessWidget {
   }
 
   Widget _buildStudyStatsCard(DrawingProvider provider, bool isDarkMode) {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: AppTheme.spaceLg),
-      padding: const EdgeInsets.all(AppTheme.spaceLg),
-      decoration: BoxDecoration(
-        gradient: AppTheme.primaryGradient,
-        borderRadius: BorderRadius.circular(AppTheme.radiusLg),
-        boxShadow: AppTheme.shadowMd(isDarkMode),
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: _buildStatItem(
-              '오늘 순공',
-              '2h 34m',
-              Icons.timer_outlined,
-              Colors.white,
+    final todayStats = provider.studyStatsManager.getTodayStats();
+    final weeklyGoal = provider.studyStatsManager.getWeeklyGoalAchievement();
+    final streak = provider.studyStatsManager.getStudyStreak();
+
+    return GestureDetector(
+      onTap: () {
+        // Navigate to detailed stats screen
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => const StatsScreen()),
+        );
+      },
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: AppTheme.spaceLg),
+        padding: const EdgeInsets.all(AppTheme.spaceLg),
+        decoration: BoxDecoration(
+          gradient: AppTheme.primaryGradient,
+          borderRadius: BorderRadius.circular(AppTheme.radiusLg),
+          boxShadow: AppTheme.shadowMd(isDarkMode),
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: _buildStatItem(
+                '오늘 순공',
+                todayStats.formattedDuration,
+                Icons.timer_outlined,
+                Colors.white,
+              ),
             ),
-          ),
-          Container(
-            width: 1,
-            height: 40,
-            color: Colors.white.withOpacity(0.3),
-          ),
-          Expanded(
-            child: _buildStatItem(
-              '이번 주 목표',
-              '67%',
-              Icons.track_changes,
-              Colors.white,
+            Container(
+              width: 1,
+              height: 40,
+              color: Colors.white.withOpacity(0.3),
             ),
-          ),
-          Container(
-            width: 1,
-            height: 40,
-            color: Colors.white.withOpacity(0.3),
-          ),
-          Expanded(
-            child: _buildStatItem(
-              '연속 학습',
-              '5일',
-              Icons.local_fire_department,
-              Colors.white,
+            Expanded(
+              child: _buildStatItem(
+                '이번 주 목표',
+                '${weeklyGoal.toStringAsFixed(0)}%',
+                Icons.track_changes,
+                Colors.white,
+              ),
             ),
-          ),
-        ],
+            Container(
+              width: 1,
+              height: 40,
+              color: Colors.white.withOpacity(0.3),
+            ),
+            Expanded(
+              child: _buildStatItem(
+                '연속 학습',
+                '$streak일',
+                Icons.local_fire_department,
+                Colors.white,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -346,6 +361,12 @@ class HomeDashboard extends StatelessWidget {
               context,
               MaterialPageRoute(builder: (_) => const NotesListScreen()),
             );
+          } else if (index == 3) {
+            // Navigate to stats
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const StatsScreen()),
+            );
           }
         },
         items: const [
@@ -396,8 +417,30 @@ class HomeDashboard extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('테마 선택', style: AppTheme.heading2(provider.isDarkMode)),
+            Text('설정', style: AppTheme.heading2(provider.isDarkMode)),
             const SizedBox(height: AppTheme.spaceLg),
+
+            // Font settings button
+            ListTile(
+              leading: const Icon(Icons.font_download),
+              title: const Text('폰트 설정'),
+              subtitle: Text(
+                provider.settings.customFontFamily ?? '기본 폰트 (SF Pro)',
+                style: const TextStyle(fontSize: 12),
+              ),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const FontSettingsScreen()),
+                );
+              },
+            ),
+
+            const Divider(),
+
+            Text('테마 선택', style: AppTheme.heading3(provider.isDarkMode)),
+            const SizedBox(height: AppTheme.spaceMd),
             Wrap(
               spacing: AppTheme.spaceMd,
               runSpacing: AppTheme.spaceMd,

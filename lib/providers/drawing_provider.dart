@@ -19,9 +19,11 @@ import '../services/note_service.dart';
 import '../services/version_manager.dart';
 import '../services/wrong_answer_service.dart';
 import '../services/hybrid_input_detector.dart';
+import '../services/app_state_service.dart';
 import '../models/practice_session.dart';
 import '../models/planner.dart';
 import '../models/lecture_mode.dart';
+import '../models/study_stats.dart';
 
 enum DrawingMode { pen, eraser, select, shape, text, wrongAnswerClip }
 
@@ -99,6 +101,14 @@ class DrawingProvider extends ChangeNotifier {
   final PlannerManager _plannerManager = PlannerManager();
   PlannerManager get plannerManager => _plannerManager;
 
+  // Study stats manager
+  final StudyStatsManager _studyStatsManager = StudyStatsManager();
+  StudyStatsManager get studyStatsManager => _studyStatsManager;
+
+  // App state service for persistence
+  final AppStateService _appStateService = AppStateService();
+  AppStateService get appStateService => _appStateService;
+
   // Lecture mode (split view optimization)
   bool _isLectureMode = false;
   final List<LectureScreenshot> _lectureScreenshots = [];
@@ -120,17 +130,92 @@ class DrawingProvider extends ChangeNotifier {
   // Constructor - Initialize default layers and load notes
   DrawingProvider() {
     _initializeLayers();
-    _initializeNoteService();
+    _initializeApp();
+  }
+
+  /// Initialize app - load saved state and notes
+  Future<void> _initializeApp() async {
+    // Increment launch count
+    await _appStateService.incrementLaunchCount();
+
+    // Load saved settings
+    await _loadSavedSettings();
+
+    // Initialize note service
+    await _initializeNoteService();
+
+    // Restore last opened note if exists
+    await _restoreLastSession();
+  }
+
+  /// Load saved settings from persistence
+  Future<void> _loadSavedSettings() async {
+    try {
+      // Load theme
+      final savedTheme = await _appStateService.getThemeType();
+      if (savedTheme != null) {
+        final themeType = AppThemeType.values.firstWhere(
+          (t) => t.name == savedTheme,
+          orElse: () => AppThemeType.ivory,
+        );
+        _settings = _settings.copyWith(themeType: themeType);
+        _isDarkMode = themeType == AppThemeType.darkMode;
+      }
+
+      // Load custom font
+      final savedFont = await _appStateService.getCustomFont();
+      if (savedFont != null) {
+        _settings = _settings.copyWith(customFontFamily: savedFont);
+      }
+
+      // Load favorite pens
+      final savedPens = await _appStateService.getFavoritePens();
+      if (savedPens != null && savedPens.isNotEmpty) {
+        // Convert to FavoritePen objects
+        // (Implementation depends on FavoritePen.fromJson)
+      }
+    } catch (e) {
+      print('Error loading saved settings: $e');
+    }
   }
 
   Future<void> _initializeNoteService() async {
     await _noteService.loadNotesFromDisk();
 
-    // If no notes exist or no current note, create a quick note
+    // If no notes exist or no current note, we'll create one later if needed
+  }
+
+  /// Restore last opened note and page
+  Future<void> _restoreLastSession() async {
+    try {
+      final lastNote = await _appStateService.getLastOpenedNote();
+
+      if (lastNote != null) {
+        final noteId = lastNote['noteId'] as String;
+        final pageIndex = lastNote['pageIndex'] as int;
+
+        // Try to load the note
+        final note = _noteService.notes.firstWhere(
+          (n) => n.id == noteId,
+          orElse: () => _noteService.currentNote!,
+        );
+
+        if (note != null) {
+          _loadNoteData(note);
+          _pageManager.goToPage(pageIndex);
+          print('Restored last session: note=$noteId, page=$pageIndex');
+          notifyListeners();
+          return;
+        }
+      }
+    } catch (e) {
+      print('Error restoring last session: $e');
+    }
+
+    // Fallback: create quick note if no current note
     if (_noteService.currentNote == null) {
       createQuickNote();
     } else {
-      // Load current note's layers and data
       _loadNoteData(_noteService.currentNote!);
     }
   }
@@ -1520,6 +1605,9 @@ class DrawingProvider extends ChangeNotifier {
     // Update dark mode based on theme
     _isDarkMode = themeType == AppThemeType.darkMode;
 
+    // Save to persistence
+    _appStateService.saveThemeType(themeType.name);
+
     notifyListeners();
   }
 
@@ -1531,6 +1619,10 @@ class DrawingProvider extends ChangeNotifier {
   /// Set custom font family
   void setCustomFont(String? fontFamily) {
     _settings = _settings.copyWith(customFontFamily: fontFamily);
+
+    // Save to persistence
+    _appStateService.saveCustomFont(fontFamily);
+
     notifyListeners();
   }
 
@@ -1570,6 +1662,9 @@ class DrawingProvider extends ChangeNotifier {
     _noteService.switchToNote(noteId);
     if (_noteService.currentNote != null) {
       _loadNoteData(_noteService.currentNote!);
+
+      // Save as last opened note
+      _saveCurrentSession();
     }
   }
 
@@ -1596,7 +1691,21 @@ class DrawingProvider extends ChangeNotifier {
   /// Navigate to specific page
   void goToPage(int pageIndex) {
     _pageManager.goToPage(pageIndex);
+
+    // Save current session
+    _saveCurrentSession();
+
     notifyListeners();
+  }
+
+  /// Save current session (note + page)
+  void _saveCurrentSession() {
+    if (_noteService.currentNote != null) {
+      _appStateService.saveLastOpenedNote(
+        noteId: _noteService.currentNote!.id,
+        pageIndex: _pageManager.currentPageIndex,
+      );
+    }
   }
 
   /// Add a new page
