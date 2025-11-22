@@ -301,17 +301,17 @@ class DrawingProvider extends ChangeNotifier {
       app_layer.Layer(
         id: 'background_0',
         name: '배경',
-        type: LayerType.background,
+        type: app_layer.LayerType.background,
       ),
       app_layer.Layer(
         id: 'writing_1',
         name: '필기',
-        type: LayerType.writing,
+        type: app_layer.LayerType.writing,
       ),
       app_layer.Layer(
         id: 'decoration_2',
         name: '꾸미기',
-        type: LayerType.decoration,
+        type: app_layer.LayerType.decoration,
       ),
     ]);
     _currentLayerIndex = 1; // 필기 레이어가 기본
@@ -523,11 +523,11 @@ class DrawingProvider extends ChangeNotifier {
     }
   }
 
-  void addLayer(LayerType type) {
+  void addLayer(app_layer.LayerType type) {
     final newId = '${type.name}_${DateTime.now().millisecondsSinceEpoch}';
     final newLayer = app_layer.Layer(
       id: newId,
-      name: '${type == LayerType.background ? '배경' : type == LayerType.writing ? '필기' : '꾸미기'} ${_layers.length + 1}',
+      name: '${type == app_layer.LayerType.background ? '배경' : type == app_layer.LayerType.writing ? '필기' : '꾸미기'} ${_layers.length + 1}',
       type: type,
     );
     _layers.add(newLayer);
@@ -561,7 +561,7 @@ class DrawingProvider extends ChangeNotifier {
 
   /// Find the first layer of a specific type
   /// Returns the layer index, or -1 if not found
-  int _findLayerByType(LayerType type) {
+  int _findLayerByType(app_layer.LayerType type) {
     for (int i = 0; i < _layers.length; i++) {
       if (_layers[i].type == type) {
         return i;
@@ -572,7 +572,7 @@ class DrawingProvider extends ChangeNotifier {
 
   /// Automatically switch to the appropriate layer based on content type
   /// This is the core of intelligent layer management
-  void _autoSelectLayerForContent(LayerType contentType) {
+  void _autoSelectLayerForContent(app_layer.LayerType contentType) {
     // Skip if auto layer management is disabled
     if (!_settings.autoLayerManagement) return;
 
@@ -595,17 +595,17 @@ class DrawingProvider extends ChangeNotifier {
 
   /// Prepare layer for handwriting (pen/stylus input)
   void _prepareForHandwriting() {
-    _autoSelectLayerForContent(LayerType.writing);
+    _autoSelectLayerForContent(app_layer.LayerType.writing);
   }
 
   /// Prepare layer for decoration (shapes, stickers, images)
   void _prepareForDecoration() {
-    _autoSelectLayerForContent(LayerType.decoration);
+    _autoSelectLayerForContent(app_layer.LayerType.decoration);
   }
 
   /// Prepare layer for background content (PDFs, background images)
   void _prepareForBackground() {
-    _autoSelectLayerForContent(LayerType.background);
+    _autoSelectLayerForContent(app_layer.LayerType.background);
   }
 
   void deleteLayer(int index) {

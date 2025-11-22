@@ -79,16 +79,16 @@ class TodayStudyCard extends StatelessWidget {
                       child: _buildStatItem(
                         icon: Icons.timer_outlined,
                         label: '공부 시간',
-                        value: _formatDuration(todayStats.totalStudyTime),
+                        value: _formatDuration(todayStats.studyDuration),
                         index: 0,
                       ),
                     ),
                     const SizedBox(width: AppTheme.spaceMd),
                     Expanded(
                       child: _buildStatItem(
-                        icon: Icons.note_outlined,
-                        label: '작성 노트',
-                        value: '${todayStats.notesCreated}개',
+                        icon: Icons.edit_outlined,
+                        label: '푼 문제',
+                        value: '${todayStats.problemsSolved}개',
                         index: 1,
                       ),
                     ),
@@ -97,7 +97,7 @@ class TodayStudyCard extends StatelessWidget {
                       child: _buildStatItem(
                         icon: Icons.check_circle_outline,
                         label: '완료 계획',
-                        value: '${todayStats.goalsCompleted}개',
+                        value: '${todayStats.completedTasks.length}개',
                         index: 2,
                       ),
                     ),
@@ -125,7 +125,7 @@ class TodayStudyCard extends StatelessWidget {
                         const SizedBox(width: 8),
                         Expanded(
                           child: Text(
-                            _getMotivationMessage(todayStats.totalStudyTime),
+                            _getMotivationMessage(todayStats.studyDuration),
                             style: TextStyle(
                               fontSize: 13,
                               color: Colors.white.withValues(alpha: 0.95),
