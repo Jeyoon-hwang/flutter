@@ -67,6 +67,18 @@ class _FloatingToolbarState extends State<FloatingToolbar> {
         final verticalPadding = (isTablet ? 8.0 : 6.0) * sizeMultiplier;
         final colorButtonSize = (isTablet ? 28.0 : 24.0) * sizeMultiplier;
 
+        // Get page bounds for constraining toolbar position
+        final currentPage = provider.pageManager.currentPage;
+        final pageBounds = currentPage.bounds;
+
+        // Use paper bounds for clamping in tablet mode with defined page sizes
+        final usePageBounds = isTablet && currentPage.size.index < 4; // Not infinite
+        final margin = 100.0; // Toolbar margin from edges
+        final minX = usePageBounds ? pageBounds.left + margin : margin;
+        final maxX = usePageBounds ? pageBounds.right - margin : screenSize.width - margin;
+        final minY = usePageBounds ? pageBounds.top + 50.0 : 50.0;
+        final maxY = usePageBounds ? pageBounds.bottom - 150.0 : screenSize.height - 150.0;
+
         return Stack(
           children: [
             // Main toolbar
@@ -78,8 +90,8 @@ class _FloatingToolbarState extends State<FloatingToolbar> {
                 onPanUpdate: (details) {
                   setState(() {
                     _position = Offset(
-                      (_position.dx + details.delta.dx).clamp(100.0, screenSize.width - 100),
-                      (_position.dy + details.delta.dy).clamp(50.0, screenSize.height - 150),
+                      (_position.dx + details.delta.dx).clamp(minX, maxX),
+                      (_position.dy + details.delta.dy).clamp(minY, maxY),
                     );
                   });
                 },
