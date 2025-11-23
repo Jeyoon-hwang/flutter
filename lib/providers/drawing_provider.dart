@@ -797,13 +797,17 @@ class DrawingProvider extends ChangeNotifier {
 
     // Palm rejection: ONLY reject touch/finger input when palmRejection is enabled
     // ALWAYS allow stylus pen input (including inverted stylus)
+    // CRITICAL: Never reject stylus input!
     if (_settings.palmRejection &&
         deviceKind == PointerDeviceKind.touch &&
         !isStylusInput &&
         _mode == DrawingMode.pen) {
-      debugPrint('🚫 Touch input rejected by palm rejection');
+      debugPrint('🚫 Touch input rejected by palm rejection (deviceKind: $deviceKind, isStylusInput: $isStylusInput, mode: $_mode)');
       return;
     }
+
+    // Additional debug logging
+    debugPrint('✅ Drawing started: mode=$_mode, stylus=$isStylusInput, pressure=$pressure, layer=${_currentLayerIndex}/${_layers.length}');
 
     // Auto-add pages if drawing beyond current pages
     _pageManager.autoAddPagesForPoint(offset);
