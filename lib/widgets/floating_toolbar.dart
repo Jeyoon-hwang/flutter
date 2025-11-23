@@ -58,14 +58,14 @@ class _FloatingToolbarState extends State<FloatingToolbar> {
 
         // Apply button size multiplier from settings
         final sizeMultiplier = provider.settings.buttonSize;
-        final buttonSize = (isTablet ? 36.0 : 32.0) * sizeMultiplier;
-        final smallButtonSize = (isTablet ? 32.0 : 28.0) * sizeMultiplier;
-        final iconSize = (isTablet ? 20.0 : 18.0) * sizeMultiplier;
-        final smallIconSize = (isTablet ? 18.0 : 16.0) * sizeMultiplier;
-        final spacing = (isTablet ? 8.0 : 6.0) * sizeMultiplier;
-        final padding = (isTablet ? 12.0 : 10.0) * sizeMultiplier;
-        final verticalPadding = (isTablet ? 10.0 : 8.0) * sizeMultiplier;
-        final colorButtonSize = (isTablet ? 32.0 : 28.0) * sizeMultiplier;
+        final buttonSize = (isTablet ? 32.0 : 28.0) * sizeMultiplier;
+        final smallButtonSize = (isTablet ? 28.0 : 24.0) * sizeMultiplier;
+        final iconSize = (isTablet ? 18.0 : 16.0) * sizeMultiplier;
+        final smallIconSize = (isTablet ? 16.0 : 14.0) * sizeMultiplier;
+        final spacing = (isTablet ? 6.0 : 5.0) * sizeMultiplier;
+        final padding = (isTablet ? 10.0 : 8.0) * sizeMultiplier;
+        final verticalPadding = (isTablet ? 8.0 : 6.0) * sizeMultiplier;
+        final colorButtonSize = (isTablet ? 28.0 : 24.0) * sizeMultiplier;
 
         return Stack(
           children: [
@@ -86,7 +86,7 @@ class _FloatingToolbarState extends State<FloatingToolbar> {
             onPanEnd: (details) {},
             child: Center(
             child: ClipRRect(
-              borderRadius: BorderRadius.circular(isTablet ? 20 : 18),
+              borderRadius: BorderRadius.circular(isTablet ? 16 : 14),
               child: BackdropFilter(
                 filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
                 child: Container(
@@ -105,7 +105,7 @@ class _FloatingToolbarState extends State<FloatingToolbar> {
                               Colors.white.withValues(alpha: 0.5),
                             ],
                     ),
-                    borderRadius: BorderRadius.circular(18),
+                    borderRadius: BorderRadius.circular(14),
                     border: Border.all(
                       color: provider.isDarkMode
                           ? Colors.white.withValues(alpha: 0.1)
@@ -210,7 +210,7 @@ class _FloatingToolbarState extends State<FloatingToolbar> {
                           SizedBox(width: spacing * 1.5),
                           Container(
                             width: 1,
-                            height: isTablet ? 24 : 20,
+                            height: isTablet ? 20 : 18,
                             decoration: BoxDecoration(
                               gradient: LinearGradient(
                                 begin: Alignment.topCenter,
@@ -282,7 +282,7 @@ class _FloatingToolbarState extends State<FloatingToolbar> {
                           // Divider before recent colors
                           Container(
                             width: 1,
-                            height: isTablet ? 24 : 20,
+                            height: isTablet ? 20 : 18,
                             decoration: BoxDecoration(
                               gradient: LinearGradient(
                                 begin: Alignment.topCenter,
@@ -330,7 +330,7 @@ class _FloatingToolbarState extends State<FloatingToolbar> {
                           // Divider after recent colors
                           Container(
                             width: 1,
-                            height: isTablet ? 24 : 20,
+                            height: isTablet ? 20 : 18,
                             decoration: BoxDecoration(
                               gradient: LinearGradient(
                                 begin: Alignment.topCenter,
@@ -387,7 +387,7 @@ class _FloatingToolbarState extends State<FloatingToolbar> {
                           // Divider before template picker
                           Container(
                             width: 1,
-                            height: isTablet ? 24 : 20,
+                            height: isTablet ? 20 : 18,
                             decoration: BoxDecoration(
                               gradient: LinearGradient(
                                 begin: Alignment.topCenter,
@@ -422,12 +422,14 @@ class _FloatingToolbarState extends State<FloatingToolbar> {
             // Pen settings panel (floating next to toolbar)
             if (_showPenSettings)
               Positioned(
-                // If toolbar is on the left half, show panel on the right
-                // If toolbar is on the right half, show panel on the left
+                // Horizontal positioning: left vs right
                 left: _position.dx < screenSize.width / 2
-                    ? _position.dx + (screenSize.width / 2) - 100
-                    : _position.dx - (screenSize.width / 2) - (isTablet ? 280 : 240) - 20,
-                top: _position.dy,
+                    ? _position.dx + (screenSize.width / 2) - 70  // On left → panel on right
+                    : _position.dx - (screenSize.width / 2) - (isTablet ? 260 : 220) - 16,  // On right → panel on left
+                // Vertical positioning: top vs bottom
+                top: _position.dy < screenSize.height / 2
+                    ? _position.dy + 50  // On top → panel below
+                    : _position.dy - (isTablet ? 320 : 300),  // On bottom → panel above
                 child: _buildPenSettingsPanel(provider, isTablet, sizeMultiplier),
               ),
           ],
@@ -505,15 +507,15 @@ class _FloatingToolbarState extends State<FloatingToolbar> {
 
   Widget _buildPenSettingsPanel(DrawingProvider provider, bool isTablet, double sizeMultiplier) {
     final isDarkMode = provider.isDarkMode;
-    final panelWidth = isTablet ? 280.0 : 240.0;
+    final panelWidth = isTablet ? 260.0 : 220.0;
 
     return ClipRRect(
-      borderRadius: BorderRadius.circular(isTablet ? 20 : 18),
+      borderRadius: BorderRadius.circular(isTablet ? 16 : 14),
       child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
         child: Container(
           width: panelWidth,
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(14),
           decoration: BoxDecoration(
             gradient: LinearGradient(
               begin: Alignment.topLeft,
@@ -528,7 +530,7 @@ class _FloatingToolbarState extends State<FloatingToolbar> {
                       Colors.white.withValues(alpha: 0.75),
                     ],
             ),
-            borderRadius: BorderRadius.circular(isTablet ? 20 : 18),
+            borderRadius: BorderRadius.circular(isTablet ? 16 : 14),
             border: Border.all(
               color: isDarkMode
                   ? Colors.white.withValues(alpha: 0.1)
@@ -554,7 +556,7 @@ class _FloatingToolbarState extends State<FloatingToolbar> {
                   Text(
                     '펜 설정',
                     style: TextStyle(
-                      fontSize: 16,
+                      fontSize: 14,
                       fontWeight: FontWeight.bold,
                       color: isDarkMode ? Colors.white : Colors.black,
                     ),
@@ -567,30 +569,30 @@ class _FloatingToolbarState extends State<FloatingToolbar> {
                     },
                     child: Icon(
                       Icons.close,
-                      size: 20,
+                      size: 18,
                       color: isDarkMode ? Colors.white54 : Colors.black54,
                     ),
                   ),
                 ],
               ),
 
-              const SizedBox(height: 16),
+              const SizedBox(height: 12),
 
               // Color section
               Text(
                 '색상',
                 style: TextStyle(
-                  fontSize: 13,
+                  fontSize: 12,
                   fontWeight: FontWeight.w600,
                   color: isDarkMode ? Colors.white : Colors.black87,
                 ),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 6),
 
               // Color palette (compact grid)
               Wrap(
-                spacing: 8,
-                runSpacing: 8,
+                spacing: 6,
+                runSpacing: 6,
                 children: presetColors.map((color) {
                   final isSelected = provider.currentColor == color;
                   return GestureDetector(
@@ -598,8 +600,8 @@ class _FloatingToolbarState extends State<FloatingToolbar> {
                       provider.setColor(color);
                     },
                     child: Container(
-                      width: 32,
-                      height: 32,
+                      width: 28,
+                      height: 28,
                       decoration: BoxDecoration(
                         color: color,
                         borderRadius: BorderRadius.circular(8),
@@ -611,25 +613,25 @@ class _FloatingToolbarState extends State<FloatingToolbar> {
                         ),
                       ),
                       child: isSelected
-                          ? const Icon(Icons.check, color: Colors.white, size: 18)
+                          ? const Icon(Icons.check, color: Colors.white, size: 16)
                           : null,
                     ),
                   );
                 }).toList(),
               ),
 
-              const SizedBox(height: 16),
+              const SizedBox(height: 12),
 
               // Thickness section
               Text(
                 '굵기',
                 style: TextStyle(
-                  fontSize: 13,
+                  fontSize: 12,
                   fontWeight: FontWeight.w600,
                   color: isDarkMode ? Colors.white : Colors.black87,
                 ),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 6),
 
               // Thickness slider (compact)
               Row(
@@ -637,9 +639,9 @@ class _FloatingToolbarState extends State<FloatingToolbar> {
                   Icon(
                     Icons.line_weight,
                     color: isDarkMode ? Colors.white70 : Colors.black54,
-                    size: 16,
+                    size: 14,
                   ),
-                  const SizedBox(width: 8),
+                  const SizedBox(width: 6),
                   Expanded(
                     child: Slider(
                       value: provider.lineWidth,
@@ -652,21 +654,21 @@ class _FloatingToolbarState extends State<FloatingToolbar> {
                       },
                     ),
                   ),
-                  const SizedBox(width: 8),
+                  const SizedBox(width: 6),
                   Container(
-                    width: 36,
-                    padding: const EdgeInsets.symmetric(vertical: 4),
+                    width: 32,
+                    padding: const EdgeInsets.symmetric(vertical: 3),
                     decoration: BoxDecoration(
                       color: isDarkMode
                           ? Colors.white.withValues(alpha: 0.1)
                           : Colors.black.withValues(alpha: 0.05),
-                      borderRadius: BorderRadius.circular(6),
+                      borderRadius: BorderRadius.circular(5),
                     ),
                     child: Text(
                       '${provider.lineWidth.round()}',
                       textAlign: TextAlign.center,
                       style: TextStyle(
-                        fontSize: 12,
+                        fontSize: 11,
                         fontWeight: FontWeight.bold,
                         color: isDarkMode ? Colors.white : Colors.black87,
                       ),
