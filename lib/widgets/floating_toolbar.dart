@@ -612,14 +612,6 @@ class _FloatingToolbarState extends State<FloatingToolbar> with TickerProviderSt
           _scaleController.reverse();
         },
         onTap: () {
-          HapticFeedback.selectionClick();
-          setState(() {
-            _selectedPenId = pen.id;
-          });
-          provider.selectAdvancedPen(pen.id);
-          provider.setMode(DrawingMode.pen);
-        },
-        onLongPress: () {
           HapticFeedback.mediumImpact();
           _showPenCustomizer(context, provider, pen: pen);
         },
@@ -783,9 +775,12 @@ class _FloatingToolbarState extends State<FloatingToolbar> with TickerProviderSt
             // Updating existing pen
             provider.updateAdvancedPen(pen.id, newPen);
           }
+          // Select this pen and switch to pen mode
           setState(() {
             _selectedPenId = newPen.id;
           });
+          provider.selectAdvancedPen(newPen.id);
+          provider.setMode(DrawingMode.pen);
         },
         isDarkMode: provider.isDarkMode,
       ),
