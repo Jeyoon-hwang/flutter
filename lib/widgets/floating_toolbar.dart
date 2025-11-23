@@ -6,10 +6,18 @@ import '../utils/responsive_util.dart';
 import './ocr_result_dialog.dart';
 import './template_picker.dart';
 
-class FloatingToolbar extends StatelessWidget {
+class FloatingToolbar extends StatefulWidget {
   final GlobalKey repaintBoundaryKey;
 
   const FloatingToolbar({Key? key, required this.repaintBoundaryKey}) : super(key: key);
+
+  @override
+  State<FloatingToolbar> createState() => _FloatingToolbarState();
+}
+
+class _FloatingToolbarState extends State<FloatingToolbar> {
+  Offset _position = const Offset(0, 0); // Will be calculated in build
+  bool _isDragging = false;
 
   static const List<Color> presetColors = [
     Colors.black,
@@ -41,6 +49,14 @@ class FloatingToolbar extends StatelessWidget {
     final verticalPadding = isTablet ? 16.0 : 12.0;
     final colorButtonSize = isTablet ? 48.0 : 40.0;
 
+    final screenSize = MediaQuery.of(context).size;
+    final defaultBottom = isTablet ? 40.0 : 30.0;
+
+    // Initialize position on first build
+    if (_position == const Offset(0, 0)) {
+      _position = Offset(screenSize.width / 2, screenSize.height - defaultBottom - 50);
+    }
+
     return Consumer<DrawingProvider>(
       builder: (context, provider, child) {
         // Hide in focus mode
@@ -49,10 +65,28 @@ class FloatingToolbar extends StatelessWidget {
         }
 
         return Positioned(
-          bottom: isTablet ? 40 : 30,
-          left: isTablet ? 30 : 20,
-          right: isTablet ? 30 : 20,
-          child: Center(
+          left: _position.dx - (screenSize.width / 2),
+          top: _position.dy,
+          child: GestureDetector(
+            onPanStart: (details) {
+              setState(() {
+                _isDragging = true;
+              });
+            },
+            onPanUpdate: (details) {
+              setState(() {
+                _position = Offset(
+                  (_position.dx + details.delta.dx).clamp(100.0, screenSize.width - 100),
+                  (_position.dy + details.delta.dy).clamp(50.0, screenSize.height - 150),
+                );
+              });
+            },
+            onPanEnd: (details) {
+              setState(() {
+                _isDragging = false;
+              });
+            },
+            child: Center(
             child: ClipRRect(
               borderRadius: BorderRadius.circular(isTablet ? 36 : 30),
               child: BackdropFilter(
@@ -379,6 +413,7 @@ class FloatingToolbar extends StatelessWidget {
                 ),
               ),
             ),
+            ),
           ),
         );
       },
@@ -386,7 +421,7 @@ class FloatingToolbar extends StatelessWidget {
   }
 
   Future<void> _recognizeText(BuildContext context, DrawingProvider provider) async {
-    final result = await provider.recognizeSelection(repaintBoundaryKey);
+    final result = await provider.recognizeSelection(widget.repaintBoundaryKey);
     if (result != null && context.mounted) {
       showDialog(
         context: context,
@@ -401,7 +436,7 @@ class FloatingToolbar extends StatelessWidget {
   }
 
   Future<void> _recognizeMath(BuildContext context, DrawingProvider provider) async {
-    final result = await provider.recognizeSelection(repaintBoundaryKey);
+    final result = await provider.recognizeSelection(widget.repaintBoundaryKey);
     if (result != null && context.mounted) {
       showDialog(
         context: context,
@@ -416,7 +451,7 @@ class FloatingToolbar extends StatelessWidget {
   }
 
   Future<void> _convertToLatex(BuildContext context, DrawingProvider provider) async {
-    await provider.convertSelectionToLatex(repaintBoundaryKey);
+    await provider.convertSelectionToLatex(widget.repaintBoundaryKey);
 
     if (context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(

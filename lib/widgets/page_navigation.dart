@@ -6,11 +6,26 @@ import '../models/page_layout.dart';
 import '../screens/home_dashboard.dart';
 
 /// Page navigation widget for switching between pages (HORIZONTAL LAYOUT)
-class PageNavigation extends StatelessWidget {
+class PageNavigation extends StatefulWidget {
   const PageNavigation({Key? key}) : super(key: key);
 
   @override
+  State<PageNavigation> createState() => _PageNavigationState();
+}
+
+class _PageNavigationState extends State<PageNavigation> {
+  Offset _position = const Offset(20, 0); // Will be calculated in build
+  bool _isDragging = false;
+
+  @override
   Widget build(BuildContext context) {
+    final screenSize = MediaQuery.of(context).size;
+
+    // Initialize position on first build
+    if (_position == const Offset(20, 0)) {
+      _position = Offset(20, screenSize.height - 100);
+    }
+
     return Consumer<DrawingProvider>(
       builder: (context, provider, child) {
         // Hide in focus mode
@@ -28,9 +43,28 @@ class PageNavigation extends StatelessWidget {
         final totalPages = pageManager.pageCount;
 
         return Positioned(
-          bottom: 20,
-          left: 20,
-          child: ClipRRect(
+          left: _position.dx,
+          top: _position.dy,
+          child: GestureDetector(
+            onPanStart: (details) {
+              setState(() {
+                _isDragging = true;
+              });
+            },
+            onPanUpdate: (details) {
+              setState(() {
+                _position = Offset(
+                  (_position.dx + details.delta.dx).clamp(0.0, screenSize.width - 250),
+                  (_position.dy + details.delta.dy).clamp(0.0, screenSize.height - 100),
+                );
+              });
+            },
+            onPanEnd: (details) {
+              setState(() {
+                _isDragging = false;
+              });
+            },
+            child: ClipRRect(
             borderRadius: BorderRadius.circular(24),
             child: BackdropFilter(
               filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
@@ -168,6 +202,7 @@ class PageNavigation extends StatelessWidget {
                   ],
                 ),
               ),
+            ),
             ),
           ),
         );

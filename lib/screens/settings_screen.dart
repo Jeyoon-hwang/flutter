@@ -88,9 +88,9 @@ class SettingsScreen extends StatelessWidget {
               _buildSectionHeader('필기 설정', provider.isDarkMode),
               _buildSettingCard(
                 context,
-                icon: Icons.pan_tool,
-                title: '손으로 필기하기',
-                subtitle: '펜 입력만 인식 (손바닥 무시)',
+                icon: Icons.touch_app,
+                title: '손바닥 거부 (Palm Rejection)',
+                subtitle: '펜/스타일러스만 인식, 손바닥 터치 무시',
                 trailing: Switch(
                   value: provider.palmRejection,
                   onChanged: (value) => provider.togglePalmRejection(),

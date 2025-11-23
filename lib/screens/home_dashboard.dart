@@ -15,6 +15,7 @@ import 'font_settings_screen.dart';
 import 'gesture_guide_screen.dart';
 import 'background_settings_screen.dart';
 import 'settings_screen.dart';
+import 'wrong_answer_screen.dart';
 
 /// Home dashboard with planner-centric design
 /// "Gong-stagram" aesthetic: minimal, clean, motivating
@@ -503,6 +504,9 @@ class _HomeDashboardState extends State<HomeDashboard> {
           if (index == 1) {
             // Navigate to notes list
             context.pushSlideRight(const NotesListScreen());
+          } else if (index == 2) {
+            // Navigate to wrong answer notes
+            context.pushSlideRight(const WrongAnswerScreen());
           } else if (index == 3) {
             // Navigate to stats
             context.pushSlideRight(const StatsScreen());
