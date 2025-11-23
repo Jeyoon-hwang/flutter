@@ -20,6 +20,7 @@ class FloatingToolbar extends StatefulWidget {
 class _FloatingToolbarState extends State<FloatingToolbar> with TickerProviderStateMixin {
   String? _selectedPenId;
   bool _isHidden = false; // Toolbar hidden at edge
+  Color _toolbarColor = const Color(0xFF667EEA); // Toolbar accent color
 
   // Toolbar position
   double _toolbarX = 0;
@@ -170,7 +171,7 @@ class _FloatingToolbarState extends State<FloatingToolbar> with TickerProviderSt
                     ),
                     child: Icon(
                       _getArrowIcon(),
-                      color: const Color(0xFF667EEA),
+                      color: _toolbarColor,
                       size: 24,
                     ),
                   ),
@@ -228,27 +229,66 @@ class _FloatingToolbarState extends State<FloatingToolbar> with TickerProviderSt
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        // Drag handle
+                        // Drag handle with controls
                         Container(
                           width: double.infinity,
-                          padding: const EdgeInsets.symmetric(vertical: 8),
+                          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
                           decoration: BoxDecoration(
-                            color: isDarkMode
-                                ? Colors.white.withValues(alpha: 0.05)
-                                : Colors.black.withValues(alpha: 0.03),
+                            color: _toolbarColor.withValues(alpha: 0.15),
                             borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
                           ),
-                          child: Center(
-                            child: Container(
-                              width: 40,
-                              height: 4,
-                              decoration: BoxDecoration(
-                                color: isDarkMode
-                                    ? Colors.white.withValues(alpha: 0.3)
-                                    : Colors.black.withValues(alpha: 0.3),
-                                borderRadius: BorderRadius.circular(2),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              // Color picker buttons
+                              Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  _buildColorButton(const Color(0xFF667EEA)), // Blue
+                                  const SizedBox(width: 4),
+                                  _buildColorButton(const Color(0xFFFF3B30)), // Red
+                                  const SizedBox(width: 4),
+                                  _buildColorButton(const Color(0xFF34C759)), // Green
+                                  const SizedBox(width: 4),
+                                  _buildColorButton(const Color(0xFFFF9500)), // Orange
+                                  const SizedBox(width: 4),
+                                  _buildColorButton(const Color(0xFF5E5CE6)), // Purple
+                                ],
                               ),
-                            ),
+                              // Drag handle
+                              Container(
+                                width: 40,
+                                height: 4,
+                                decoration: BoxDecoration(
+                                  color: _toolbarColor,
+                                  borderRadius: BorderRadius.circular(2),
+                                ),
+                              ),
+                              // Hide button
+                              GestureDetector(
+                                onTap: () {
+                                  setState(() {
+                                    _isHidden = true;
+                                    _dockedEdge = EdgeLocation.bottom;
+                                  });
+                                  HapticFeedback.lightImpact();
+                                },
+                                child: Container(
+                                  padding: const EdgeInsets.all(4),
+                                  decoration: BoxDecoration(
+                                    color: isDarkMode
+                                        ? Colors.white.withValues(alpha: 0.1)
+                                        : Colors.black.withValues(alpha: 0.05),
+                                    borderRadius: BorderRadius.circular(6),
+                                  ),
+                                  child: Icon(
+                                    Icons.keyboard_arrow_down,
+                                    size: 18,
+                                    color: _toolbarColor,
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                         Padding(
@@ -771,6 +811,39 @@ class _FloatingToolbarState extends State<FloatingToolbar> with TickerProviderSt
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildColorButton(Color color) {
+    final isSelected = _toolbarColor == color;
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          _toolbarColor = color;
+        });
+        HapticFeedback.selectionClick();
+      },
+      child: Container(
+        width: 20,
+        height: 20,
+        decoration: BoxDecoration(
+          color: color,
+          shape: BoxShape.circle,
+          border: Border.all(
+            color: isSelected ? Colors.white : Colors.transparent,
+            width: 2,
+          ),
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: color.withValues(alpha: 0.5),
+                    blurRadius: 8,
+                    spreadRadius: 2,
+                  ),
+                ]
+              : null,
+        ),
       ),
     );
   }
