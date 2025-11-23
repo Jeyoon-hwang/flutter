@@ -17,6 +17,7 @@ class FloatingToolbar extends StatefulWidget {
 
 class _FloatingToolbarState extends State<FloatingToolbar> {
   Offset _position = const Offset(0, 0); // Will be calculated in build
+  bool _showPenSettings = false;
 
   static const List<Color> presetColors = [
     Colors.black,
@@ -57,19 +58,22 @@ class _FloatingToolbarState extends State<FloatingToolbar> {
 
         // Apply button size multiplier from settings
         final sizeMultiplier = provider.settings.buttonSize;
-        final buttonSize = (isTablet ? 56.0 : 48.0) * sizeMultiplier;
-        final smallButtonSize = (isTablet ? 48.0 : 40.0) * sizeMultiplier;
-        final iconSize = (isTablet ? 28.0 : 24.0) * sizeMultiplier;
-        final smallIconSize = (isTablet ? 24.0 : 20.0) * sizeMultiplier;
-        final spacing = (isTablet ? 12.0 : 8.0) * sizeMultiplier;
-        final padding = (isTablet ? 20.0 : 16.0) * sizeMultiplier;
-        final verticalPadding = (isTablet ? 16.0 : 12.0) * sizeMultiplier;
-        final colorButtonSize = (isTablet ? 48.0 : 40.0) * sizeMultiplier;
+        final buttonSize = (isTablet ? 36.0 : 32.0) * sizeMultiplier;
+        final smallButtonSize = (isTablet ? 32.0 : 28.0) * sizeMultiplier;
+        final iconSize = (isTablet ? 20.0 : 18.0) * sizeMultiplier;
+        final smallIconSize = (isTablet ? 18.0 : 16.0) * sizeMultiplier;
+        final spacing = (isTablet ? 8.0 : 6.0) * sizeMultiplier;
+        final padding = (isTablet ? 12.0 : 10.0) * sizeMultiplier;
+        final verticalPadding = (isTablet ? 10.0 : 8.0) * sizeMultiplier;
+        final colorButtonSize = (isTablet ? 32.0 : 28.0) * sizeMultiplier;
 
-        return Positioned(
-          left: _position.dx - (screenSize.width / 2),
-          top: _position.dy,
-          child: GestureDetector(
+        return Stack(
+          children: [
+            // Main toolbar
+            Positioned(
+              left: _position.dx - (screenSize.width / 2),
+              top: _position.dy,
+              child: GestureDetector(
             onPanStart: (details) {},
             onPanUpdate: (details) {
               setState(() {
@@ -82,7 +86,7 @@ class _FloatingToolbarState extends State<FloatingToolbar> {
             onPanEnd: (details) {},
             child: Center(
             child: ClipRRect(
-              borderRadius: BorderRadius.circular(isTablet ? 36 : 30),
+              borderRadius: BorderRadius.circular(isTablet ? 20 : 18),
               child: BackdropFilter(
                 filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
                 child: Container(
@@ -101,7 +105,7 @@ class _FloatingToolbarState extends State<FloatingToolbar> {
                               Colors.white.withValues(alpha: 0.5),
                             ],
                     ),
-                    borderRadius: BorderRadius.circular(30),
+                    borderRadius: BorderRadius.circular(18),
                     border: Border.all(
                       color: provider.isDarkMode
                           ? Colors.white.withValues(alpha: 0.1)
@@ -206,7 +210,7 @@ class _FloatingToolbarState extends State<FloatingToolbar> {
                           SizedBox(width: spacing * 1.5),
                           Container(
                             width: 1,
-                            height: isTablet ? 36 : 30,
+                            height: isTablet ? 24 : 20,
                             decoration: BoxDecoration(
                               gradient: LinearGradient(
                                 begin: Alignment.topCenter,
@@ -278,7 +282,7 @@ class _FloatingToolbarState extends State<FloatingToolbar> {
                           // Divider before recent colors
                           Container(
                             width: 1,
-                            height: isTablet ? 36 : 30,
+                            height: isTablet ? 24 : 20,
                             decoration: BoxDecoration(
                               gradient: LinearGradient(
                                 begin: Alignment.topCenter,
@@ -326,7 +330,7 @@ class _FloatingToolbarState extends State<FloatingToolbar> {
                           // Divider after recent colors
                           Container(
                             width: 1,
-                            height: isTablet ? 36 : 30,
+                            height: isTablet ? 24 : 20,
                             decoration: BoxDecoration(
                               gradient: LinearGradient(
                                 begin: Alignment.topCenter,
@@ -369,7 +373,11 @@ class _FloatingToolbarState extends State<FloatingToolbar> {
                             currentColor: provider.currentColor,
                             currentWidth: provider.lineWidth,
                             isDarkMode: provider.isDarkMode,
-                            onPressed: () => _showPenSettingsPopup(context, provider),
+                            onPressed: () {
+                              setState(() {
+                                _showPenSettings = !_showPenSettings;
+                              });
+                            },
                             size: buttonSize,
                           ),
                         ],
@@ -379,7 +387,7 @@ class _FloatingToolbarState extends State<FloatingToolbar> {
                           // Divider before template picker
                           Container(
                             width: 1,
-                            height: isTablet ? 36 : 30,
+                            height: isTablet ? 24 : 20,
                             decoration: BoxDecoration(
                               gradient: LinearGradient(
                                 begin: Alignment.topCenter,
@@ -408,7 +416,21 @@ class _FloatingToolbarState extends State<FloatingToolbar> {
               ),
             ),
             ),
-          ),
+              ),
+            ),
+
+            // Pen settings panel (floating next to toolbar)
+            if (_showPenSettings)
+              Positioned(
+                // If toolbar is on the left half, show panel on the right
+                // If toolbar is on the right half, show panel on the left
+                left: _position.dx < screenSize.width / 2
+                    ? _position.dx + (screenSize.width / 2) - 100
+                    : _position.dx - (screenSize.width / 2) - (isTablet ? 280 : 240) - 20,
+                top: _position.dy,
+                child: _buildPenSettingsPanel(provider, isTablet, sizeMultiplier),
+              ),
+          ],
         );
       },
     );
@@ -479,6 +501,184 @@ class _FloatingToolbarState extends State<FloatingToolbar> {
         ),
       );
     }
+  }
+
+  Widget _buildPenSettingsPanel(DrawingProvider provider, bool isTablet, double sizeMultiplier) {
+    final isDarkMode = provider.isDarkMode;
+    final panelWidth = isTablet ? 280.0 : 240.0;
+
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(isTablet ? 20 : 18),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+        child: Container(
+          width: panelWidth,
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: isDarkMode
+                  ? [
+                      Colors.black.withValues(alpha: 0.85),
+                      Colors.black.withValues(alpha: 0.75),
+                    ]
+                  : [
+                      Colors.white.withValues(alpha: 0.85),
+                      Colors.white.withValues(alpha: 0.75),
+                    ],
+            ),
+            borderRadius: BorderRadius.circular(isTablet ? 20 : 18),
+            border: Border.all(
+              color: isDarkMode
+                  ? Colors.white.withValues(alpha: 0.1)
+                  : Colors.black.withValues(alpha: 0.1),
+              width: 1.5,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.2),
+                blurRadius: 30,
+                offset: const Offset(0, 10),
+              ),
+            ],
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Title with close button
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    '펜 설정',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: isDarkMode ? Colors.white : Colors.black,
+                    ),
+                  ),
+                  GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        _showPenSettings = false;
+                      });
+                    },
+                    child: Icon(
+                      Icons.close,
+                      size: 20,
+                      color: isDarkMode ? Colors.white54 : Colors.black54,
+                    ),
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 16),
+
+              // Color section
+              Text(
+                '색상',
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: isDarkMode ? Colors.white : Colors.black87,
+                ),
+              ),
+              const SizedBox(height: 8),
+
+              // Color palette (compact grid)
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: presetColors.map((color) {
+                  final isSelected = provider.currentColor == color;
+                  return GestureDetector(
+                    onTap: () {
+                      provider.setColor(color);
+                    },
+                    child: Container(
+                      width: 32,
+                      height: 32,
+                      decoration: BoxDecoration(
+                        color: color,
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(
+                          color: isSelected
+                              ? const Color(0xFF667EEA)
+                              : (isDarkMode ? Colors.white24 : Colors.black12),
+                          width: isSelected ? 2.5 : 1,
+                        ),
+                      ),
+                      child: isSelected
+                          ? const Icon(Icons.check, color: Colors.white, size: 18)
+                          : null,
+                    ),
+                  );
+                }).toList(),
+              ),
+
+              const SizedBox(height: 16),
+
+              // Thickness section
+              Text(
+                '굵기',
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: isDarkMode ? Colors.white : Colors.black87,
+                ),
+              ),
+              const SizedBox(height: 8),
+
+              // Thickness slider (compact)
+              Row(
+                children: [
+                  Icon(
+                    Icons.line_weight,
+                    color: isDarkMode ? Colors.white70 : Colors.black54,
+                    size: 16,
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Slider(
+                      value: provider.lineWidth,
+                      min: 1.0,
+                      max: 20.0,
+                      divisions: 19,
+                      activeColor: const Color(0xFF667EEA),
+                      onChanged: (value) {
+                        provider.setLineWidth(value);
+                      },
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Container(
+                    width: 36,
+                    padding: const EdgeInsets.symmetric(vertical: 4),
+                    decoration: BoxDecoration(
+                      color: isDarkMode
+                          ? Colors.white.withValues(alpha: 0.1)
+                          : Colors.black.withValues(alpha: 0.05),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Text(
+                      '${provider.lineWidth.round()}',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        color: isDarkMode ? Colors.white : Colors.black87,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   void _showPenSettingsPopup(BuildContext context, DrawingProvider provider) {
@@ -682,7 +882,7 @@ class _FavoritePenButton extends StatelessWidget {
               : (isDarkMode
                   ? Colors.white.withValues(alpha: 0.1)
                   : Colors.black.withValues(alpha: 0.05)),
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(10),
           border: Border.all(
             color: isSelected
                 ? pen.color
@@ -755,7 +955,7 @@ class _PenSettingsButton extends StatelessWidget {
           color: isDarkMode
               ? Colors.white.withValues(alpha: 0.1)
               : Colors.black.withValues(alpha: 0.05),
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(10),
           border: Border.all(
             color: isDarkMode
                 ? Colors.white.withValues(alpha: 0.2)
@@ -846,7 +1046,7 @@ class _ModernToolButton extends StatelessWidget {
           color: isActive
               ? null
               : (isDarkMode ? Colors.white.withValues(alpha: 0.1) : Colors.black.withValues(alpha: 0.05)),
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(10),
           boxShadow: isActive
               ? [
                   BoxShadow(
@@ -909,7 +1109,7 @@ class _ModernActionButton extends StatelessWidget {
               color.withValues(alpha: 0.8),
             ],
           ),
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(10),
           boxShadow: [
             BoxShadow(
               color: color.withValues(alpha: 0.3),
@@ -975,7 +1175,7 @@ class _ModernColorButton extends StatelessWidget {
         height: size,
         decoration: BoxDecoration(
           color: color,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(8),
           border: Border.all(
             color: isSelected ? Colors.white : Colors.transparent,
             width: 3,

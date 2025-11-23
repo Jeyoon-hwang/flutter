@@ -56,8 +56,8 @@ class _AdvancedPenBarState extends State<AdvancedPenBar>
               : Duration.zero,
           curve: AppTheme.animationCurve,
           padding: EdgeInsets.symmetric(
-            horizontal: provider.focusMode ? 0 : AppTheme.spaceMd * scaleFactor,
-            vertical: AppTheme.spaceSm * scaleFactor,
+            horizontal: provider.focusMode ? 0 : AppTheme.spaceMd * scaleFactor * 0.6,
+            vertical: AppTheme.spaceSm * scaleFactor * 0.6,
           ),
           decoration: BoxDecoration(
             color: isDarkMode
@@ -88,8 +88,8 @@ class _AdvancedPenBarState extends State<AdvancedPenBar>
               // Divider
               Container(
                 width: 1.5 * scaleFactor,
-                height: 32 * scaleFactor,
-                margin: EdgeInsets.symmetric(horizontal: AppTheme.spaceSm * scaleFactor),
+                height: 24 * scaleFactor,
+                margin: EdgeInsets.symmetric(horizontal: AppTheme.spaceSm * scaleFactor * 0.7),
                 color: isDarkMode ? AppTheme.darkBorder : AppTheme.lightBorder,
               ),
 
@@ -201,9 +201,9 @@ class _AdvancedPenBarState extends State<AdvancedPenBar>
     return AnimatedContainer(
       duration: AppTheme.animationFast,
       curve: AppTheme.animationCurve,
-      margin: EdgeInsets.symmetric(horizontal: 4 * scaleFactor),
-      padding: EdgeInsets.all(8 * scaleFactor),
-      constraints: BoxConstraints(minWidth: touchTargetSize, minHeight: touchTargetSize),
+      margin: EdgeInsets.symmetric(horizontal: 3 * scaleFactor),
+      padding: EdgeInsets.all(6 * scaleFactor),
+      constraints: BoxConstraints(minWidth: touchTargetSize * 0.7, minHeight: touchTargetSize * 0.7),
       decoration: BoxDecoration(
         color: isSelected
             ? pen.color.withValues(alpha: 0.2)
@@ -224,20 +224,20 @@ class _AdvancedPenBarState extends State<AdvancedPenBar>
                 Icon(
                   pen.getIcon(),
                   color: pen.color.withValues(alpha: 0.5),
-                  size: 28 * scaleFactor,
+                  size: 20 * scaleFactor,
                 ),
               Icon(
                 pen.getIcon(),
                 color: pen.color,
-                size: 24 * scaleFactor,
+                size: 18 * scaleFactor,
               ),
             ],
           ),
-          SizedBox(height: 2 * scaleFactor),
+          SizedBox(height: 1 * scaleFactor),
           // Width indicator with gradient for rainbow
           Container(
-            width: pen.width.clamp(2.0, 16.0) * scaleFactor,
-            height: 3 * scaleFactor,
+            width: pen.width.clamp(2.0, 12.0) * scaleFactor,
+            height: 2 * scaleFactor,
             decoration: BoxDecoration(
               gradient: pen.gradientColors != null
                   ? LinearGradient(colors: pen.gradientColors!)
@@ -273,9 +273,9 @@ class _AdvancedPenBarState extends State<AdvancedPenBar>
         child: AnimatedContainer(
           duration: AppTheme.animationFast,
           curve: AppTheme.animationCurve,
-          margin: EdgeInsets.symmetric(horizontal: 4 * scaleFactor),
-          padding: EdgeInsets.all(8 * scaleFactor),
-          constraints: BoxConstraints(minWidth: touchTargetSize, minHeight: touchTargetSize),
+          margin: EdgeInsets.symmetric(horizontal: 3 * scaleFactor),
+          padding: EdgeInsets.all(6 * scaleFactor),
+          constraints: BoxConstraints(minWidth: touchTargetSize * 0.7, minHeight: touchTargetSize * 0.7),
           decoration: BoxDecoration(
             color: isSelected
                 ? AppTheme.primary.withValues(alpha: 0.2)
@@ -292,7 +292,7 @@ class _AdvancedPenBarState extends State<AdvancedPenBar>
                 : (isDarkMode
                     ? AppTheme.darkTextSecondary
                     : AppTheme.lightTextSecondary),
-            size: 24 * scaleFactor,
+            size: 18 * scaleFactor,
           ),
         ),
       ),
