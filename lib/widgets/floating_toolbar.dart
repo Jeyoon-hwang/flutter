@@ -320,18 +320,15 @@ class FloatingToolbar extends StatelessWidget {
                           SizedBox(width: spacing * 1.5),
                         ],
 
-                        // Color palette (only show when pen mode)
+                        // Pen settings button (compact popup for color & thickness)
                         if (provider.mode == DrawingMode.pen && provider.selectionRect == null) ...[
-                          ...presetColors.map((color) => Padding(
-                                padding: EdgeInsets.only(right: spacing),
-                                child: _ModernColorButton(
-                                  color: color,
-                                  isSelected: provider.currentColor == color,
-                                  onTap: () => provider.setColor(color),
-                                  isDarkMode: provider.isDarkMode,
-                                  size: colorButtonSize,
-                                ),
-                              )),
+                          _PenSettingsButton(
+                            currentColor: provider.currentColor,
+                            currentWidth: provider.currentStrokeWidth,
+                            isDarkMode: provider.isDarkMode,
+                            onPressed: () => _showPenSettingsPopup(context, provider),
+                            size: buttonSize,
+                          ),
                         ],
 
                         // Template picker button (show for all modes except select with rect)
@@ -438,6 +435,254 @@ class FloatingToolbar extends StatelessWidget {
         ),
       );
     }
+  }
+
+  void _showPenSettingsPopup(BuildContext context, DrawingProvider provider) {
+    final isDarkMode = provider.isDarkMode;
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (context) => Container(
+        padding: const EdgeInsets.all(24),
+        decoration: BoxDecoration(
+          color: isDarkMode ? const Color(0xFF2A2A2A) : Colors.white,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Handle bar
+            Center(
+              child: Container(
+                margin: const EdgeInsets.only(bottom: 20),
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: isDarkMode ? Colors.white24 : Colors.black12,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            ),
+
+            // Title
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  '펜 설정',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: isDarkMode ? Colors.white : Colors.black,
+                  ),
+                ),
+                IconButton(
+                  icon: Icon(
+                    Icons.close,
+                    color: isDarkMode ? Colors.white54 : Colors.black54,
+                  ),
+                  onPressed: () => Navigator.pop(context),
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 24),
+
+            // Color section
+            Text(
+              '색상',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: isDarkMode ? Colors.white : Colors.black87,
+              ),
+            ),
+            const SizedBox(height: 12),
+
+            // Color palette
+            Wrap(
+              spacing: 12,
+              runSpacing: 12,
+              children: presetColors.map((color) {
+                final isSelected = provider.currentColor == color;
+                return GestureDetector(
+                  onTap: () {
+                    provider.setColor(color);
+                  },
+                  child: Container(
+                    width: 48,
+                    height: 48,
+                    decoration: BoxDecoration(
+                      color: color,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: isSelected
+                            ? const Color(0xFF667EEA)
+                            : (isDarkMode ? Colors.white24 : Colors.black12),
+                        width: isSelected ? 3 : 1,
+                      ),
+                      boxShadow: isSelected
+                          ? [
+                              BoxShadow(
+                                color: color.withValues(alpha: 0.4),
+                                blurRadius: 12,
+                                offset: const Offset(0, 4),
+                              ),
+                            ]
+                          : [],
+                    ),
+                    child: isSelected
+                        ? const Icon(Icons.check, color: Colors.white, size: 24)
+                        : null,
+                  ),
+                );
+              }).toList(),
+            ),
+
+            const SizedBox(height: 32),
+
+            // Thickness section
+            Text(
+              '굵기',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: isDarkMode ? Colors.white : Colors.black87,
+              ),
+            ),
+            const SizedBox(height: 12),
+
+            // Thickness slider
+            Row(
+              children: [
+                Icon(
+                  Icons.line_weight,
+                  color: isDarkMode ? Colors.white70 : Colors.black54,
+                  size: 20,
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Slider(
+                    value: provider.currentStrokeWidth,
+                    min: 1.0,
+                    max: 20.0,
+                    divisions: 19,
+                    activeColor: const Color(0xFF667EEA),
+                    onChanged: (value) {
+                      provider.setStrokeWidth(value);
+                    },
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Container(
+                  width: 48,
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  decoration: BoxDecoration(
+                    color: isDarkMode
+                        ? Colors.white.withValues(alpha: 0.1)
+                        : Colors.black.withValues(alpha: 0.05),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    '${provider.currentStrokeWidth.round()}',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                      color: isDarkMode ? Colors.white : Colors.black87,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 32),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// Pen settings button widget
+class _PenSettingsButton extends StatelessWidget {
+  final Color currentColor;
+  final double currentWidth;
+  final bool isDarkMode;
+  final VoidCallback onPressed;
+  final double size;
+
+  const _PenSettingsButton({
+    required this.currentColor,
+    required this.currentWidth,
+    required this.isDarkMode,
+    required this.onPressed,
+    required this.size,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onPressed,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        decoration: BoxDecoration(
+          color: isDarkMode
+              ? Colors.white.withValues(alpha: 0.1)
+              : Colors.black.withValues(alpha: 0.05),
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(
+            color: isDarkMode
+                ? Colors.white.withValues(alpha: 0.2)
+                : Colors.black.withValues(alpha: 0.1),
+            width: 1.5,
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Color indicator
+            Container(
+              width: 24,
+              height: 24,
+              decoration: BoxDecoration(
+                color: currentColor,
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: isDarkMode ? Colors.white24 : Colors.black12,
+                  width: 2,
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
+            // Thickness indicator
+            Icon(
+              Icons.line_weight,
+              size: 18,
+              color: isDarkMode ? Colors.white70 : Colors.black54,
+            ),
+            const SizedBox(width: 4),
+            Text(
+              '${currentWidth.round()}',
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: isDarkMode ? Colors.white70 : Colors.black54,
+              ),
+            ),
+            const SizedBox(width: 6),
+            Icon(
+              Icons.arrow_drop_down,
+              size: 18,
+              color: isDarkMode ? Colors.white54 : Colors.black38,
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }
 

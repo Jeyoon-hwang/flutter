@@ -26,6 +26,27 @@ class HomeDashboard extends StatefulWidget {
 class _HomeDashboardState extends State<HomeDashboard> {
   bool _performanceInitialized = false;
 
+  // Inspirational quotes
+  static const List<String> _quotes = [
+    '오늘도 화이팅!',
+    '작은 진전도 진전입니다',
+    '꾸준함이 재능을 이긴다',
+    '오늘의 노력이 내일의 결과',
+    '할 수 있다고 믿으면 이미 반은 성공',
+    '포기하지 않는 한 실패는 없다',
+    '지금 이 순간에 집중하세요',
+    '당신은 생각보다 강합니다',
+    '매일 조금씩 성장하고 있어요',
+    '완벽하지 않아도 괜찮아요',
+    '시작이 반이다',
+    '노력은 배신하지 않습니다',
+  ];
+
+  String _getTodayQuote() {
+    final dayOfYear = DateTime.now().difference(DateTime(DateTime.now().year, 1, 1)).inDays;
+    return _quotes[dayOfYear % _quotes.length];
+  }
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -149,6 +170,8 @@ class _HomeDashboardState extends State<HomeDashboard> {
     final now = DateTime.now();
     final weekdays = ['월', '화', '수', '목', '금', '토', '일'];
     final weekday = weekdays[now.weekday - 1];
+    final hour = now.hour.toString().padLeft(2, '0');
+    final minute = now.minute.toString().padLeft(2, '0');
 
     return Container(
       padding: const EdgeInsets.all(AppTheme.spaceLg),
@@ -158,13 +181,32 @@ class _HomeDashboardState extends State<HomeDashboard> {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                '${now.month}월 ${now.day}일 $weekday요일',
-                style: AppTheme.bodySmall(isDarkMode),
+              Row(
+                children: [
+                  Text(
+                    '${now.month}월 ${now.day}일 $weekday요일',
+                    style: AppTheme.bodySmall(isDarkMode),
+                  ),
+                  const SizedBox(width: 12),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: AppTheme.primary.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      '$hour:$minute',
+                      style: AppTheme.bodySmall(isDarkMode).copyWith(
+                        color: AppTheme.primary,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ],
               ),
               const SizedBox(height: 4),
               Text(
-                '오늘도 화이팅!',
+                _getTodayQuote(),
                 style: AppTheme.heading1(isDarkMode),
               ),
             ],
