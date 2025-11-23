@@ -71,52 +71,136 @@ class AppHeader extends StatelessWidget {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    // Logo - Clickable to navigate to home
-                    GestureDetector(
-                      onTap: () {
-                        Navigator.pushAndRemoveUntil(
-                          context,
-                          MaterialPageRoute(builder: (context) => const HomeDashboard()),
-                          (route) => false,
-                        );
+                    // Logo - Clickable menu
+                    PopupMenuButton<String>(
+                      offset: const Offset(0, 50),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      color: provider.isDarkMode ? const Color(0xFF2A2A2A) : Colors.white,
+                      elevation: 8,
+                      onSelected: (value) {
+                        switch (value) {
+                          case 'home':
+                            Navigator.pushAndRemoveUntil(
+                              context,
+                              MaterialPageRoute(builder: (context) => const HomeDashboard()),
+                              (route) => false,
+                            );
+                            break;
+                          case 'notes':
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) => const NotesListScreen()),
+                            );
+                            break;
+                          case 'settings':
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) => const SettingsScreen()),
+                            );
+                            break;
+                          case 'theme':
+                            provider.toggleDarkMode();
+                            break;
+                          case 'focus':
+                            provider.toggleFocusMode();
+                            break;
+                        }
                       },
-                      child: Row(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(10),
-                            decoration: BoxDecoration(
-                              gradient: const LinearGradient(
-                                colors: [Color(0xFF667EEA), Color(0xFF764BA2)],
-                              ),
-                              borderRadius: BorderRadius.circular(12),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: const Color(0xFF667EEA).withValues(alpha: 0.3),
-                                  blurRadius: 8,
-                                  offset: const Offset(0, 2),
-                                ),
-                              ],
-                            ),
-                            child: const Icon(
-                              Icons.draw,
-                              color: Colors.white,
-                              size: 20,
-                            ),
+                      itemBuilder: (context) => [
+                        _buildMenuItem(
+                          Icons.home_outlined,
+                          '홈으로',
+                          'home',
+                          provider.isDarkMode,
+                        ),
+                        _buildMenuItem(
+                          Icons.folder_outlined,
+                          '노트 목록',
+                          'notes',
+                          provider.isDarkMode,
+                        ),
+                        _buildMenuItem(
+                          provider.isDarkMode ? Icons.light_mode : Icons.dark_mode,
+                          provider.isDarkMode ? '라이트 모드' : '다크 모드',
+                          'theme',
+                          provider.isDarkMode,
+                        ),
+                        _buildMenuItem(
+                          Icons.fullscreen,
+                          '집중 모드',
+                          'focus',
+                          provider.isDarkMode,
+                        ),
+                        const PopupMenuDivider(),
+                        _buildMenuItem(
+                          Icons.settings_outlined,
+                          '설정',
+                          'settings',
+                          provider.isDarkMode,
+                        ),
+                      ],
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        decoration: BoxDecoration(
+                          color: provider.isDarkMode
+                              ? Colors.white.withValues(alpha: 0.05)
+                              : Colors.black.withValues(alpha: 0.02),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: provider.isDarkMode
+                                ? Colors.white.withValues(alpha: 0.1)
+                                : Colors.black.withValues(alpha: 0.05),
                           ),
-                          const SizedBox(width: 12),
-                          Text(
-                            'Digital Note',
-                            style: TextStyle(
-                              fontSize: 22,
-                              fontWeight: FontWeight.w700,
-                              letterSpacing: -0.5,
-                              foreground: Paint()
-                                ..shader = const LinearGradient(
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                gradient: const LinearGradient(
                                   colors: [Color(0xFF667EEA), Color(0xFF764BA2)],
-                                ).createShader(const Rect.fromLTWH(0, 0, 200, 70)),
+                                ),
+                                borderRadius: BorderRadius.circular(10),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: const Color(0xFF667EEA).withValues(alpha: 0.3),
+                                    blurRadius: 6,
+                                    offset: const Offset(0, 2),
+                                  ),
+                                ],
+                              ),
+                              child: const Icon(
+                                Icons.draw,
+                                color: Colors.white,
+                                size: 18,
+                              ),
                             ),
-                          ),
-                        ],
+                            const SizedBox(width: 10),
+                            Text(
+                              'Digital Note',
+                              style: TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.w700,
+                                letterSpacing: -0.5,
+                                foreground: Paint()
+                                  ..shader = const LinearGradient(
+                                    colors: [Color(0xFF667EEA), Color(0xFF764BA2)],
+                                  ).createShader(const Rect.fromLTWH(0, 0, 200, 70)),
+                              ),
+                            ),
+                            const SizedBox(width: 6),
+                            Icon(
+                              Icons.arrow_drop_down,
+                              size: 20,
+                              color: provider.isDarkMode
+                                  ? Colors.white.withValues(alpha: 0.6)
+                                  : Colors.black.withValues(alpha: 0.6),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                     Row(
@@ -312,6 +396,43 @@ class AppHeader extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  PopupMenuItem<String> _buildMenuItem(
+    IconData icon,
+    String label,
+    String value,
+    bool isDarkMode,
+  ) {
+    return PopupMenuItem<String>(
+      value: value,
+      height: 48,
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: const Color(0xFF667EEA).withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Icon(
+              icon,
+              size: 18,
+              color: const Color(0xFF667EEA),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.w500,
+              color: isDarkMode ? Colors.white.withValues(alpha: 0.9) : Colors.black.withValues(alpha: 0.8),
+            ),
+          ),
+        ],
       ),
     );
   }
