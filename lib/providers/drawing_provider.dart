@@ -666,9 +666,6 @@ class DrawingProvider extends ChangeNotifier {
     double? tiltX,
     double? tiltY,
   }) {
-    // Detect stylus pen automatically
-    final isStylusPen = deviceKind == PointerDeviceKind.stylus;
-
     // Update current input device
     if (deviceKind != null) {
       switch (deviceKind) {
