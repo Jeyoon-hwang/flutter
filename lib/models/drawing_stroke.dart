@@ -73,6 +73,7 @@ class DrawingStroke {
   final double? glitterDensity;
   final double smoothing;
   final double tapering;
+  final double pressureSensitivity; // 0.0 (no pressure) to 1.0 (max pressure)
 
   DrawingStroke({
     required this.points,
@@ -86,5 +87,6 @@ class DrawingStroke {
     this.glitterDensity,
     this.smoothing = 0.0,
     this.tapering = 0.0,
+    this.pressureSensitivity = 0.7,
   });
 }
