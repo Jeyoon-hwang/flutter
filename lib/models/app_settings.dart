@@ -45,7 +45,7 @@ class AppSettings {
   double buttonSize;
 
   AppSettings({
-    this.palmRejection = false,
+    this.palmRejection = true, // S-Pen이 기본 (손바닥 거부)
     this.isDarkMode = false,
     this.autoShapeEnabled = false,
     this.showGridLines = false,
