@@ -547,7 +547,7 @@ class _HomeDashboardState extends State<HomeDashboard> {
     final recentNotes = provider.noteService.allNotes.take(3).toList();
 
     return SizedBox(
-      height: 140,
+      height: 160, // Increased height to prevent overflow
       child: ListView.builder(
         padding: const EdgeInsets.symmetric(horizontal: AppTheme.spaceLg),
         scrollDirection: Axis.horizontal,
@@ -564,10 +564,13 @@ class _HomeDashboardState extends State<HomeDashboard> {
             },
             child: Container(
               width: 160,
+              height: 155, // Explicit height constraint
               margin: EdgeInsets.only(right: index < recentNotes.length - 1 ? AppTheme.spaceMd : 0),
+              clipBehavior: Clip.hardEdge, // Clip overflow
               decoration: AppTheme.containerDecoration(isDarkMode),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
                 children: [
                   // Note preview/cover
                   Container(
@@ -603,29 +606,34 @@ class _HomeDashboardState extends State<HomeDashboard> {
                     ),
                   ),
                   // Note info
-                  Padding(
-                    padding: const EdgeInsets.all(12),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          note.title,
-                          style: AppTheme.bodyMedium(isDarkMode).copyWith(
-                            fontWeight: FontWeight.bold,
+                  Flexible(
+                    child: Padding(
+                      padding: const EdgeInsets.all(12),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            note.title,
+                            style: AppTheme.bodyMedium(isDarkMode).copyWith(
+                              fontWeight: FontWeight.bold,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          note.lastModifiedString,
-                          style: AppTheme.bodySmall(isDarkMode).copyWith(
-                            color: isDarkMode
-                                ? AppTheme.darkTextSecondary
-                                : AppTheme.lightTextSecondary,
+                          const SizedBox(height: 4),
+                          Text(
+                            note.lastModifiedString,
+                            style: AppTheme.bodySmall(isDarkMode).copyWith(
+                              color: isDarkMode
+                                  ? AppTheme.darkTextSecondary
+                                  : AppTheme.lightTextSecondary,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
                 ],
