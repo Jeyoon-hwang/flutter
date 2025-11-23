@@ -17,7 +17,6 @@ class FloatingToolbar extends StatefulWidget {
 
 class _FloatingToolbarState extends State<FloatingToolbar> {
   Offset _position = const Offset(0, 0); // Will be calculated in build
-  bool _isDragging = false;
 
   static const List<Color> presetColors = [
     Colors.black,
@@ -71,11 +70,7 @@ class _FloatingToolbarState extends State<FloatingToolbar> {
           left: _position.dx - (screenSize.width / 2),
           top: _position.dy,
           child: GestureDetector(
-            onPanStart: (details) {
-              setState(() {
-                _isDragging = true;
-              });
-            },
+            onPanStart: (details) {},
             onPanUpdate: (details) {
               setState(() {
                 _position = Offset(
@@ -84,11 +79,7 @@ class _FloatingToolbarState extends State<FloatingToolbar> {
                 );
               });
             },
-            onPanEnd: (details) {
-              setState(() {
-                _isDragging = false;
-              });
-            },
+            onPanEnd: (details) {},
             child: Center(
             child: ClipRRect(
               borderRadius: BorderRadius.circular(isTablet ? 36 : 30),

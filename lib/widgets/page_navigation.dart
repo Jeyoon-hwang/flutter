@@ -15,7 +15,6 @@ class PageNavigation extends StatefulWidget {
 
 class _PageNavigationState extends State<PageNavigation> {
   Offset _position = const Offset(20, 0); // Will be calculated in build
-  bool _isDragging = false;
 
   @override
   Widget build(BuildContext context) {
@@ -46,11 +45,7 @@ class _PageNavigationState extends State<PageNavigation> {
           left: _position.dx,
           top: _position.dy,
           child: GestureDetector(
-            onPanStart: (details) {
-              setState(() {
-                _isDragging = true;
-              });
-            },
+            onPanStart: (details) {},
             onPanUpdate: (details) {
               setState(() {
                 _position = Offset(
@@ -59,11 +54,7 @@ class _PageNavigationState extends State<PageNavigation> {
                 );
               });
             },
-            onPanEnd: (details) {
-              setState(() {
-                _isDragging = false;
-              });
-            },
+            onPanEnd: (details) {},
             child: ClipRRect(
             borderRadius: BorderRadius.circular(24),
             child: BackdropFilter(
