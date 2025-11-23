@@ -103,8 +103,8 @@ class _FloatingToolbarState extends State<FloatingToolbar> {
                               Colors.white.withValues(alpha: 0.7),
                               Colors.white.withValues(alpha: 0.5),
                             ],
-                    ),
-                    borderRadius: BorderRadius.circular(14),
+                        ),
+                        borderRadius: BorderRadius.circular(14),
                     border: Border.all(
                       color: provider.isDarkMode
                           ? Colors.white.withValues(alpha: 0.1)
