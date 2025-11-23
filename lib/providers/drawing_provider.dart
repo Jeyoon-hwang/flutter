@@ -29,6 +29,8 @@ import '../models/study_stats.dart';
 import '../models/advanced_pen.dart';
 import '../models/performance_settings.dart';
 import '../models/study_timer.dart';
+import '../utils/stroke_smoother.dart';
+import '../services/auto_save_service.dart';
 
 enum DrawingMode { pen, eraser, select, shape, text, wrongAnswerClip }
 
@@ -124,6 +126,10 @@ class DrawingProvider extends ChangeNotifier {
   final AppStateService _appStateService = AppStateService();
   AppStateService get appStateService => _appStateService;
 
+  // Auto-save service (prevents work loss)
+  final AutoSaveService _autoSaveService = AutoSaveService();
+  AutoSaveService get autoSaveService => _autoSaveService;
+
   // Advanced pen system
   final List<AdvancedPen> _advancedPens = [];
   String? _selectedAdvancedPenId;
@@ -175,6 +181,31 @@ class DrawingProvider extends ChangeNotifier {
 
     // Restore last opened note if exists
     await _restoreLastSession();
+
+    // Initialize auto-save
+    _initializeAutoSave();
+  }
+
+  /// Initialize auto-save system
+  void _initializeAutoSave() {
+    // Configure auto-save callbacks
+    _autoSaveService.onAutoSave = () async {
+      // Save current note
+      if (_noteService.currentNote != null) {
+        await _noteService.saveCurrentNote();
+      }
+    };
+
+    _autoSaveService.onSaveSuccess = () {
+      debugPrint('✅ Auto-save successful');
+    };
+
+    _autoSaveService.onSaveError = (error) {
+      debugPrint('❌ Auto-save error: $error');
+    };
+
+    // Start auto-save timer (30 seconds)
+    _autoSaveService.startAutoSave();
   }
 
   /// Load saved settings from persistence
@@ -451,11 +482,23 @@ class DrawingProvider extends ChangeNotifier {
   void deleteSelection() {
     if (_selectionRect != null) {
       // Delete all strokes within selection
+      final deletedStrokes = <DrawingStroke>[];
       _strokes.removeWhere((stroke) {
-        return stroke.points.any((point) => _selectionRect!.contains(point.offset));
+        final shouldRemove = stroke.points.any((point) => _selectionRect!.contains(point.offset));
+        if (shouldRemove) deletedStrokes.add(stroke);
+        return shouldRemove;
       });
+
       clearSelection();
-      _historyManager.recordAction(HistoryActionType.delete, null);
+
+      // Record history if strokes were deleted
+      if (deletedStrokes.isNotEmpty) {
+        _historyManager.recordAction(HistoryAction(
+          type: HistoryActionType.removeStroke,
+          timestamp: DateTime.now(),
+        ));
+      }
+
       notifyListeners();
     }
   }
@@ -959,6 +1002,7 @@ class DrawingProvider extends ChangeNotifier {
           glitterDensity: penProps['glitterDensity'],
           smoothing: penProps['smoothing'],
           tapering: penProps['tapering'],
+          pressureSensitivity: penProps['pressureSensitivity'],
         );
         // Add stroke to current layer instead of _strokes
         if (_currentLayerIndex >= 0 && _currentLayerIndex < _layers.length) {
@@ -996,6 +1040,30 @@ class DrawingProvider extends ChangeNotifier {
       DrawingStroke stroke;
       final penProps = _getAdvancedPenProperties();
 
+      // Apply stroke smoothing and jitter reduction
+      List<DrawingPoint> processedPoints = List.from(_currentStroke);
+
+      // Remove jitter (micro-movements)
+      processedPoints = StrokeSmoother.removeJitter(processedPoints, minDistance: 1.5);
+
+      // Apply smoothing based on pen settings
+      final smoothingFactor = penProps['smoothing'] ?? 0.0;
+      if (smoothingFactor > 0) {
+        processedPoints = StrokeSmoother.smoothPoints(processedPoints, smoothingFactor);
+      }
+
+      // Apply velocity-based width adjustment if pen supports it
+      final currentPen = _advancedPens.firstWhere(
+        (p) => p.id == _selectedAdvancedPenId,
+        orElse: () => _advancedPens.first,
+      );
+      if (currentPen.velocityBased) {
+        processedPoints = StrokeSmoother.applyVelocityAdjustment(
+          processedPoints,
+          velocityFactor: 0.3,
+        );
+      }
+
       // Try shape recognition if auto-shape is enabled
       if (_autoShapeEnabled && _mode == DrawingMode.pen) {
         final recognizedShape = _shapeService.recognizeShape(_currentStroke);
@@ -1016,11 +1084,12 @@ class DrawingProvider extends ChangeNotifier {
             glitterDensity: penProps['glitterDensity'],
             smoothing: penProps['smoothing'],
             tapering: penProps['tapering'],
+            pressureSensitivity: penProps['pressureSensitivity'],
           );
         } else {
-          // Use original stroke
+          // Use processed (smoothed) stroke
           stroke = DrawingStroke(
-            points: List.from(_currentStroke),
+            points: processedPoints,
             color: _currentColor,
             width: _lineWidth,
             opacity: _opacity,
@@ -1031,11 +1100,12 @@ class DrawingProvider extends ChangeNotifier {
             glitterDensity: penProps['glitterDensity'],
             smoothing: penProps['smoothing'],
             tapering: penProps['tapering'],
+            pressureSensitivity: penProps['pressureSensitivity'],
           );
         }
       } else {
         stroke = DrawingStroke(
-          points: List.from(_currentStroke),
+          points: processedPoints,
           color: _currentColor,
           width: _lineWidth,
           opacity: _opacity,
@@ -1046,6 +1116,7 @@ class DrawingProvider extends ChangeNotifier {
           glitterDensity: penProps['glitterDensity'],
           smoothing: penProps['smoothing'],
           tapering: penProps['tapering'],
+          pressureSensitivity: penProps['pressureSensitivity'],
         );
       }
 
@@ -1078,6 +1149,9 @@ class DrawingProvider extends ChangeNotifier {
 
       // Auto-save to current note
       _saveToCurrentNote();
+
+      // Mark unsaved changes for auto-save system
+      _autoSaveService.markUnsavedChanges(isStroke: true);
     }
     notifyListeners();
   }
@@ -1410,6 +1484,7 @@ class DrawingProvider extends ChangeNotifier {
           glitterDensity: stroke.glitterDensity,
           smoothing: stroke.smoothing,
           tapering: stroke.tapering,
+          pressureSensitivity: stroke.pressureSensitivity,
         );
       }
     }
@@ -1862,6 +1937,7 @@ class DrawingProvider extends ChangeNotifier {
         'glitterDensity': selectedPen.glitterDensity,
         'smoothing': selectedPen.smoothing,
         'tapering': selectedPen.tapering,
+        'pressureSensitivity': selectedPen.pressureSensitivity,
       };
     }
     return {
@@ -1871,6 +1947,7 @@ class DrawingProvider extends ChangeNotifier {
       'glitterDensity': null,
       'smoothing': 0.0,
       'tapering': 0.0,
+      'pressureSensitivity': 0.7,
     };
   }
 

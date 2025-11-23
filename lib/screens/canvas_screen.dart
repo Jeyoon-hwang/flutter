@@ -12,6 +12,8 @@ import '../widgets/pen_status_indicator.dart';
 import '../widgets/hamburger_menu.dart';
 import '../widgets/keyboard_shortcuts_overlay.dart';
 import '../utils/keyboard_shortcuts.dart';
+import '../utils/responsive_util.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:provider/provider.dart';
 import '../providers/drawing_provider.dart';
 
@@ -45,23 +47,14 @@ class _CanvasScreenState extends State<CanvasScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Check if keyboard shortcuts should be enabled (desktop/web only)
+    final enableKeyboardShortcuts = kIsWeb ||
+        ResponsiveUtil.getDeviceType(context) == DeviceType.desktop;
+
     return Consumer<DrawingProvider>(
       builder: (context, provider, child) {
-        return Shortcuts(
-          shortcuts: KeyboardShortcuts.getShortcuts(),
-          child: Actions(
-            actions: KeyboardShortcuts.getActions(
-              provider,
-              onShowHelp: () {
-                setState(() {
-                  _showKeyboardShortcuts = !_showKeyboardShortcuts;
-                });
-              },
-            ),
-            child: Focus(
-              autofocus: true,
-              child: Scaffold(
-                body: Container(
+        Widget buildContent() => Scaffold(
+          body: Container(
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 begin: Alignment.topLeft,
@@ -164,8 +157,8 @@ class _CanvasScreenState extends State<CanvasScreen> {
                       },
                     ),
 
-                  // Floating help button
-                  if (!provider.focusMode)
+                  // Floating help button (desktop/web only)
+                  if (!provider.focusMode && enableKeyboardShortcuts)
                     Positioned(
                       bottom: 100,
                       right: 20,
@@ -201,11 +194,32 @@ class _CanvasScreenState extends State<CanvasScreen> {
                 ],
               ),
             ),
-                ),
-              ),
-            ),
           ),
         );
+
+        // Wrap with keyboard shortcuts only on desktop/web
+        if (enableKeyboardShortcuts) {
+          return Shortcuts(
+            shortcuts: KeyboardShortcuts.getShortcuts(),
+            child: Actions(
+              actions: KeyboardShortcuts.getActions(
+                provider,
+                onShowHelp: () {
+                  setState(() {
+                    _showKeyboardShortcuts = !_showKeyboardShortcuts;
+                  });
+                },
+              ),
+              child: Focus(
+                autofocus: true,
+                child: buildContent(),
+              ),
+            ),
+          );
+        }
+
+        // Mobile: no keyboard shortcuts
+        return buildContent();
       },
     );
   }

@@ -22,6 +22,12 @@ class Note {
   NoteTemplate template;
   Color backgroundColor;
 
+  // Organization fields
+  String? subject;        // 과목 (예: 수학, 영어, 과학)
+  String? category;       // 카테고리/폴더
+  bool isFavorite;        // 즐겨찾기
+  int studyCount;         // 학습 횟수 (N회독)
+
   // Drawing content
   final List<Layer> layers;
   final List<TextObject> textObjects;
@@ -46,6 +52,10 @@ class Note {
     this.tags = const [],
     this.template = NoteTemplate.blank,
     this.backgroundColor = Colors.white,
+    this.subject,
+    this.category,
+    this.isFavorite = false,
+    this.studyCount = 0,
     List<Layer>? layers,
     List<TextObject>? textObjects,
     this.audioPath,
@@ -96,6 +106,65 @@ class Note {
     } else {
       return '${modifiedAt.year}.${modifiedAt.month}.${modifiedAt.day}';
     }
+  }
+
+  /// Get all searchable text from note
+  String get searchableContent {
+    final buffer = StringBuffer();
+
+    // Title
+    buffer.write(title.toLowerCase());
+    buffer.write(' ');
+
+    // Subject
+    if (subject != null) {
+      buffer.write(subject!.toLowerCase());
+      buffer.write(' ');
+    }
+
+    // Tags
+    for (final tag in tags) {
+      buffer.write(tag.toLowerCase());
+      buffer.write(' ');
+    }
+
+    // Text objects (OCR'd or typed text)
+    for (final textObj in textObjects) {
+      buffer.write(textObj.text.toLowerCase());
+      buffer.write(' ');
+    }
+
+    return buffer.toString();
+  }
+
+  /// Check if note matches search query
+  bool matchesSearch(String query) {
+    if (query.isEmpty) return true;
+
+    final lowerQuery = query.toLowerCase();
+    final content = searchableContent;
+
+    // Split query into words for better matching
+    final queryWords = lowerQuery.split(' ').where((w) => w.isNotEmpty);
+
+    // All words must be found
+    for (final word in queryWords) {
+      if (!content.contains(word)) {
+        return false;
+      }
+    }
+
+    return true;
+  }
+
+  /// Toggle favorite status
+  void toggleFavorite() {
+    isFavorite = !isFavorite;
+  }
+
+  /// Increment study count
+  void incrementStudyCount() {
+    studyCount++;
   }
 
   /// Check if note has any content

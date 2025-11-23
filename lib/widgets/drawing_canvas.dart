@@ -498,9 +498,11 @@ class DrawingPainter extends CustomPainter {
     if (stroke.points.length == 1) {
       final point = stroke.points[0];
       final pressure = point.pressure;
+      // Apply pressure sensitivity to single point
+      final pressureEffect = 1.0 - stroke.pressureSensitivity + (pressure * stroke.pressureSensitivity);
       final dotRadius = stroke.isEraser
           ? stroke.width * 1.5
-          : stroke.width * (0.5 + pressure * 0.5);
+          : stroke.width * pressureEffect * 0.5;
 
       paint.color = stroke.isEraser
           ? (isDarkMode ? const Color(0xFF1E1E1E) : Colors.white)
@@ -531,9 +533,14 @@ class DrawingPainter extends CustomPainter {
         taperingFactor = 1.0 - (distanceFromCenter * stroke.tapering);
       }
 
+      // Apply pressure sensitivity
+      // pressureSensitivity = 0.0: constant width (no pressure effect)
+      // pressureSensitivity = 1.0: maximum pressure variation
+      final pressureEffect = 1.0 - stroke.pressureSensitivity + (pressure * stroke.pressureSensitivity);
+
       final adjustedWidth = stroke.isEraser
           ? stroke.width * 3
-          : stroke.width * (0.5 + pressure) * taperingFactor;
+          : stroke.width * pressureEffect * taperingFactor;
 
       // Rainbow gradient effect
       if (stroke.gradientColors != null && stroke.gradientColors!.length > 1) {
@@ -580,7 +587,8 @@ class DrawingPainter extends CustomPainter {
       final point2 = stroke.points[i + 1];
 
       final pressure = (point1.pressure + point2.pressure) / 2;
-      final adjustedWidth = stroke.width * (0.5 + pressure) * 2; // Wider for glow
+      final pressureEffect = 1.0 - stroke.pressureSensitivity + (pressure * stroke.pressureSensitivity);
+      final adjustedWidth = stroke.width * pressureEffect * 2; // Wider for glow
 
       glowPaint.color = (isDarkMode
               ? _invertColorIntelligently(stroke.color)
