@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../providers/drawing_provider.dart';
 import '../screens/settings_screen.dart';
 import '../screens/notes_list_screen.dart';
+import '../screens/home_dashboard.dart';
 import './history_feedback_toast.dart';
 
 class AppHeader extends StatelessWidget {
@@ -70,43 +71,53 @@ class AppHeader extends StatelessWidget {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(10),
-                          decoration: BoxDecoration(
-                            gradient: const LinearGradient(
-                              colors: [Color(0xFF667EEA), Color(0xFF764BA2)],
-                            ),
-                            borderRadius: BorderRadius.circular(12),
-                            boxShadow: [
-                              BoxShadow(
-                                color: const Color(0xFF667EEA).withValues(alpha: 0.3),
-                                blurRadius: 8,
-                                offset: const Offset(0, 2),
-                              ),
-                            ],
-                          ),
-                          child: const Icon(
-                            Icons.draw,
-                            color: Colors.white,
-                            size: 20,
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Text(
-                          'Digital Note',
-                          style: TextStyle(
-                            fontSize: 22,
-                            fontWeight: FontWeight.w700,
-                            letterSpacing: -0.5,
-                            foreground: Paint()
-                              ..shader = const LinearGradient(
+                    // Logo - Clickable to navigate to home
+                    GestureDetector(
+                      onTap: () {
+                        Navigator.pushAndRemoveUntil(
+                          context,
+                          MaterialPageRoute(builder: (context) => const HomeDashboard()),
+                          (route) => false,
+                        );
+                      },
+                      child: Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(10),
+                            decoration: BoxDecoration(
+                              gradient: const LinearGradient(
                                 colors: [Color(0xFF667EEA), Color(0xFF764BA2)],
-                              ).createShader(const Rect.fromLTWH(0, 0, 200, 70)),
+                              ),
+                              borderRadius: BorderRadius.circular(12),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: const Color(0xFF667EEA).withValues(alpha: 0.3),
+                                  blurRadius: 8,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ],
+                            ),
+                            child: const Icon(
+                              Icons.draw,
+                              color: Colors.white,
+                              size: 20,
+                            ),
                           ),
-                        ),
-                      ],
+                          const SizedBox(width: 12),
+                          Text(
+                            'Digital Note',
+                            style: TextStyle(
+                              fontSize: 22,
+                              fontWeight: FontWeight.w700,
+                              letterSpacing: -0.5,
+                              foreground: Paint()
+                                ..shader = const LinearGradient(
+                                  colors: [Color(0xFF667EEA), Color(0xFF764BA2)],
+                                ).createShader(const Rect.fromLTWH(0, 0, 200, 70)),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                     Row(
                       children: [
