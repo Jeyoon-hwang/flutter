@@ -84,7 +84,6 @@ class _FloatingToolbarState extends State<FloatingToolbar> {
               });
             },
             onPanEnd: (details) {},
-            child: Center(
             child: ClipRRect(
               borderRadius: BorderRadius.circular(isTablet ? 16 : 14),
               child: BackdropFilter(
@@ -415,9 +414,7 @@ class _FloatingToolbarState extends State<FloatingToolbar> {
                 ),
               ),
             ),
-            ),
               ),
-            ),
 
             // Pen settings panel (floating next to toolbar)
             if (_showPenSettings)
