@@ -18,9 +18,34 @@ class FloatingToolbar extends StatefulWidget {
   State<FloatingToolbar> createState() => _FloatingToolbarState();
 }
 
-class _FloatingToolbarState extends State<FloatingToolbar> {
+class _FloatingToolbarState extends State<FloatingToolbar> with SingleTickerProviderStateMixin {
   String? _selectedPenId;
   bool _isExpanded = false; // Toolbar collapsed by default
+  bool _isHidden = false; // Toolbar hidden at edge
+  late AnimationController _slideController;
+  late Animation<Offset> _slideAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _slideController = AnimationController(
+      duration: const Duration(milliseconds: 300),
+      vsync: this,
+    );
+    _slideAnimation = Tween<Offset>(
+      begin: Offset.zero,
+      end: const Offset(0, 1), // Slide down to hide
+    ).animate(CurvedAnimation(
+      parent: _slideController,
+      curve: Curves.easeInOut,
+    ));
+  }
+
+  @override
+  void dispose() {
+    _slideController.dispose();
+    super.dispose();
+  }
 
   static const List<Color> presetColors = [
     Colors.black,
@@ -57,8 +82,49 @@ class _FloatingToolbarState extends State<FloatingToolbar> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
+              // Hidden state - small arrow to show toolbar
+              if (_isHidden)
+                GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      _isHidden = false;
+                      _isExpanded = true;
+                    });
+                    _slideController.reverse();
+                    HapticFeedback.selectionClick();
+                  },
+                  child: Container(
+                    margin: const EdgeInsets.only(bottom: 8),
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: isDarkMode
+                            ? [Colors.black.withValues(alpha: 0.9), Colors.black.withValues(alpha: 0.95)]
+                            : [Colors.white.withValues(alpha: 0.9), Colors.white.withValues(alpha: 0.95)],
+                      ),
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: isDarkMode ? Colors.white.withValues(alpha: 0.1) : Colors.black.withValues(alpha: 0.1),
+                        width: 1,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.2),
+                          blurRadius: 15,
+                          offset: const Offset(0, -3),
+                        ),
+                      ],
+                    ),
+                    child: Icon(
+                      Icons.keyboard_arrow_up,
+                      size: 28,
+                      color: const Color(0xFF667EEA),
+                    ),
+                  ),
+                ),
+
               // Collapsed state - small toggle button
-              if (!_isExpanded)
+              if (!_isExpanded && !_isHidden)
                 GestureDetector(
                   onTap: () {
                     setState(() {
@@ -117,8 +183,21 @@ class _FloatingToolbarState extends State<FloatingToolbar> {
                 ),
 
               // Expanded state - full toolbar
-              if (_isExpanded)
-                ClipRRect(
+              if (_isExpanded && !_isHidden)
+                SlideTransition(
+                  position: _slideAnimation,
+                  child: GestureDetector(
+                    onVerticalDragEnd: (details) {
+                      // Swipe down to hide
+                      if (details.primaryVelocity != null && details.primaryVelocity! > 300) {
+                        setState(() {
+                          _isHidden = true;
+                        });
+                        _slideController.forward();
+                        HapticFeedback.mediumImpact();
+                      }
+                    },
+                    child: ClipRRect(
                   borderRadius: const BorderRadius.vertical(top: Radius.circular(0)),
                   child: BackdropFilter(
                     filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
@@ -464,6 +543,9 @@ class _FloatingToolbarState extends State<FloatingToolbar> {
                 ),
               ),
             ),
+                  ),
+                ),
+              ),
             ],
           ),
         );
