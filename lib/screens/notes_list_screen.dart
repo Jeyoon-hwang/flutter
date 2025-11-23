@@ -3,6 +3,8 @@ import 'package:provider/provider.dart';
 import '../providers/drawing_provider.dart';
 import '../models/note.dart';
 import '../utils/responsive_util.dart';
+import '../services/note_search_service.dart';
+import '../widgets/note_search_bar.dart';
 import 'canvas_screen.dart';
 
 /// Notes list screen showing all notes with inbox and organized sections
@@ -17,6 +19,13 @@ class _NotesListScreenState extends State<NotesListScreen> {
   String _searchQuery = '';
   bool _showInboxOnly = false;
 
+  // Advanced search filters
+  String? _filterSubject;
+  String? _filterCategory;
+  List<String>? _filterTags;
+  bool? _filterFavorite;
+  NoteSortBy _sortBy = NoteSortBy.modifiedDate;
+
   @override
   Widget build(BuildContext context) {
     return Consumer<DrawingProvider>(
@@ -24,13 +33,25 @@ class _NotesListScreenState extends State<NotesListScreen> {
         final isTabletDevice = ResponsiveUtil.isTablet(context);
         final isDarkMode = provider.isDarkMode;
 
+        // Get available filter options
+        final availableSubjects = NoteSearchService.getSubjects(provider.noteService.allNotes);
+        final availableCategories = NoteSearchService.getCategories(provider.noteService.allNotes);
+        final availableTags = NoteSearchService.getAllTags(provider.noteService.allNotes);
+
+        // Apply advanced search with filters
         List<Note> notesToShow;
-        if (_searchQuery.isNotEmpty) {
-          notesToShow = provider.noteService.searchNotes(_searchQuery);
-        } else if (_showInboxOnly) {
+        if (_showInboxOnly) {
           notesToShow = provider.noteService.inboxNotes;
         } else {
-          notesToShow = provider.noteService.allNotes;
+          notesToShow = NoteSearchService.searchNotes(
+            notes: provider.noteService.allNotes,
+            searchQuery: _searchQuery.isEmpty ? null : _searchQuery,
+            subject: _filterSubject,
+            category: _filterCategory,
+            tags: _filterTags,
+            isFavorite: _filterFavorite,
+            sortBy: _sortBy,
+          );
         }
 
         return Scaffold(
@@ -69,42 +90,32 @@ class _NotesListScreenState extends State<NotesListScreen> {
           ),
           body: Column(
             children: [
-              // Search bar
-              Padding(
-                padding: EdgeInsets.all(isTabletDevice ? 24 : 16),
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: isDarkMode ? const Color(0xFF2A2A2A) : Colors.grey[200],
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(
-                      color: isDarkMode
-                          ? const Color(0xFF404040)
-                          : const Color(0xFFE0E0E0),
-                    ),
-                  ),
-                  child: TextField(
-                    onChanged: (value) {
-                      setState(() {
-                        _searchQuery = value;
-                      });
-                    },
-                    style: TextStyle(
-                      color: isDarkMode ? Colors.white : Colors.black,
-                    ),
-                    decoration: InputDecoration(
-                      hintText: '노트 검색...',
-                      hintStyle: TextStyle(
-                        color: isDarkMode ? Colors.white54 : Colors.black54,
-                      ),
-                      prefixIcon: Icon(
-                        Icons.search,
-                        color: isDarkMode ? Colors.white54 : Colors.black54,
-                      ),
-                      border: InputBorder.none,
-                      contentPadding: const EdgeInsets.all(16),
-                    ),
-                  ),
-                ),
+              // Advanced search bar with filters
+              NoteSearchBar(
+                initialQuery: _searchQuery,
+                onSearch: (query) {
+                  setState(() {
+                    _searchQuery = query;
+                  });
+                },
+                onFilterChanged: ({
+                  String? subject,
+                  String? category,
+                  List<String>? tags,
+                  bool? isFavorite,
+                  NoteSortBy? sortBy,
+                }) {
+                  setState(() {
+                    _filterSubject = subject;
+                    _filterCategory = category;
+                    _filterTags = tags;
+                    _filterFavorite = isFavorite;
+                    if (sortBy != null) _sortBy = sortBy;
+                  });
+                },
+                availableSubjects: availableSubjects,
+                availableCategories: availableCategories,
+                availableTags: availableTags,
               ),
 
               // Notes count
