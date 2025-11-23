@@ -31,10 +31,10 @@ class _PageThumbnailNavigatorState extends State<PageThumbnailNavigator> {
         }
 
         return Positioned(
-          left: isTablet ? 20 : 16,
-          bottom: isTablet ? 100 : 80,
+          right: isTablet ? 20 : 16,
+          bottom: isTablet ? 20 : 16, // 우측 하단에 고정
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               // Toggle button
               GestureDetector(

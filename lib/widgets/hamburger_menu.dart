@@ -6,6 +6,7 @@ import '../screens/settings_screen.dart';
 import '../screens/stats_screen.dart';
 import '../screens/wrong_answer_screen.dart';
 import '../screens/home_dashboard.dart';
+import '../screens/notes_list_screen.dart';
 import '../utils/responsive_util.dart';
 
 /// Hamburger menu for unified access to all features and settings
@@ -199,6 +200,18 @@ class _HamburgerMenuState extends State<HamburgerMenu> with SingleTickerProvider
                                 },
                               ),
                               _MenuItem(
+                                icon: Icons.folder_open,
+                                label: '노트 탐색',
+                                isDarkMode: isDarkMode,
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(builder: (_) => const NotesListScreen()),
+                                  );
+                                  _toggleMenu();
+                                },
+                              ),
+                              _MenuItem(
                                 icon: Icons.bar_chart,
                                 label: '학습 통계',
                                 isDarkMode: isDarkMode,
@@ -218,18 +231,6 @@ class _HamburgerMenuState extends State<HamburgerMenu> with SingleTickerProvider
                                   Navigator.push(
                                     context,
                                     MaterialPageRoute(builder: (_) => const WrongAnswerScreen()),
-                                  );
-                                  _toggleMenu();
-                                },
-                              ),
-                              _MenuItem(
-                                icon: Icons.settings,
-                                label: '설정',
-                                isDarkMode: isDarkMode,
-                                onTap: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(builder: (_) => const SettingsScreen()),
                                   );
                                   _toggleMenu();
                                 },
@@ -269,6 +270,30 @@ class _HamburgerMenuState extends State<HamburgerMenu> with SingleTickerProvider
                                   // Toggle shape palette
                                 },
                                 compact: true,
+                              ),
+
+                              // Divider before settings
+                              Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                child: Divider(
+                                  color: isDarkMode
+                                      ? Colors.white.withValues(alpha: 0.1)
+                                      : Colors.black.withValues(alpha: 0.1),
+                                ),
+                              ),
+
+                              // Settings at bottom
+                              _MenuItem(
+                                icon: Icons.settings,
+                                label: '설정',
+                                isDarkMode: isDarkMode,
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(builder: (_) => const SettingsScreen()),
+                                  );
+                                  _toggleMenu();
+                                },
                               ),
 
                               const SizedBox(height: 12),
