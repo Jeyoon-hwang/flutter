@@ -666,7 +666,6 @@ class _FloatingToolbarState extends State<FloatingToolbar> with TickerProviderSt
           ],
         ),
       ),
-          ),
         ),
       ),
     );
@@ -704,57 +703,58 @@ class _FloatingToolbarState extends State<FloatingToolbar> with TickerProviderSt
           child: InkWell(
             onTap: isEnabled ? onTap : null,
             borderRadius: BorderRadius.circular(12),
-            splashColor: (color ?? const Color(0xFF667EEA)).withOpacity(0.3),
-            highlightColor: (color ?? const Color(0xFF667EEA)).withOpacity(0.1),
+            splashColor: (color ?? const Color(0xFF667EEA)).withValues(alpha: 0.3),
+            highlightColor: (color ?? const Color(0xFF667EEA)).withValues(alpha: 0.1),
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 200),
-          width: 56,
-          height: 56,
-          decoration: BoxDecoration(
-            color: isActive
-                ? (color ?? const Color(0xFF667EEA)).withValues(alpha: 0.2)
-                : (isDarkMode
-                    ? Colors.white.withValues(alpha: 0.05)
-                    : Colors.black.withValues(alpha: 0.03)),
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color: isActive
-                  ? (color ?? const Color(0xFF667EEA))
-                  : (isDarkMode
-                      ? Colors.white.withValues(alpha: 0.1)
-                      : Colors.black.withValues(alpha: 0.1)),
-              width: isActive ? 2 : 1,
-            ),
-          ),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                icon,
-                size: 20,
-                color: color ??
-                    (isActive
-                        ? const Color(0xFF667EEA)
-                        : (isDarkMode ? Colors.white : Colors.black87)),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                label,
-                style: TextStyle(
-                  fontSize: 9,
-                  fontWeight: isActive ? FontWeight.w600 : FontWeight.normal,
-                  color: color ??
-                      (isDarkMode ? Colors.white70 : Colors.black54),
+              width: 56,
+              height: 56,
+              decoration: BoxDecoration(
+                color: isActive
+                    ? (color ?? const Color(0xFF667EEA)).withValues(alpha: 0.2)
+                    : (isDarkMode
+                        ? Colors.white.withValues(alpha: 0.05)
+                        : Colors.black.withValues(alpha: 0.03)),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: isActive
+                      ? (color ?? const Color(0xFF667EEA))
+                      : (isDarkMode
+                          ? Colors.white.withValues(alpha: 0.1)
+                          : Colors.black.withValues(alpha: 0.1)),
+                  width: isActive ? 2 : 1,
                 ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                textAlign: TextAlign.center,
               ),
-            ],
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    icon,
+                    size: 20,
+                    color: color ??
+                        (isActive
+                            ? const Color(0xFF667EEA)
+                            : (isDarkMode ? Colors.white : Colors.black87)),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    label,
+                    style: TextStyle(
+                      fontSize: 9,
+                      fontWeight: isActive ? FontWeight.w600 : FontWeight.normal,
+                      color: color ??
+                          (isDarkMode ? Colors.white70 : Colors.black54),
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    textAlign: TextAlign.center,
+                  ),
+                ],
+              ),
+            ),
           ),
         ),
       ),
-    ),
     );
   }
 
