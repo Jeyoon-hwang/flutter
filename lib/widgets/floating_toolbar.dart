@@ -501,13 +501,12 @@ class _FloatingToolbarState extends State<FloatingToolbar> with TickerProviderSt
                     ),
                   ),
                 ),
-              ],
-            ),
-          ],
-        );
-      },
-    );
-  }
+              ),
+            ],
+          );
+        },
+      );
+    }
 
   Widget _buildPenButton(
     BuildContext context,
