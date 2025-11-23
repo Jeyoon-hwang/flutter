@@ -146,6 +146,44 @@ class _FloatingToolbarState extends State<FloatingToolbar> {
                             iconSize: iconSize,
                           ),
                           SizedBox(width: spacing),
+                          // Clear all button (only visible in eraser mode)
+                          if (provider.mode == DrawingMode.eraser) ...[
+                            _ModernToolButton(
+                              icon: Icons.delete_sweep,
+                              isActive: false,
+                              onTap: () {
+                                // Show confirmation dialog
+                                showDialog(
+                                  context: context,
+                                  builder: (context) => AlertDialog(
+                                    title: const Text('전체 지우기'),
+                                    content: const Text('모든 내용을 지우시겠습니까?\n이 작업은 실행 취소할 수 없습니다.'),
+                                    actions: [
+                                      TextButton(
+                                        onPressed: () => Navigator.pop(context),
+                                        child: const Text('취소'),
+                                      ),
+                                      TextButton(
+                                        onPressed: () {
+                                          provider.clearCanvas();
+                                          Navigator.pop(context);
+                                        },
+                                        style: TextButton.styleFrom(
+                                          foregroundColor: Colors.red,
+                                        ),
+                                        child: const Text('전체 지우기'),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              },
+                              isDarkMode: provider.isDarkMode,
+                              size: buttonSize,
+                              iconSize: iconSize,
+                              color: Colors.red,
+                            ),
+                            SizedBox(width: spacing),
+                          ],
                         ],
                         if (provider.settings.showSelectTool) ...[
                           _ModernToolButton(
@@ -846,6 +884,7 @@ class _ModernToolButton extends StatelessWidget {
   final bool isDarkMode;
   final double size;
   final double iconSize;
+  final Color? color; // Custom color for special buttons
 
   const _ModernToolButton({
     required this.icon,
@@ -854,6 +893,7 @@ class _ModernToolButton extends StatelessWidget {
     required this.isDarkMode,
     required this.size,
     required this.iconSize,
+    this.color,
   });
 
   @override
@@ -891,9 +931,9 @@ class _ModernToolButton extends StatelessWidget {
         child: Icon(
           icon,
           size: iconSize,
-          color: isActive
+          color: color ?? (isActive
               ? Colors.white
-              : (isDarkMode ? Colors.white.withValues(alpha: 0.8) : Colors.black.withValues(alpha: 0.7)),
+              : (isDarkMode ? Colors.white.withValues(alpha: 0.8) : Colors.black.withValues(alpha: 0.7))),
         ),
       ),
     );
