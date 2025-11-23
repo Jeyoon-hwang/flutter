@@ -415,7 +415,6 @@ class _FloatingToolbarState extends State<FloatingToolbar> {
               ),
             ),
               ),
-            ),
 
             // Pen settings panel (floating next to toolbar)
             if (_showPenSettings)
