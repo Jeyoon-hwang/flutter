@@ -1,4 +1,3 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -20,50 +19,33 @@ class FloatingToolbar extends StatefulWidget {
 
 class _FloatingToolbarState extends State<FloatingToolbar> with TickerProviderStateMixin {
   String? _selectedPenId;
-  bool _isExpanded = false; // Toolbar collapsed by default
   bool _isHidden = false; // Toolbar hidden at edge
 
   // Toolbar position
   double _toolbarX = 0;
-  double _toolbarY = 20; // Start at top
+  double _toolbarY = 0; // Will be set in initState to bottom
   EdgeLocation _dockedEdge = EdgeLocation.none;
 
   late AnimationController _slideController;
-  late AnimationController _fadeController;
   late AnimationController _scaleController;
-  late Animation<Offset> _slideAnimation;
-  late Animation<double> _fadeAnimation;
   late Animation<double> _scaleAnimation;
 
   @override
   void initState() {
     super.initState();
 
+    // Set toolbar to bottom after first frame
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      setState(() {
+        _toolbarY = MediaQuery.of(context).size.height - 150;
+      });
+    });
+
     // Slide animation for hiding/showing toolbar
     _slideController = AnimationController(
       duration: const Duration(milliseconds: 400),
       vsync: this,
     );
-    _slideAnimation = Tween<Offset>(
-      begin: Offset.zero,
-      end: const Offset(0, 1), // Slide down to hide
-    ).animate(CurvedAnimation(
-      parent: _slideController,
-      curve: Curves.easeInOutCubic,
-    ));
-
-    // Fade animation for smooth transitions
-    _fadeController = AnimationController(
-      duration: const Duration(milliseconds: 300),
-      vsync: this,
-    );
-    _fadeAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _fadeController,
-      curve: Curves.easeOut,
-    ));
 
     // Scale animation for button press effects
     _scaleController = AnimationController(
@@ -77,15 +59,11 @@ class _FloatingToolbarState extends State<FloatingToolbar> with TickerProviderSt
       parent: _scaleController,
       curve: Curves.easeInOut,
     ));
-
-    // Start with fade in
-    _fadeController.forward();
   }
 
   @override
   void dispose() {
     _slideController.dispose();
-    _fadeController.dispose();
     _scaleController.dispose();
     super.dispose();
   }
@@ -125,13 +103,16 @@ class _FloatingToolbarState extends State<FloatingToolbar> with TickerProviderSt
   void _showToolbar() {
     setState(() {
       _isHidden = false;
-      _isExpanded = true;
 
       // Move toolbar to visible position based on docked edge
       if (_dockedEdge == EdgeLocation.left) {
         _toolbarX = 10;
       } else if (_dockedEdge == EdgeLocation.right) {
         _toolbarX = MediaQuery.of(context).size.width - 400;
+      } else if (_dockedEdge == EdgeLocation.top) {
+        _toolbarY = 20;
+      } else if (_dockedEdge == EdgeLocation.bottom) {
+        _toolbarY = MediaQuery.of(context).size.height - 150;
       }
     });
   }
@@ -278,238 +259,241 @@ class _FloatingToolbarState extends State<FloatingToolbar> with TickerProviderSt
                           child: Column(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                        SingleChildScrollView(
-                          scrollDirection: Axis.horizontal,
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                          // Advanced Pens Section
-                          ...advancedPens.take(isTablet ? 6 : 4).map((pen) => Padding(
-                                padding: const EdgeInsets.only(right: 8),
-                                child: _buildPenButton(
-                                  context,
-                                  provider,
-                                  pen,
-                                  isSelected: pen.id == _selectedPenId,
-                                  isDarkMode: isDarkMode,
+                              SingleChildScrollView(
+                                scrollDirection: Axis.horizontal,
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    // Advanced Pens Section
+                                    ...advancedPens.take(isTablet ? 6 : 4).map((pen) => Padding(
+                                          padding: const EdgeInsets.only(right: 8),
+                                          child: _buildPenButton(
+                                            context,
+                                            provider,
+                                            pen,
+                                            isSelected: pen.id == _selectedPenId,
+                                            isDarkMode: isDarkMode,
+                                          ),
+                                        )),
+
+                                    // Add Pen Button
+                                    Padding(
+                                      padding: const EdgeInsets.only(right: 8),
+                                      child: _buildToolButton(
+                                        context,
+                                        icon: Icons.add_circle_outline,
+                                        label: '펜 추가',
+                                        isActive: false,
+                                        onTap: () {
+                                          HapticFeedback.selectionClick();
+                                          _showPenCustomizer(context, provider);
+                                        },
+                                        isDarkMode: isDarkMode,
+                                      ),
+                                    ),
+
+                                    // Divider
+                                    Container(
+                                      width: 2,
+                                      height: 40,
+                                      margin: const EdgeInsets.symmetric(horizontal: 12),
+                                      decoration: BoxDecoration(
+                                        gradient: LinearGradient(
+                                          begin: Alignment.topCenter,
+                                          end: Alignment.bottomCenter,
+                                          colors: isDarkMode
+                                              ? [
+                                                  Colors.white.withValues(alpha: 0.1),
+                                                  Colors.white.withValues(alpha: 0.05),
+                                                ]
+                                              : [
+                                                  Colors.black.withValues(alpha: 0.1),
+                                                  Colors.black.withValues(alpha: 0.05),
+                                                ],
+                                        ),
+                                      ),
+                                    ),
+
+                                    // Tools Section
+                                    if (provider.settings.showEraserTool) ...[
+                                      Padding(
+                                        padding: const EdgeInsets.only(right: 8),
+                                        child: _buildToolButton(
+                                          context,
+                                          icon: Icons.auto_fix_high,
+                                          label: '지우개',
+                                          isActive: provider.mode == DrawingMode.eraser,
+                                          onTap: () {
+                                            HapticFeedback.selectionClick();
+                                            provider.setMode(DrawingMode.eraser);
+                                          },
+                                          isDarkMode: isDarkMode,
+                                        ),
+                                      ),
+                                    ],
+
+                                    // Clear All (only in eraser mode)
+                                    if (provider.mode == DrawingMode.eraser) ...[
+                                      Padding(
+                                        padding: const EdgeInsets.only(right: 8),
+                                        child: _buildToolButton(
+                                          context,
+                                          icon: Icons.delete_sweep,
+                                          label: '전체 지우기',
+                                          isActive: false,
+                                          onTap: () {
+                                            _showClearAllDialog(context, provider);
+                                          },
+                                          isDarkMode: isDarkMode,
+                                          color: Colors.red,
+                                        ),
+                                      ),
+                                    ],
+
+                                    if (provider.settings.showSelectTool) ...[
+                                      Padding(
+                                        padding: const EdgeInsets.only(right: 8),
+                                        child: _buildToolButton(
+                                          context,
+                                          icon: Icons.select_all,
+                                          label: '선택',
+                                          isActive: provider.mode == DrawingMode.select,
+                                          onTap: () {
+                                            HapticFeedback.selectionClick();
+                                            provider.setMode(DrawingMode.select);
+                                          },
+                                          isDarkMode: isDarkMode,
+                                        ),
+                                      ),
+                                    ],
+
+                                    // Wrong Answer Clip
+                                    Padding(
+                                      padding: const EdgeInsets.only(right: 8),
+                                      child: _buildToolButton(
+                                        context,
+                                        icon: Icons.content_cut,
+                                        label: '오답',
+                                        isActive: provider.mode == DrawingMode.wrongAnswerClip,
+                                        onTap: () {
+                                          HapticFeedback.selectionClick();
+                                          provider.setMode(DrawingMode.wrongAnswerClip);
+                                        },
+                                        isDarkMode: isDarkMode,
+                                      ),
+                                    ),
+
+                                    if (provider.settings.showShapeTool) ...[
+                                      Padding(
+                                        padding: const EdgeInsets.only(right: 8),
+                                        child: _buildToolButton(
+                                          context,
+                                          icon: Icons.category_outlined,
+                                          label: '도형',
+                                          isActive: provider.mode == DrawingMode.shape,
+                                          onTap: () {
+                                            HapticFeedback.selectionClick();
+                                            provider.setMode(DrawingMode.shape);
+                                          },
+                                          isDarkMode: isDarkMode,
+                                        ),
+                                      ),
+                                    ],
+
+                                    if (provider.settings.showTextTool) ...[
+                                      Padding(
+                                        padding: const EdgeInsets.only(right: 8),
+                                        child: _buildToolButton(
+                                          context,
+                                          icon: Icons.text_fields,
+                                          label: '텍스트',
+                                          isActive: provider.mode == DrawingMode.text,
+                                          onTap: () {
+                                            HapticFeedback.selectionClick();
+                                            provider.setMode(DrawingMode.text);
+                                          },
+                                          isDarkMode: isDarkMode,
+                                        ),
+                                      ),
+                                    ],
+
+                                    // Divider
+                                    Container(
+                                      width: 2,
+                                      height: 40,
+                                      margin: const EdgeInsets.symmetric(horizontal: 12),
+                                      decoration: BoxDecoration(
+                                        gradient: LinearGradient(
+                                          begin: Alignment.topCenter,
+                                          end: Alignment.bottomCenter,
+                                          colors: isDarkMode
+                                              ? [
+                                                  Colors.white.withValues(alpha: 0.1),
+                                                  Colors.white.withValues(alpha: 0.05),
+                                                ]
+                                              : [
+                                                  Colors.black.withValues(alpha: 0.1),
+                                                  Colors.black.withValues(alpha: 0.05),
+                                                ],
+                                        ),
+                                      ),
+                                    ),
+
+                                    // Undo/Redo
+                                    Padding(
+                                      padding: const EdgeInsets.only(right: 8),
+                                      child: _buildToolButton(
+                                        context,
+                                        icon: Icons.undo,
+                                        label: 'Undo',
+                                        isActive: false,
+                                        onTap: provider.canUndo
+                                            ? () {
+                                                HapticFeedback.mediumImpact();
+                                                provider.undo();
+                                              }
+                                            : null,
+                                        isDarkMode: isDarkMode,
+                                        isEnabled: provider.canUndo,
+                                      ),
+                                    ),
+
+                                    Padding(
+                                      padding: const EdgeInsets.only(right: 8),
+                                      child: _buildToolButton(
+                                        context,
+                                        icon: Icons.redo,
+                                        label: 'Redo',
+                                        isActive: false,
+                                        onTap: provider.canRedo
+                                            ? () {
+                                                HapticFeedback.mediumImpact();
+                                                provider.redo();
+                                              }
+                                            : null,
+                                        isDarkMode: isDarkMode,
+                                        isEnabled: provider.canRedo,
+                                      ),
+                                    ),
+
+                                    // Template Tool
+                                    Padding(
+                                      padding: const EdgeInsets.only(right: 8),
+                                      child: _buildToolButton(
+                                        context,
+                                        icon: Icons.grid_on,
+                                        label: '템플릿',
+                                        isActive: false,
+                                        onTap: () {
+                                          HapticFeedback.selectionClick();
+                                          _showTemplatePicker(context, provider);
+                                        },
+                                        isDarkMode: isDarkMode,
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                              )),
-
-                          // Add Pen Button
-                          Padding(
-                            padding: const EdgeInsets.only(right: 8),
-                            child: _buildToolButton(
-                              context,
-                              icon: Icons.add_circle_outline,
-                              label: '펜 추가',
-                              isActive: false,
-                              onTap: () {
-                                HapticFeedback.selectionClick();
-                                _showPenCustomizer(context, provider);
-                              },
-                              isDarkMode: isDarkMode,
-                            ),
-                          ),
-
-                          // Divider
-                          Container(
-                            width: 2,
-                            height: 40,
-                            margin: const EdgeInsets.symmetric(horizontal: 12),
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                begin: Alignment.topCenter,
-                                end: Alignment.bottomCenter,
-                                colors: isDarkMode
-                                    ? [
-                                        Colors.white.withValues(alpha: 0.1),
-                                        Colors.white.withValues(alpha: 0.05),
-                                      ]
-                                    : [
-                                        Colors.black.withValues(alpha: 0.1),
-                                        Colors.black.withValues(alpha: 0.05),
-                                      ],
                               ),
-                            ),
-                          ),
-
-                          // Tools Section
-                          if (provider.settings.showEraserTool) ...[
-                            Padding(
-                              padding: const EdgeInsets.only(right: 8),
-                              child: _buildToolButton(
-                                context,
-                                icon: Icons.auto_fix_high,
-                                label: '지우개',
-                                isActive: provider.mode == DrawingMode.eraser,
-                                onTap: () {
-                                  HapticFeedback.selectionClick();
-                                  provider.setMode(DrawingMode.eraser);
-                                },
-                                isDarkMode: isDarkMode,
-                              ),
-                            ),
-                          ],
-
-                          // Clear All (only in eraser mode)
-                          if (provider.mode == DrawingMode.eraser) ...[
-                            Padding(
-                              padding: const EdgeInsets.only(right: 8),
-                              child: _buildToolButton(
-                                context,
-                                icon: Icons.delete_sweep,
-                                label: '전체 지우기',
-                                isActive: false,
-                                onTap: () {
-                                  _showClearAllDialog(context, provider);
-                                },
-                                isDarkMode: isDarkMode,
-                                color: Colors.red,
-                              ),
-                            ),
-                          ],
-
-                          if (provider.settings.showSelectTool) ...[
-                            Padding(
-                              padding: const EdgeInsets.only(right: 8),
-                              child: _buildToolButton(
-                                context,
-                                icon: Icons.select_all,
-                                label: '선택',
-                                isActive: provider.mode == DrawingMode.select,
-                                onTap: () {
-                                  HapticFeedback.selectionClick();
-                                  provider.setMode(DrawingMode.select);
-                                },
-                                isDarkMode: isDarkMode,
-                              ),
-                            ),
-                          ],
-
-                          // Wrong Answer Clip
-                          Padding(
-                            padding: const EdgeInsets.only(right: 8),
-                            child: _buildToolButton(
-                              context,
-                              icon: Icons.content_cut,
-                              label: '오답',
-                              isActive: provider.mode == DrawingMode.wrongAnswerClip,
-                              onTap: () {
-                                HapticFeedback.selectionClick();
-                                provider.setMode(DrawingMode.wrongAnswerClip);
-                              },
-                              isDarkMode: isDarkMode,
-                            ),
-                          ),
-
-                          if (provider.settings.showShapeTool) ...[
-                            Padding(
-                              padding: const EdgeInsets.only(right: 8),
-                              child: _buildToolButton(
-                                context,
-                                icon: Icons.category_outlined,
-                                label: '도형',
-                                isActive: provider.mode == DrawingMode.shape,
-                                onTap: () {
-                                  HapticFeedback.selectionClick();
-                                  provider.setMode(DrawingMode.shape);
-                                },
-                                isDarkMode: isDarkMode,
-                              ),
-                            ),
-                          ],
-
-                          if (provider.settings.showTextTool) ...[
-                            Padding(
-                              padding: const EdgeInsets.only(right: 8),
-                              child: _buildToolButton(
-                                context,
-                                icon: Icons.text_fields,
-                                label: '텍스트',
-                                isActive: provider.mode == DrawingMode.text,
-                                onTap: () {
-                                  HapticFeedback.selectionClick();
-                                  provider.setMode(DrawingMode.text);
-                                },
-                                isDarkMode: isDarkMode,
-                              ),
-                            ),
-                          ],
-
-                          // Divider
-                          Container(
-                            width: 2,
-                            height: 40,
-                            margin: const EdgeInsets.symmetric(horizontal: 12),
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                begin: Alignment.topCenter,
-                                end: Alignment.bottomCenter,
-                                colors: isDarkMode
-                                    ? [
-                                        Colors.white.withValues(alpha: 0.1),
-                                        Colors.white.withValues(alpha: 0.05),
-                                      ]
-                                    : [
-                                        Colors.black.withValues(alpha: 0.1),
-                                        Colors.black.withValues(alpha: 0.05),
-                                      ],
-                              ),
-                            ),
-                          ),
-
-                          // Undo/Redo
-                          Padding(
-                            padding: const EdgeInsets.only(right: 8),
-                            child: _buildToolButton(
-                              context,
-                              icon: Icons.undo,
-                              label: 'Undo',
-                              isActive: false,
-                              onTap: provider.canUndo
-                                  ? () {
-                                      HapticFeedback.mediumImpact();
-                                      provider.undo();
-                                    }
-                                  : null,
-                              isDarkMode: isDarkMode,
-                              isEnabled: provider.canUndo,
-                            ),
-                          ),
-
-                          Padding(
-                            padding: const EdgeInsets.only(right: 8),
-                            child: _buildToolButton(
-                              context,
-                              icon: Icons.redo,
-                              label: 'Redo',
-                              isActive: false,
-                              onTap: provider.canRedo
-                                  ? () {
-                                      HapticFeedback.mediumImpact();
-                                      provider.redo();
-                                    }
-                                  : null,
-                              isDarkMode: isDarkMode,
-                              isEnabled: provider.canRedo,
-                            ),
-                          ),
-
-                          // Template Tool
-                          Padding(
-                            padding: const EdgeInsets.only(right: 8),
-                            child: _buildToolButton(
-                              context,
-                              icon: Icons.grid_on,
-                              label: '템플릿',
-                              isActive: false,
-                              onTap: () {
-                                HapticFeedback.selectionClick();
-                                _showTemplatePicker(context, provider);
-                              },
-                              isDarkMode: isDarkMode,
-                            ),
-                          ),
                             ],
                           ),
                         ),
@@ -519,10 +503,8 @@ class _FloatingToolbarState extends State<FloatingToolbar> with TickerProviderSt
                 ),
               ],
             ),
-          ),
-        ),
-      ],
-    );
+          ],
+        );
       },
     );
   }
