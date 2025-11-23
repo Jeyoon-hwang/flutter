@@ -50,7 +50,7 @@ class OCRService {
 
       // 3. Apply slight sharpening to enhance edges
       imgImage = img.gaussianBlur(imgImage, radius: 1); // Reduce noise first
-      imgImage = img.convolution(imgImage, [
+      imgImage = img.convolution(imgImage, filter: [
         0, -1, 0,
         -1, 5, -1,
         0, -1, 0,

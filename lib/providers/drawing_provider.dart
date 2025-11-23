@@ -495,7 +495,8 @@ class DrawingProvider extends ChangeNotifier {
       if (deletedStrokes.isNotEmpty) {
         _historyManager.recordAction(HistoryAction(
           type: HistoryActionType.removeStroke,
-          timestamp: DateTime.now(),
+          data: deletedStrokes,
+          description: 'Delete ${deletedStrokes.length} strokes',
         ));
       }
 

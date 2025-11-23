@@ -1,4 +1,5 @@
 import 'dart:ui';
+import 'dart:math' as math;
 import '../models/drawing_stroke.dart';
 
 /// Performance optimizer for large notes
@@ -140,7 +141,7 @@ class PerformanceOptimizer {
     final numerator = ((dy * (point.dx - lineStart.dx)) -
             (dx * (point.dy - lineStart.dy)))
         .abs();
-    final denominator = (dx * dx + dy * dy).sqrt();
+    final denominator = math.sqrt(dx * dx + dy * dy);
 
     return numerator / denominator;
   }

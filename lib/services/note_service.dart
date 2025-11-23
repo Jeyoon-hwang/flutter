@@ -253,6 +253,13 @@ class NoteService extends ChangeNotifier {
     }
   }
 
+  /// Save current note to disk
+  Future<void> saveCurrentNote() async {
+    if (_currentNote != null) {
+      await saveNoteToDisk(_currentNote!);
+    }
+  }
+
   /// Load all notes from disk
   Future<void> loadNotesFromDisk() async {
     try {
