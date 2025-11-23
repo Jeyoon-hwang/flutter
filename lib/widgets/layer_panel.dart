@@ -5,8 +5,15 @@ import '../providers/drawing_provider.dart';
 import '../models/layer.dart';
 import '../utils/responsive_util.dart';
 
-class LayerPanel extends StatelessWidget {
+class LayerPanel extends StatefulWidget {
   const LayerPanel({Key? key}) : super(key: key);
+
+  @override
+  State<LayerPanel> createState() => _LayerPanelState();
+}
+
+class _LayerPanelState extends State<LayerPanel> {
+  bool _isExpanded = false;
 
   @override
   Widget build(BuildContext context) {
@@ -18,152 +25,236 @@ class LayerPanel extends StatelessWidget {
           return const SizedBox.shrink(); // 포커스 모드일 때 숨김
         }
 
+        final isDarkMode = provider.isDarkMode;
+
         return Positioned(
           right: isTablet ? 30 : 20,
-          top: isTablet ? 100 : 80,
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(isTablet ? 20 : 16),
-            child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-              child: Container(
-                width: isTablet ? 280 : 240,
-                constraints: BoxConstraints(
-                  maxHeight: MediaQuery.of(context).size.height * 0.6,
-                ),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: provider.isDarkMode
-                        ? [
-                            Colors.black.withValues(alpha: 0.7),
-                            Colors.black.withValues(alpha: 0.5),
-                          ]
-                        : [
-                            Colors.white.withValues(alpha: 0.7),
-                            Colors.white.withValues(alpha: 0.5),
+          top: isTablet ? 180 : 150,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              // Toggle button (축소된 상태)
+              if (!_isExpanded)
+                GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      _isExpanded = true;
+                    });
+                  },
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(isTablet ? 16 : 12),
+                    child: BackdropFilter(
+                      filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                      child: Container(
+                        width: isTablet ? 56 : 48,
+                        height: isTablet ? 56 : 48,
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: isDarkMode
+                                ? [
+                                    Colors.black.withValues(alpha: 0.7),
+                                    Colors.black.withValues(alpha: 0.5),
+                                  ]
+                                : [
+                                    Colors.white.withValues(alpha: 0.9),
+                                    Colors.white.withValues(alpha: 0.7),
+                                  ],
+                          ),
+                          borderRadius: BorderRadius.circular(isTablet ? 16 : 12),
+                          border: Border.all(
+                            color: isDarkMode
+                                ? Colors.white.withValues(alpha: 0.1)
+                                : Colors.black.withValues(alpha: 0.1),
+                            width: 1.5,
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.2),
+                              blurRadius: 15,
+                              offset: const Offset(0, 5),
+                            ),
                           ],
-                  ),
-                  borderRadius: BorderRadius.circular(isTablet ? 20 : 16),
-                  border: Border.all(
-                    color: provider.isDarkMode
-                        ? Colors.white.withValues(alpha: 0.1)
-                        : Colors.black.withValues(alpha: 0.1),
-                    width: 1.5,
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.1),
-                      blurRadius: 30,
-                      offset: const Offset(0, 10),
+                        ),
+                        child: Icon(
+                          Icons.layers,
+                          color: isDarkMode ? Colors.white : Colors.black87,
+                          size: isTablet ? 28 : 24,
+                        ),
+                      ),
                     ),
-                  ],
+                  ),
                 ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    // Header
-                    Padding(
-                      padding: EdgeInsets.all(isTablet ? 16.0 : 12.0),
-                      child: Row(
+
+              // Full panel (확장된 상태)
+              if (_isExpanded)
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(isTablet ? 20 : 16),
+                  child: BackdropFilter(
+                    filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                    child: Container(
+                      width: isTablet ? 280 : 240,
+                      constraints: BoxConstraints(
+                        maxHeight: MediaQuery.of(context).size.height * 0.6,
+                      ),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: isDarkMode
+                              ? [
+                                  Colors.black.withValues(alpha: 0.7),
+                                  Colors.black.withValues(alpha: 0.5),
+                                ]
+                              : [
+                                  Colors.white.withValues(alpha: 0.7),
+                                  Colors.white.withValues(alpha: 0.5),
+                                ],
+                        ),
+                        borderRadius: BorderRadius.circular(isTablet ? 20 : 16),
+                        border: Border.all(
+                          color: isDarkMode
+                              ? Colors.white.withValues(alpha: 0.1)
+                              : Colors.black.withValues(alpha: 0.1),
+                          width: 1.5,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.1),
+                            blurRadius: 30,
+                            offset: const Offset(0, 10),
+                          ),
+                        ],
+                      ),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(
-                            Icons.layers,
-                            size: isTablet ? 24 : 20,
-                            color: provider.isDarkMode
-                                ? Colors.white.withValues(alpha: 0.9)
-                                : Colors.black.withValues(alpha: 0.8),
-                          ),
-                          SizedBox(width: isTablet ? 12 : 8),
-                          Text(
-                            '레이어',
-                            style: TextStyle(
-                              fontSize: isTablet ? 18 : 16,
-                              fontWeight: FontWeight.bold,
-                              color: provider.isDarkMode
-                                  ? Colors.white.withValues(alpha: 0.9)
-                                  : Colors.black.withValues(alpha: 0.8),
+                          // Header
+                          Padding(
+                            padding: EdgeInsets.all(isTablet ? 16.0 : 12.0),
+                            child: Row(
+                              children: [
+                                Icon(
+                                  Icons.layers,
+                                  size: isTablet ? 24 : 20,
+                                  color: isDarkMode
+                                      ? Colors.white.withValues(alpha: 0.9)
+                                      : Colors.black.withValues(alpha: 0.8),
+                                ),
+                                SizedBox(width: isTablet ? 12 : 8),
+                                Text(
+                                  '레이어',
+                                  style: TextStyle(
+                                    fontSize: isTablet ? 18 : 16,
+                                    fontWeight: FontWeight.bold,
+                                    color: isDarkMode
+                                        ? Colors.white.withValues(alpha: 0.9)
+                                        : Colors.black.withValues(alpha: 0.8),
+                                  ),
+                                ),
+                                const Spacer(),
+                                // Close button
+                                GestureDetector(
+                                  onTap: () {
+                                    setState(() {
+                                      _isExpanded = false;
+                                    });
+                                  },
+                                  child: Container(
+                                    padding: EdgeInsets.all(isTablet ? 8 : 6),
+                                    decoration: BoxDecoration(
+                                      color: Colors.grey.withValues(alpha: 0.2),
+                                      borderRadius: BorderRadius.circular(isTablet ? 10 : 8),
+                                    ),
+                                    child: Icon(
+                                      Icons.close,
+                                      size: isTablet ? 20 : 18,
+                                      color: isDarkMode
+                                          ? Colors.white.withValues(alpha: 0.7)
+                                          : Colors.black.withValues(alpha: 0.7),
+                                    ),
+                                  ),
+                                ),
+                                SizedBox(width: isTablet ? 8 : 6),
+                                // Auto layer management toggle
+                                Tooltip(
+                                  message: provider.autoLayerManagement
+                                      ? '자동 레이어 관리: 켜짐\n(콘텐츠 타입에 따라 자동 배정)'
+                                      : '자동 레이어 관리: 꺼짐\n(수동 레이어 선택)',
+                                  child: GestureDetector(
+                                    onTap: () => provider.toggleAutoLayerManagement(),
+                                    child: Container(
+                                      padding: EdgeInsets.all(isTablet ? 8 : 6),
+                                      decoration: BoxDecoration(
+                                        color: provider.autoLayerManagement
+                                            ? const Color(0xFF34C759).withValues(alpha: 0.2)
+                                            : Colors.grey.withValues(alpha: 0.2),
+                                        borderRadius: BorderRadius.circular(isTablet ? 10 : 8),
+                                      ),
+                                      child: Icon(
+                                        provider.autoLayerManagement
+                                            ? Icons.auto_awesome
+                                            : Icons.auto_awesome_outlined,
+                                        size: isTablet ? 20 : 18,
+                                        color: provider.autoLayerManagement
+                                            ? const Color(0xFF34C759)
+                                            : Colors.grey,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                SizedBox(width: isTablet ? 8 : 6),
+                                GestureDetector(
+                                  onTap: () => _showAddLayerDialog(context, provider),
+                                  child: Container(
+                                    padding: EdgeInsets.all(isTablet ? 8 : 6),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFF667EEA).withValues(alpha: 0.2),
+                                      borderRadius: BorderRadius.circular(isTablet ? 10 : 8),
+                                    ),
+                                    child: Icon(
+                                      Icons.add,
+                                      size: isTablet ? 20 : 18,
+                                      color: const Color(0xFF667EEA),
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
-                          const Spacer(),
-                          // Auto layer management toggle
-                          Tooltip(
-                            message: provider.autoLayerManagement
-                                ? '자동 레이어 관리: 켜짐\n(콘텐츠 타입에 따라 자동 배정)'
-                                : '자동 레이어 관리: 꺼짐\n(수동 레이어 선택)',
-                            child: GestureDetector(
-                              onTap: () => provider.toggleAutoLayerManagement(),
-                              child: Container(
-                                padding: EdgeInsets.all(isTablet ? 8 : 6),
-                                decoration: BoxDecoration(
-                                  color: provider.autoLayerManagement
-                                      ? const Color(0xFF34C759).withValues(alpha: 0.2)
-                                      : Colors.grey.withValues(alpha: 0.2),
-                                  borderRadius: BorderRadius.circular(isTablet ? 10 : 8),
-                                ),
-                                child: Icon(
-                                  provider.autoLayerManagement
-                                      ? Icons.auto_awesome
-                                      : Icons.auto_awesome_outlined,
-                                  size: isTablet ? 20 : 18,
-                                  color: provider.autoLayerManagement
-                                      ? const Color(0xFF34C759)
-                                      : Colors.grey,
-                                ),
-                              ),
-                            ),
-                          ),
-                          SizedBox(width: isTablet ? 12 : 8),
-                          GestureDetector(
-                            onTap: () => _showAddLayerDialog(context, provider),
-                            child: Container(
-                              padding: EdgeInsets.all(isTablet ? 8 : 6),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFF667EEA).withValues(alpha: 0.2),
-                                borderRadius: BorderRadius.circular(isTablet ? 10 : 8),
-                              ),
-                              child: Icon(
-                                Icons.add,
-                                size: isTablet ? 20 : 18,
-                                color: const Color(0xFF667EEA),
-                              ),
+
+                          // Layer list
+                          Flexible(
+                            child: ListView.builder(
+                              shrinkWrap: true,
+                              reverse: true, // Bottom layer first
+                              itemCount: provider.layers.length,
+                              itemBuilder: (context, index) {
+                                final layer = provider.layers[index];
+                                final isSelected = index == provider.currentLayerIndex;
+
+                                return _LayerItem(
+                                  layer: layer,
+                                  index: index,
+                                  isSelected: isSelected,
+                                  isTablet: isTablet,
+                                  onTap: () => provider.selectLayer(index),
+                                  onToggleVisibility: () => provider.toggleLayerVisibility(index),
+                                  onToggleLock: () => provider.toggleLayerLock(index),
+                                  onDelete: provider.layers.length > 1
+                                      ? () => provider.deleteLayer(index)
+                                      : null,
+                                  onOpacityChange: (value) => provider.setLayerOpacity(index, value),
+                                  isDarkMode: isDarkMode,
+                                );
+                              },
                             ),
                           ),
                         ],
                       ),
                     ),
-
-                    // Layer list
-                    Flexible(
-                      child: ListView.builder(
-                        shrinkWrap: true,
-                        reverse: true, // Bottom layer first
-                        itemCount: provider.layers.length,
-                        itemBuilder: (context, index) {
-                          final layer = provider.layers[index];
-                          final isSelected = index == provider.currentLayerIndex;
-
-                          return _LayerItem(
-                            layer: layer,
-                            index: index,
-                            isSelected: isSelected,
-                            isTablet: isTablet,
-                            onTap: () => provider.selectLayer(index),
-                            onToggleVisibility: () => provider.toggleLayerVisibility(index),
-                            onToggleLock: () => provider.toggleLayerLock(index),
-                            onDelete: provider.layers.length > 1
-                                ? () => provider.deleteLayer(index)
-                                : null,
-                            onOpacityChange: (value) => provider.setLayerOpacity(index, value),
-                            isDarkMode: provider.isDarkMode,
-                          );
-                        },
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
-              ),
-            ),
+            ],
           ),
         );
       },

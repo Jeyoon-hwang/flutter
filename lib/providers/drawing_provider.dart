@@ -757,14 +757,23 @@ class DrawingProvider extends ChangeNotifier {
     double? tiltX,
     double? tiltY,
   }) {
+    // Debug logging for S-Pen detection
+    if (deviceKind != null) {
+      debugPrint('🖊️ Pointer Device: ${deviceKind.toString()}, Pressure: $pressure');
+    }
+
     // Update current input device
+    bool isStylusInput = false;
     if (deviceKind != null) {
       switch (deviceKind) {
         case PointerDeviceKind.stylus:
+        case PointerDeviceKind.invertedStylus: // S-Pen 지우개 모드도 인식
           _currentInputDevice = InputDeviceType.stylus;
+          isStylusInput = true;
           // Haptic feedback when stylus is first detected
           if (!_isStylusDetected) {
             hapticService.stylusDetected();
+            debugPrint('✅ S-Pen/Stylus detected!');
           }
           _isStylusDetected = true;
           break;
@@ -776,12 +785,23 @@ class DrawingProvider extends ChangeNotifier {
           break;
         default:
           _currentInputDevice = InputDeviceType.unknown;
+          // Unknown devices with pressure > 0.3 are likely styluses (S-Pen fallback)
+          if (pressure > 0.3) {
+            debugPrint('⚠️ Unknown device with pressure $pressure - treating as stylus');
+            _currentInputDevice = InputDeviceType.stylus;
+            isStylusInput = true;
+            _isStylusDetected = true;
+          }
       }
     }
 
     // Palm rejection: ONLY reject touch/finger input when palmRejection is enabled
-    // Always allow stylus pen input regardless of palmRejection setting
-    if (_settings.palmRejection && deviceKind == PointerDeviceKind.touch && _mode == DrawingMode.pen) {
+    // ALWAYS allow stylus pen input (including inverted stylus)
+    if (_settings.palmRejection &&
+        deviceKind == PointerDeviceKind.touch &&
+        !isStylusInput &&
+        _mode == DrawingMode.pen) {
+      debugPrint('🚫 Touch input rejected by palm rejection');
       return;
     }
 

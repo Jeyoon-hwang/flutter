@@ -32,7 +32,7 @@ class _HomeDashboardState extends State<HomeDashboard> {
   bool _performanceInitialized = false;
 
   // Get today's motivational quote
-  String _getTodayQuote() {
+  Quote _getTodayQuote() {
     return MotivationalQuotes.getTimeBasedQuote();
   }
 
@@ -225,10 +225,29 @@ class _HomeDashboardState extends State<HomeDashboard> {
                   ),
                 ],
               ),
-              const SizedBox(height: 4),
-              Text(
-                _getTodayQuote(),
-                style: AppTheme.heading1(isDarkMode),
+              const SizedBox(height: 8),
+              // Motivational quote
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    _getTodayQuote().text,
+                    style: AppTheme.bodyMedium(isDarkMode).copyWith(
+                      fontWeight: FontWeight.w600,
+                      fontSize: 15,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    '- ${_getTodayQuote().author} -',
+                    style: AppTheme.bodySmall(isDarkMode).copyWith(
+                      fontSize: 12,
+                      fontStyle: FontStyle.italic,
+                      color: (isDarkMode ? AppTheme.darkText : AppTheme.lightText)
+                          .withValues(alpha: 0.6),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
