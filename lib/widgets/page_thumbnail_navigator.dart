@@ -2,7 +2,6 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/drawing_provider.dart';
-import '../models/page_layout.dart';
 import '../utils/responsive_util.dart';
 
 /// Page thumbnail navigator for multi-page notes
@@ -191,7 +190,7 @@ class _PageThumbnailNavigatorState extends State<PageThumbnailNavigator> {
 
                                   return GestureDetector(
                                     onTap: () {
-                                      provider.pageManager.setCurrentPage(index);
+                                      provider.pageManager.goToPage(index);
                                       setState(() {
                                         _isExpanded = false;
                                       });
