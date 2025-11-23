@@ -417,7 +417,7 @@ class _FloatingToolbarState extends State<FloatingToolbar> {
             ),
 
             // Pen settings panel (floating next to toolbar)
-            ...(_showPenSettings ? [
+            if (_showPenSettings) ...[
               Positioned(
                 // Horizontal positioning: left vs right
                 left: _position.dx < screenSize.width / 2
@@ -429,7 +429,7 @@ class _FloatingToolbarState extends State<FloatingToolbar> {
                     : _position.dy - (isTablet ? 320 : 300),  // On bottom → panel above
                 child: _buildPenSettingsPanel(provider, isTablet, sizeMultiplier),
               ),
-            ] : []),
+            ],
           ],
         );
       },
