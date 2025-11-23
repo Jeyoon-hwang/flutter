@@ -320,8 +320,23 @@ class FloatingToolbar extends StatelessWidget {
                           SizedBox(width: spacing * 1.5),
                         ],
 
-                        // Pen settings button (compact popup for color & thickness)
+                        // Favorite pens quick access
                         if (provider.mode == DrawingMode.pen && provider.selectionRect == null) ...[
+                          // Favorite pens
+                          ...provider.settings.favoritePens.take(5).map((favPen) => Padding(
+                                padding: EdgeInsets.only(right: spacing),
+                                child: _FavoritePenButton(
+                                  pen: favPen,
+                                  isSelected: provider.settings.selectedFavoritePenId == favPen.id,
+                                  onTap: () => provider.selectFavoritePen(favPen.id),
+                                  isDarkMode: provider.isDarkMode,
+                                  size: smallButtonSize,
+                                ),
+                              )),
+
+                          SizedBox(width: spacing),
+
+                          // Pen settings button
                           _PenSettingsButton(
                             currentColor: provider.currentColor,
                             currentWidth: provider.currentStrokeWidth,
@@ -600,6 +615,84 @@ class FloatingToolbar extends StatelessWidget {
             ),
 
             const SizedBox(height: 32),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// Favorite pen button widget
+class _FavoritePenButton extends StatelessWidget {
+  final dynamic pen; // FavoritePen
+  final bool isSelected;
+  final VoidCallback onTap;
+  final bool isDarkMode;
+  final double size;
+
+  const _FavoritePenButton({
+    required this.pen,
+    required this.isSelected,
+    required this.onTap,
+    required this.isDarkMode,
+    required this.size,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        curve: Curves.easeOutCubic,
+        width: size,
+        height: size,
+        decoration: BoxDecoration(
+          color: isSelected
+              ? pen.color.withValues(alpha: 0.2)
+              : (isDarkMode
+                  ? Colors.white.withValues(alpha: 0.1)
+                  : Colors.black.withValues(alpha: 0.05)),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: isSelected
+                ? pen.color
+                : (isDarkMode
+                    ? Colors.white.withValues(alpha: 0.1)
+                    : Colors.black.withValues(alpha: 0.1)),
+            width: isSelected ? 2.5 : 1,
+          ),
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: pen.color.withValues(alpha: 0.3),
+                    blurRadius: 8,
+                    offset: const Offset(0, 3),
+                  ),
+                ]
+              : [],
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              pen.icon,
+              size: size * 0.4,
+              color: isSelected
+                  ? pen.color
+                  : (isDarkMode ? Colors.white70 : Colors.black54),
+            ),
+            if (size > 45) ...[
+              const SizedBox(height: 2),
+              Container(
+                width: size * 0.6,
+                height: 2,
+                decoration: BoxDecoration(
+                  color: pen.color,
+                  borderRadius: BorderRadius.circular(1),
+                ),
+              ),
+            ],
           ],
         ),
       ),
