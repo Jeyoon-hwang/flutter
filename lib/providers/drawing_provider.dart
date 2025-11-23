@@ -467,6 +467,65 @@ class DrawingProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Center the note content on screen
+  /// If fitToScreen is true, also adjusts scale to fit all content
+  void centerNote(Size screenSize, {bool fitToScreen = false}) {
+    if (_strokes.isEmpty && _textObjects.isEmpty) {
+      // Nothing to center, just reset to center of screen
+      resetTransform();
+      return;
+    }
+
+    // Calculate bounding box of all content
+    double minX = double.infinity;
+    double minY = double.infinity;
+    double maxX = double.negativeInfinity;
+    double maxY = double.negativeInfinity;
+
+    // Include all strokes
+    for (final stroke in _strokes) {
+      for (final point in stroke.points) {
+        if (point.offset.dx < minX) minX = point.offset.dx;
+        if (point.offset.dy < minY) minY = point.offset.dy;
+        if (point.offset.dx > maxX) maxX = point.offset.dx;
+        if (point.offset.dy > maxY) maxY = point.offset.dy;
+      }
+    }
+
+    // Include all text objects
+    for (final textObj in _textObjects) {
+      if (textObj.position.dx < minX) minX = textObj.position.dx;
+      if (textObj.position.dy < minY) minY = textObj.position.dy;
+      if (textObj.position.dx > maxX) maxX = textObj.position.dx;
+      if (textObj.position.dy > maxY) maxY = textObj.position.dy;
+    }
+
+    // Calculate content center and size
+    final contentCenter = Offset(
+      (minX + maxX) / 2,
+      (minY + minY) / 2,
+    );
+    final contentWidth = maxX - minX;
+    final contentHeight = maxY - minY;
+
+    // Calculate screen center
+    final screenCenter = Offset(screenSize.width / 2, screenSize.height / 2);
+
+    double newScale = _scale;
+
+    // If fitToScreen is true, calculate scale to fit content
+    if (fitToScreen && contentWidth > 0 && contentHeight > 0) {
+      final scaleX = (screenSize.width * 0.8) / contentWidth;
+      final scaleY = (screenSize.height * 0.8) / contentHeight;
+      newScale = (scaleX < scaleY ? scaleX : scaleY).clamp(_minScale, _maxScale);
+    }
+
+    // Calculate offset to center content
+    final newOffset = screenCenter - (contentCenter * newScale);
+
+    updateTransform(newScale, newOffset);
+  }
+
   // Zoom convenience methods for keyboard shortcuts
   void resetZoom() => resetTransform();
 

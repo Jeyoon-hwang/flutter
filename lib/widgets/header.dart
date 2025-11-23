@@ -103,6 +103,10 @@ class AppHeader extends StatelessWidget {
                           case 'theme':
                             provider.toggleDarkMode();
                             break;
+                          case 'center':
+                            final screenSize = MediaQuery.of(context).size;
+                            provider.centerNote(screenSize, fitToScreen: true);
+                            break;
                           case 'focus':
                             provider.toggleFocusMode();
                             break;
@@ -125,6 +129,12 @@ class AppHeader extends StatelessWidget {
                           provider.isDarkMode ? Icons.light_mode : Icons.dark_mode,
                           provider.isDarkMode ? '라이트 모드' : '다크 모드',
                           'theme',
+                          provider.isDarkMode,
+                        ),
+                        _buildMenuItem(
+                          Icons.center_focus_strong,
+                          '노트 중앙 정렬',
+                          'center',
                           provider.isDarkMode,
                         ),
                         _buildMenuItem(
@@ -267,6 +277,16 @@ class AppHeader extends StatelessWidget {
                         _ModernIconButton(
                           icon: provider.isDarkMode ? Icons.light_mode : Icons.dark_mode,
                           onTap: provider.toggleDarkMode,
+                          isDarkMode: provider.isDarkMode,
+                          isEnabled: true,
+                        ),
+                        const SizedBox(width: 8),
+                        _ModernIconButton(
+                          icon: Icons.center_focus_strong,
+                          onTap: () {
+                            final screenSize = MediaQuery.of(context).size;
+                            provider.centerNote(screenSize, fitToScreen: false);
+                          },
                           isDarkMode: provider.isDarkMode,
                           isEnabled: true,
                         ),
