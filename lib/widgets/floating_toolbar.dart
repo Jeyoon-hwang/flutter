@@ -51,10 +51,8 @@ class _FloatingToolbarState extends State<FloatingToolbar> {
 
     return Consumer<DrawingProvider>(
       builder: (context, provider, child) {
-        // Hide in focus mode
-        if (provider.focusMode) {
-          return const SizedBox.shrink();
-        }
+        // Keep toolbar visible in focus mode for essential drawing controls
+        // (Header and other UI elements remain hidden for distraction-free experience)
 
         // Apply button size multiplier from settings
         final sizeMultiplier = provider.settings.buttonSize;
