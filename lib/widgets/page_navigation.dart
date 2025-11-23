@@ -3,8 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/drawing_provider.dart';
 import '../models/page_layout.dart';
+import '../screens/home_dashboard.dart';
 
-/// Page navigation widget for switching between pages
+/// Page navigation widget for switching between pages (HORIZONTAL LAYOUT)
 class PageNavigation extends StatelessWidget {
   const PageNavigation({Key? key}) : super(key: key);
 
@@ -27,14 +28,14 @@ class PageNavigation extends StatelessWidget {
         final totalPages = pageManager.pageCount;
 
         return Positioned(
-          bottom: 120, // Above floating toolbar
-          right: 20,
+          bottom: 20,
+          left: 20,
           child: ClipRRect(
             borderRadius: BorderRadius.circular(24),
             child: BackdropFilter(
               filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     begin: Alignment.topLeft,
@@ -64,23 +65,38 @@ class PageNavigation extends StatelessWidget {
                     ),
                   ],
                 ),
-                child: Column(
+                child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
+                    // Home button
+                    _NavButton(
+                      icon: Icons.home,
+                      onTap: () {
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(builder: (_) => const HomeDashboard()),
+                        );
+                      },
+                      isDarkMode: isDarkMode,
+                      isEnabled: true,
+                      isSpecial: true,
+                    ),
+                    const SizedBox(width: 8),
+
                     // Previous page button
                     _NavButton(
-                      icon: Icons.keyboard_arrow_up,
+                      icon: Icons.keyboard_arrow_left,
                       onTap: pageManager.currentPageIndex > 0
                           ? () => provider.pageManager.previousPage()
                           : null,
                       isDarkMode: isDarkMode,
                       isEnabled: pageManager.currentPageIndex > 0,
                     ),
-                    const SizedBox(height: 8),
+                    const SizedBox(width: 8),
 
                     // Page indicator
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                       decoration: BoxDecoration(
                         color: isDarkMode
                             ? Colors.white.withValues(alpha: 0.1)
@@ -96,11 +112,11 @@ class PageNavigation extends StatelessWidget {
                         ),
                       ),
                     ),
-                    const SizedBox(height: 8),
+                    const SizedBox(width: 8),
 
                     // Next page button
                     _NavButton(
-                      icon: Icons.keyboard_arrow_down,
+                      icon: Icons.keyboard_arrow_right,
                       onTap: pageManager.currentPageIndex < totalPages - 1
                           ? () => provider.pageManager.nextPage()
                           : null,
@@ -108,13 +124,15 @@ class PageNavigation extends StatelessWidget {
                       isEnabled: pageManager.currentPageIndex < totalPages - 1,
                     ),
 
-                    const SizedBox(height: 12),
+                    const SizedBox(width: 12),
                     // Divider
                     Container(
-                      width: 32,
-                      height: 1,
+                      width: 1,
+                      height: 32,
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
                           colors: isDarkMode
                               ? [
                                   Colors.white.withValues(alpha: 0),
@@ -129,7 +147,7 @@ class PageNavigation extends StatelessWidget {
                         ),
                       ),
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(width: 12),
 
                     // Add page button
                     _NavButton(
@@ -137,11 +155,10 @@ class PageNavigation extends StatelessWidget {
                       onTap: () => provider.addNewPage(),
                       isDarkMode: isDarkMode,
                       isEnabled: true,
-                      isSpecial: true,
                     ),
 
                     // Page menu button
-                    const SizedBox(height: 8),
+                    const SizedBox(width: 8),
                     _NavButton(
                       icon: Icons.more_horiz,
                       onTap: () => _showPageMenu(context, provider),
