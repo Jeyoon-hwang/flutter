@@ -7,7 +7,6 @@ import '../widgets/shape_palette.dart';
 import '../widgets/layer_panel.dart';
 import '../widgets/page_navigation.dart';
 import '../widgets/version_control_panel.dart';
-import '../widgets/advanced_pen_bar.dart';
 import '../widgets/pen_status_indicator.dart';
 import '../widgets/hamburger_menu.dart';
 import '../widgets/keyboard_shortcuts_overlay.dart';
@@ -93,15 +92,6 @@ class _CanvasScreenState extends State<CanvasScreen> {
                       child: PenStatusIndicator(),
                     ),
 
-                  // Advanced pen bar (always visible, minimal design)
-                  Positioned(
-                    bottom: 20,
-                    left: 0,
-                    right: 0,
-                    child: Center(
-                      child: const AdvancedPenBar(),
-                    ),
-                  ),
                   // Version control toggle button
                   Positioned(
                     right: 20,
