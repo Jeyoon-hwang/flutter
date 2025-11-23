@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import '../providers/drawing_provider.dart';
 import '../utils/responsive_util.dart';
 import '../models/advanced_pen.dart';
@@ -20,6 +21,8 @@ class FloatingToolbar extends StatefulWidget {
 class _FloatingToolbarState extends State<FloatingToolbar> with TickerProviderStateMixin {
   String? _selectedPenId;
   bool _isHidden = false; // Toolbar hidden at edge
+  Color _toolbarColor = const Color(0xFF667EEA); // Toolbar accent color
+  AdvancedPen? _editingPen; // Pen being edited in floating panel
 
   // Toolbar position
   double _toolbarX = 0;
@@ -144,6 +147,21 @@ class _FloatingToolbarState extends State<FloatingToolbar> with TickerProviderSt
 
         return Stack(
           children: [
+            // Dismiss overlay for pen settings panel
+            if (_editingPen != null && !_isHidden)
+              Positioned.fill(
+                child: GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      _editingPen = null;
+                    });
+                  },
+                  child: Container(
+                    color: Colors.black.withValues(alpha: 0.01),
+                  ),
+                ),
+              ),
+
             // Docked edge indicator (arrow button)
             if (_isHidden && _dockedEdge != EdgeLocation.none)
               Positioned(
@@ -170,7 +188,7 @@ class _FloatingToolbarState extends State<FloatingToolbar> with TickerProviderSt
                     ),
                     child: Icon(
                       _getArrowIcon(),
-                      color: const Color(0xFF667EEA),
+                      color: _toolbarColor,
                       size: 24,
                     ),
                   ),
@@ -228,27 +246,99 @@ class _FloatingToolbarState extends State<FloatingToolbar> with TickerProviderSt
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        // Drag handle
+                        // Drag handle with controls
                         Container(
                           width: double.infinity,
-                          padding: const EdgeInsets.symmetric(vertical: 8),
+                          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
                           decoration: BoxDecoration(
-                            color: isDarkMode
-                                ? Colors.white.withValues(alpha: 0.05)
-                                : Colors.black.withValues(alpha: 0.03),
+                            color: _toolbarColor.withValues(alpha: 0.15),
                             borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
                           ),
-                          child: Center(
-                            child: Container(
-                              width: 40,
-                              height: 4,
-                              decoration: BoxDecoration(
-                                color: isDarkMode
-                                    ? Colors.white.withValues(alpha: 0.3)
-                                    : Colors.black.withValues(alpha: 0.3),
-                                borderRadius: BorderRadius.circular(2),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              // Color picker buttons
+                              Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  _buildColorButton(const Color(0xFF667EEA)), // Blue
+                                  const SizedBox(width: 4),
+                                  _buildColorButton(const Color(0xFFFF3B30)), // Red
+                                  const SizedBox(width: 4),
+                                  _buildColorButton(const Color(0xFF34C759)), // Green
+                                  const SizedBox(width: 4),
+                                  _buildColorButton(const Color(0xFFFF9500)), // Orange
+                                  const SizedBox(width: 4),
+                                  _buildColorButton(const Color(0xFF5E5CE6)), // Purple
+                                  const SizedBox(width: 4),
+                                  // Custom color picker button
+                                  GestureDetector(
+                                    onTap: () => _showColorPicker(context, isDarkMode),
+                                    child: Container(
+                                      width: 20,
+                                      height: 20,
+                                      decoration: BoxDecoration(
+                                        gradient: const LinearGradient(
+                                          colors: [
+                                            Color(0xFFFF0000),
+                                            Color(0xFFFFFF00),
+                                            Color(0xFF00FF00),
+                                            Color(0xFF00FFFF),
+                                            Color(0xFF0000FF),
+                                            Color(0xFFFF00FF),
+                                          ],
+                                          begin: Alignment.topLeft,
+                                          end: Alignment.bottomRight,
+                                        ),
+                                        shape: BoxShape.circle,
+                                        border: Border.all(
+                                          color: Colors.white,
+                                          width: 2,
+                                        ),
+                                      ),
+                                      child: const Icon(
+                                        Icons.colorize,
+                                        size: 12,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
-                            ),
+                              // Drag handle
+                              Container(
+                                width: 40,
+                                height: 4,
+                                decoration: BoxDecoration(
+                                  color: _toolbarColor,
+                                  borderRadius: BorderRadius.circular(2),
+                                ),
+                              ),
+                              // Hide button
+                              GestureDetector(
+                                onTap: () {
+                                  setState(() {
+                                    _isHidden = true;
+                                    _dockedEdge = EdgeLocation.bottom;
+                                  });
+                                  HapticFeedback.lightImpact();
+                                },
+                                child: Container(
+                                  padding: const EdgeInsets.all(4),
+                                  decoration: BoxDecoration(
+                                    color: isDarkMode
+                                        ? Colors.white.withValues(alpha: 0.1)
+                                        : Colors.black.withValues(alpha: 0.05),
+                                    borderRadius: BorderRadius.circular(6),
+                                  ),
+                                  child: Icon(
+                                    Icons.keyboard_arrow_down,
+                                    size: 18,
+                                    color: _toolbarColor,
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                         Padding(
@@ -502,6 +592,51 @@ class _FloatingToolbarState extends State<FloatingToolbar> with TickerProviderSt
                   ),
                 ),
               ),
+
+            // Floating pen settings panel
+            if (_editingPen != null && !_isHidden)
+              Positioned(
+                left: _toolbarX + 20,
+                top: _toolbarY - 280,
+                child: GestureDetector(
+                  onTap: () {}, // Prevent closing when tapping inside
+                  child: Material(
+                    color: Colors.transparent,
+                    child: Container(
+                      width: 280,
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: isDarkMode
+                              ? [
+                                  Colors.black.withValues(alpha: 0.95),
+                                  Colors.black.withValues(alpha: 0.98),
+                                ]
+                              : [
+                                  Colors.white.withValues(alpha: 0.95),
+                                  Colors.white.withValues(alpha: 0.98),
+                                ],
+                        ),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: _editingPen!.color,
+                          width: 2,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.3),
+                            blurRadius: 20,
+                            offset: const Offset(0, 5),
+                          ),
+                        ],
+                      ),
+                      child: _buildQuickPenSettings(provider, _editingPen!, isDarkMode),
+                    ),
+                  ),
+                ),
+              ),
             ],
           );
         },
@@ -538,16 +673,13 @@ class _FloatingToolbarState extends State<FloatingToolbar> with TickerProviderSt
           _scaleController.reverse();
         },
         onTap: () {
-          HapticFeedback.selectionClick();
+          HapticFeedback.mediumImpact();
           setState(() {
+            _editingPen = pen;
             _selectedPenId = pen.id;
           });
           provider.selectAdvancedPen(pen.id);
           provider.setMode(DrawingMode.pen);
-        },
-        onLongPress: () {
-          HapticFeedback.mediumImpact();
-          _showPenCustomizer(context, provider, pen: pen);
         },
         child: ScaleTransition(
           scale: _scaleAnimation,
@@ -709,9 +841,12 @@ class _FloatingToolbarState extends State<FloatingToolbar> with TickerProviderSt
             // Updating existing pen
             provider.updateAdvancedPen(pen.id, newPen);
           }
+          // Select this pen and switch to pen mode
           setState(() {
             _selectedPenId = newPen.id;
           });
+          provider.selectAdvancedPen(newPen.id);
+          provider.setMode(DrawingMode.pen);
         },
         isDarkMode: provider.isDarkMode,
       ),
@@ -772,6 +907,292 @@ class _FloatingToolbarState extends State<FloatingToolbar> with TickerProviderSt
           ),
         ],
       ),
+    );
+  }
+
+  void _showColorPicker(BuildContext context, bool isDarkMode) {
+    Color pickerColor = _toolbarColor;
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: isDarkMode
+            ? const Color(0xFF2C2C2E)
+            : Colors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        title: Text(
+          '툴바 색상 선택',
+          style: TextStyle(
+            color: isDarkMode ? Colors.white : Colors.black87,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Color picker
+              ColorPicker(
+                pickerColor: pickerColor,
+                onColorChanged: (color) {
+                  pickerColor = color;
+                },
+                colorPickerWidth: 300,
+                pickerAreaHeightPercent: 0.7,
+                enableAlpha: false,
+                displayThumbColor: true,
+                paletteType: PaletteType.hsvWithHue,
+                labelTypes: const [],
+                pickerAreaBorderRadius: const BorderRadius.all(Radius.circular(12)),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(
+              '취소',
+              style: TextStyle(
+                color: isDarkMode ? Colors.white70 : Colors.black54,
+              ),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              setState(() {
+                _toolbarColor = pickerColor;
+              });
+              HapticFeedback.selectionClick();
+              Navigator.pop(context);
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: pickerColor,
+              elevation: 0,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+            child: const Text(
+              '적용',
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildColorButton(Color color) {
+    final isSelected = _toolbarColor == color;
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          _toolbarColor = color;
+        });
+        HapticFeedback.selectionClick();
+      },
+      child: Container(
+        width: 20,
+        height: 20,
+        decoration: BoxDecoration(
+          color: color,
+          shape: BoxShape.circle,
+          border: Border.all(
+            color: isSelected ? Colors.white : Colors.transparent,
+            width: 2,
+          ),
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: color.withValues(alpha: 0.5),
+                    blurRadius: 8,
+                    spreadRadius: 2,
+                  ),
+                ]
+              : null,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildQuickPenSettings(DrawingProvider provider, AdvancedPen pen, bool isDarkMode) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Header
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              pen.name,
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: isDarkMode ? Colors.white : Colors.black87,
+              ),
+            ),
+            IconButton(
+              icon: Icon(
+                Icons.close,
+                color: isDarkMode ? Colors.white70 : Colors.black54,
+                size: 20,
+              ),
+              onPressed: () {
+                setState(() {
+                  _editingPen = null;
+                });
+              },
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints(),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+
+        // Color picker
+        Text(
+          '색상',
+          style: TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.w600,
+            color: isDarkMode ? Colors.white70 : Colors.black54,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: [
+            Colors.black,
+            const Color(0xFF007AFF),
+            const Color(0xFFFF3B30),
+            const Color(0xFF34C759),
+            const Color(0xFFFF9500),
+            const Color(0xFF5E5CE6),
+            const Color(0xFFFF6B9D),
+            const Color(0xFFFFCC00),
+          ].map((color) {
+            final isSelected = pen.color == color;
+            return GestureDetector(
+              onTap: () {
+                final updatedPen = pen.copyWith(color: color);
+                provider.updateAdvancedPen(pen.id, updatedPen);
+                setState(() {
+                  _editingPen = updatedPen;
+                });
+                HapticFeedback.selectionClick();
+              },
+              child: Container(
+                width: 28,
+                height: 28,
+                decoration: BoxDecoration(
+                  color: color,
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: isSelected ? Colors.white : Colors.transparent,
+                    width: 3,
+                  ),
+                ),
+              ),
+            );
+          }).toList(),
+        ),
+        const SizedBox(height: 16),
+
+        // Width slider
+        Text(
+          '굵기: ${pen.width.toStringAsFixed(1)}',
+          style: TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.w600,
+            color: isDarkMode ? Colors.white70 : Colors.black54,
+          ),
+        ),
+        Slider(
+          value: pen.width,
+          min: 1.0,
+          max: 30.0,
+          divisions: 29,
+          activeColor: pen.color,
+          onChanged: (value) {
+            final updatedPen = pen.copyWith(width: value);
+            provider.updateAdvancedPen(pen.id, updatedPen);
+            setState(() {
+              _editingPen = updatedPen;
+            });
+          },
+        ),
+        const SizedBox(height: 8),
+
+        // Pen type selector
+        Text(
+          '펜 종류',
+          style: TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.w600,
+            color: isDarkMode ? Colors.white70 : Colors.black54,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Wrap(
+          spacing: 6,
+          children: PenType.values.map((type) {
+            final testPen = AdvancedPen.fromType(
+              id: 'test',
+              name: '',
+              type: type,
+              color: pen.color,
+              width: pen.width,
+            );
+            final isSelected = pen.type == type;
+            return GestureDetector(
+              onTap: () {
+                final updatedPen = testPen.copyWith(
+                  id: pen.id,
+                  name: pen.name,
+                );
+                provider.updateAdvancedPen(pen.id, updatedPen);
+                setState(() {
+                  _editingPen = updatedPen;
+                });
+                HapticFeedback.selectionClick();
+              },
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                decoration: BoxDecoration(
+                  color: isSelected
+                      ? pen.color.withValues(alpha: 0.2)
+                      : (isDarkMode
+                          ? Colors.white.withValues(alpha: 0.05)
+                          : Colors.black.withValues(alpha: 0.05)),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(
+                    color: isSelected ? pen.color : Colors.transparent,
+                    width: 2,
+                  ),
+                ),
+                child: Text(
+                  testPen.getTypeName(),
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                    color: isSelected
+                        ? pen.color
+                        : (isDarkMode ? Colors.white70 : Colors.black54),
+                  ),
+                ),
+              ),
+            );
+          }).toList(),
+        ),
+      ],
     );
   }
 }
