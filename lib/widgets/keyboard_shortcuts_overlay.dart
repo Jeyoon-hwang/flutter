@@ -16,7 +16,6 @@ class KeyboardShortcutsOverlay extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isTablet = ResponsiveUtil.isTablet(context);
-    final shortcuts = KeyboardShortcuts.getShortcutHints();
 
     return GestureDetector(
       onTap: onClose,

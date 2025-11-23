@@ -436,6 +436,53 @@ class DrawingProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  // Zoom convenience methods for keyboard shortcuts
+  void resetZoom() => resetTransform();
+
+  void zoomIn() {
+    setScale(_scale * 1.2);
+  }
+
+  void zoomOut() {
+    setScale(_scale / 1.2);
+  }
+
+  // Selection operations for keyboard shortcuts
+  void deleteSelection() {
+    if (_selectionRect != null) {
+      // Delete all strokes within selection
+      _strokes.removeWhere((stroke) {
+        return stroke.points.any((point) => _selectionRect!.contains(point.offset));
+      });
+      clearSelection();
+      _historyManager.recordAction(HistoryActionType.delete, null);
+      notifyListeners();
+    }
+  }
+
+  void selectAll() {
+    if (_strokes.isEmpty) return;
+
+    // Calculate bounding box of all strokes
+    double minX = double.infinity;
+    double minY = double.infinity;
+    double maxX = double.negativeInfinity;
+    double maxY = double.negativeInfinity;
+
+    for (final stroke in _strokes) {
+      for (final point in stroke.points) {
+        if (point.offset.dx < minX) minX = point.offset.dx;
+        if (point.offset.dy < minY) minY = point.offset.dy;
+        if (point.offset.dx > maxX) maxX = point.offset.dx;
+        if (point.offset.dy > maxY) maxY = point.offset.dy;
+      }
+    }
+
+    _selectionRect = Rect.fromLTRB(minX, minY, maxX, maxY);
+    _isSelecting = false;
+    notifyListeners();
+  }
+
   void toggleDarkMode() {
     _isDarkMode = !_isDarkMode;
     notifyListeners();
