@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import '../providers/drawing_provider.dart';
 import '../utils/responsive_util.dart';
 import '../models/advanced_pen.dart';
@@ -253,6 +254,39 @@ class _FloatingToolbarState extends State<FloatingToolbar> with TickerProviderSt
                                   _buildColorButton(const Color(0xFFFF9500)), // Orange
                                   const SizedBox(width: 4),
                                   _buildColorButton(const Color(0xFF5E5CE6)), // Purple
+                                  const SizedBox(width: 4),
+                                  // Custom color picker button
+                                  GestureDetector(
+                                    onTap: () => _showColorPicker(context, isDarkMode),
+                                    child: Container(
+                                      width: 20,
+                                      height: 20,
+                                      decoration: BoxDecoration(
+                                        gradient: const LinearGradient(
+                                          colors: [
+                                            Color(0xFFFF0000),
+                                            Color(0xFFFFFF00),
+                                            Color(0xFF00FF00),
+                                            Color(0xFF00FFFF),
+                                            Color(0xFF0000FF),
+                                            Color(0xFFFF00FF),
+                                          ],
+                                          begin: Alignment.topLeft,
+                                          end: Alignment.bottomRight,
+                                        ),
+                                        shape: BoxShape.circle,
+                                        border: Border.all(
+                                          color: Colors.white,
+                                          width: 2,
+                                        ),
+                                      ),
+                                      child: const Icon(
+                                        Icons.colorize,
+                                        size: 12,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ),
                                 ],
                               ),
                               // Drag handle
@@ -808,6 +842,84 @@ class _FloatingToolbarState extends State<FloatingToolbar> with TickerProviderSt
             child: const Text(
               '전체 지우기',
               style: TextStyle(color: Colors.white),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showColorPicker(BuildContext context, bool isDarkMode) {
+    Color pickerColor = _toolbarColor;
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: isDarkMode
+            ? const Color(0xFF2C2C2E)
+            : Colors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        title: Text(
+          '툴바 색상 선택',
+          style: TextStyle(
+            color: isDarkMode ? Colors.white : Colors.black87,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Color picker
+              ColorPicker(
+                pickerColor: pickerColor,
+                onColorChanged: (color) {
+                  pickerColor = color;
+                },
+                colorPickerWidth: 300,
+                pickerAreaHeightPercent: 0.7,
+                enableAlpha: false,
+                displayThumbColor: true,
+                paletteType: PaletteType.hsvWithHue,
+                labelTypes: const [],
+                pickerAreaBorderRadius: const BorderRadius.all(Radius.circular(12)),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(
+              '취소',
+              style: TextStyle(
+                color: isDarkMode ? Colors.white70 : Colors.black54,
+              ),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              setState(() {
+                _toolbarColor = pickerColor;
+              });
+              HapticFeedback.selectionClick();
+              Navigator.pop(context);
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: pickerColor,
+              elevation: 0,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+            child: const Text(
+              '적용',
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ),
         ],
