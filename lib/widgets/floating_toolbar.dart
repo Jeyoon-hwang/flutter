@@ -376,7 +376,7 @@ class _FloatingToolbarState extends State<FloatingToolbar> {
                           // Pen settings button
                           _PenSettingsButton(
                             currentColor: provider.currentColor,
-                            currentWidth: provider.currentStrokeWidth,
+                            currentWidth: provider.lineWidth,
                             isDarkMode: provider.isDarkMode,
                             onPressed: () => _showPenSettingsPopup(context, provider),
                             size: buttonSize,
@@ -619,13 +619,13 @@ class _FloatingToolbarState extends State<FloatingToolbar> {
                 const SizedBox(width: 12),
                 Expanded(
                   child: Slider(
-                    value: provider.currentStrokeWidth,
+                    value: provider.lineWidth,
                     min: 1.0,
                     max: 20.0,
                     divisions: 19,
                     activeColor: const Color(0xFF667EEA),
                     onChanged: (value) {
-                      provider.setStrokeWidth(value);
+                      provider.setLineWidth(value);
                     },
                   ),
                 ),
@@ -640,7 +640,7 @@ class _FloatingToolbarState extends State<FloatingToolbar> {
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
-                    '${provider.currentStrokeWidth.round()}',
+                    '${provider.lineWidth.round()}',
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 14,

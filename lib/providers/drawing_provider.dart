@@ -399,7 +399,6 @@ class DrawingProvider extends ChangeNotifier {
 
   void setButtonSize(double size) {
     _settings = _settings.copyWith(buttonSize: size);
-    _saveSettings();
     notifyListeners();
   }
 
