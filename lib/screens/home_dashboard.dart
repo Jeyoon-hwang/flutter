@@ -5,6 +5,7 @@ import '../utils/app_theme.dart';
 import '../utils/page_routes.dart';
 import '../models/planner.dart';
 import '../models/app_settings.dart';
+import '../models/note.dart';
 import '../widgets/study_timer_widget.dart' hide TodayStudyCard;
 import '../widgets/today_study_card.dart';
 import '../services/haptic_service.dart';
@@ -633,20 +634,14 @@ class _HomeDashboardState extends State<HomeDashboard> {
   }
 
   IconData _getNoteIcon(NoteTemplate template) {
-    switch (template) {
-      case NoteTemplate.blank:
-        return Icons.note;
-      case NoteTemplate.lined:
-        return Icons.subject;
-      case NoteTemplate.grid:
-        return Icons.grid_on;
-      case NoteTemplate.dots:
-        return Icons.scatter_plot;
-      case NoteTemplate.cornell:
-        return Icons.view_sidebar;
-      case NoteTemplate.music:
-        return Icons.music_note;
-    }
+    return switch (template) {
+      NoteTemplate.blank => Icons.note,
+      NoteTemplate.lined => Icons.subject,
+      NoteTemplate.grid => Icons.grid_on,
+      NoteTemplate.dots => Icons.scatter_plot,
+      NoteTemplate.cornell => Icons.view_sidebar,
+      NoteTemplate.music => Icons.music_note,
+    };
   }
 
   void _showSettingsMenu(BuildContext context, DrawingProvider provider) {

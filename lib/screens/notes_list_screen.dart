@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../providers/drawing_provider.dart';
 import '../models/note.dart';
 import '../utils/responsive_util.dart';
+import 'canvas_screen.dart';
 
 /// Notes list screen showing all notes with inbox and organized sections
 class NotesListScreen extends StatefulWidget {
