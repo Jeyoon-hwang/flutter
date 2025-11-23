@@ -53,12 +53,15 @@ class _FloatingToolbarState extends State<FloatingToolbar> {
           left: 0,
           right: 0,
           bottom: 0,
-          child: ClipRRect(
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(0)),
-            child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-              child: Container(
-                decoration: BoxDecoration(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ClipRRect(
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(0)),
+                child: BackdropFilter(
+                  filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                  child: Container(
+                  decoration: BoxDecoration(
                   gradient: LinearGradient(
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
@@ -352,6 +355,7 @@ class _FloatingToolbarState extends State<FloatingToolbar> {
                 ),
               ),
             ),
+            ],
           ),
         );
       },

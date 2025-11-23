@@ -795,15 +795,23 @@ class DrawingProvider extends ChangeNotifier {
       }
     }
 
-    // Palm rejection: ONLY reject touch/finger input when palmRejection is enabled
-    // ALWAYS allow stylus pen input (including inverted stylus)
+    // Smart Palm rejection:
+    // - If stylus has NEVER been detected in this session, allow touch input
+    // - If stylus was detected before, reject touch (palm rejection)
+    // - ALWAYS allow stylus pen input (including inverted stylus)
     // CRITICAL: Never reject stylus input!
     if (_settings.palmRejection &&
         deviceKind == PointerDeviceKind.touch &&
         !isStylusInput &&
+        _isStylusDetected && // Only reject touch if stylus was previously detected
         _mode == DrawingMode.pen) {
-      debugPrint('🚫 Touch input rejected by palm rejection (deviceKind: $deviceKind, isStylusInput: $isStylusInput, mode: $_mode)');
+      debugPrint('🚫 Touch input rejected by palm rejection (stylus was detected before)');
       return;
+    }
+
+    // Allow touch if no stylus has been detected yet
+    if (deviceKind == PointerDeviceKind.touch && !_isStylusDetected) {
+      debugPrint('✅ Touch input allowed (no stylus detected yet)');
     }
 
     // Additional debug logging
