@@ -57,7 +57,10 @@ class _CanvasScreenState extends State<CanvasScreen> {
             child: SafeArea(
               child: Stack(
                 children: [
-                  DrawingCanvas(repaintBoundaryKey: _repaintBoundaryKey),
+                  // Drawing canvas with proper pointer events
+                  Positioned.fill(
+                    child: DrawingCanvas(repaintBoundaryKey: _repaintBoundaryKey),
+                  ),
 
                   // Show header and toolbar only when not in focus mode
                   if (!provider.focusMode) ...[

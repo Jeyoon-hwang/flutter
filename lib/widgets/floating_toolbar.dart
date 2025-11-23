@@ -124,9 +124,9 @@ class _FloatingToolbarState extends State<FloatingToolbar> {
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                        // Tool buttons (only show if enabled in settings)
-                        if (provider.settings.showPenTool) ...[
-                          _ModernToolButton(
+                            // Tool buttons (only show if enabled in settings)
+                            if (provider.settings.showPenTool) ...[
+                              _ModernToolButton(
                             icon: Icons.edit,
                             isActive: provider.mode == DrawingMode.pen,
                             onTap: () => provider.setMode(DrawingMode.pen),
