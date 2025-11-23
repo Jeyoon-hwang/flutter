@@ -108,7 +108,7 @@ class _HomeDashboardState extends State<HomeDashboard> {
                             ),
                             TextButton(
                               onPressed: () {
-                                context.pushSlideRight(const NotesListScreen());
+                                _showNotesListModal(context, provider);
                               },
                               child: Text(
                                 '전체보기',
@@ -981,6 +981,208 @@ class _HomeDashboardState extends State<HomeDashboard> {
       case AppThemeType.darkMode:
         return '다크 모드';
     }
+  }
+
+  void _showNotesListModal(BuildContext context, DrawingProvider provider) {
+    final isDarkMode = provider.isDarkMode;
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (context) => DraggableScrollableSheet(
+        initialChildSize: 0.9,
+        minChildSize: 0.5,
+        maxChildSize: 0.95,
+        builder: (context, scrollController) => Container(
+          decoration: BoxDecoration(
+            color: isDarkMode ? const Color(0xFF1E1E1E) : Colors.white,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.3),
+                blurRadius: 20,
+                offset: const Offset(0, -5),
+              ),
+            ],
+          ),
+          child: Column(
+            children: [
+              // Handle bar
+              Center(
+                child: Container(
+                  margin: const EdgeInsets.only(top: 12, bottom: 8),
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: isDarkMode ? Colors.white24 : Colors.black12,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+
+              // Header
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      '모든 노트',
+                      style: AppTheme.heading1(isDarkMode),
+                    ),
+                    IconButton(
+                      icon: Icon(
+                        Icons.close,
+                        color: isDarkMode ? Colors.white : Colors.black,
+                      ),
+                      onPressed: () => Navigator.pop(context),
+                    ),
+                  ],
+                ),
+              ),
+
+              // Notes count
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: Row(
+                  children: [
+                    Text(
+                      '전체 ${provider.noteService.allNotes.length}개',
+                      style: AppTheme.bodyMedium(isDarkMode).copyWith(
+                        color: isDarkMode ? Colors.white70 : Colors.black54,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 16),
+              const Divider(height: 1),
+
+              // Notes list
+              Expanded(
+                child: provider.noteService.allNotes.isEmpty
+                    ? Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.note_add_outlined,
+                              size: 80,
+                              color: isDarkMode ? Colors.white24 : Colors.grey[300],
+                            ),
+                            const SizedBox(height: 16),
+                            Text(
+                              '아직 노트가 없습니다',
+                              style: AppTheme.bodyLarge(isDarkMode).copyWith(
+                                color: isDarkMode ? Colors.white54 : Colors.black54,
+                              ),
+                            ),
+                          ],
+                        ),
+                      )
+                    : ListView.builder(
+                        controller: scrollController,
+                        padding: const EdgeInsets.all(16),
+                        itemCount: provider.noteService.allNotes.length,
+                        itemBuilder: (context, index) {
+                          final note = provider.noteService.allNotes[index];
+                          final isCurrentNote = provider.noteService.currentNote?.id == note.id;
+
+                          return Container(
+                            margin: const EdgeInsets.only(bottom: 12),
+                            decoration: BoxDecoration(
+                              color: isDarkMode ? const Color(0xFF2A2A2A) : Colors.white,
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(
+                                color: isCurrentNote
+                                    ? AppTheme.primary
+                                    : (isDarkMode ? const Color(0xFF404040) : const Color(0xFFE0E0E0)),
+                                width: isCurrentNote ? 2 : 1,
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withValues(alpha: isDarkMode ? 0.3 : 0.05),
+                                  blurRadius: 8,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ],
+                            ),
+                            child: ListTile(
+                              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                              leading: Container(
+                                padding: const EdgeInsets.all(10),
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                    colors: _getGradientColors(note.template),
+                                  ),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Icon(
+                                  _getNoteIcon(note.template),
+                                  color: Colors.white,
+                                  size: 24,
+                                ),
+                              ),
+                              title: Text(
+                                note.title,
+                                style: AppTheme.bodyLarge(isDarkMode).copyWith(
+                                  fontWeight: FontWeight.bold,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              subtitle: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    note.lastModifiedString,
+                                    style: AppTheme.bodySmall(isDarkMode),
+                                  ),
+                                  if (note.totalStrokes > 0) ...[
+                                    const SizedBox(height: 4),
+                                    Row(
+                                      children: [
+                                        Icon(
+                                          Icons.edit,
+                                          size: 12,
+                                          color: isDarkMode ? Colors.white54 : Colors.black54,
+                                        ),
+                                        const SizedBox(width: 4),
+                                        Text(
+                                          '${note.totalStrokes} 획',
+                                          style: AppTheme.bodySmall(isDarkMode).copyWith(
+                                            fontSize: 11,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ],
+                              ),
+                              trailing: note.isFavorite
+                                  ? const Icon(Icons.favorite, color: Colors.red, size: 20)
+                                  : null,
+                              onTap: () async {
+                                await hapticService.medium();
+                                provider.switchToNote(note.id);
+                                Navigator.pop(context);
+                                if (mounted) {
+                                  context.pushSlideUp(const CanvasScreen());
+                                }
+                              },
+                            ),
+                          );
+                        },
+                      ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   void _showThemeSelector(BuildContext context, DrawingProvider provider) {
