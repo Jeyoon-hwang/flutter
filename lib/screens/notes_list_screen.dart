@@ -334,7 +334,11 @@ class _NotesListScreenState extends State<NotesListScreen> {
         ),
         onTap: () {
           provider.switchToNote(note.id);
-          Navigator.pop(context);
+          // Navigate to canvas screen
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (_) => const CanvasScreen()),
+          );
         },
       ),
     );

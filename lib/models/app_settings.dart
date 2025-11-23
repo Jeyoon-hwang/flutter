@@ -41,6 +41,9 @@ class AppSettings {
   AppThemeType themeType;
   String? customFontFamily; // Custom font loaded by user
 
+  // Button size customization (1.0 = normal, 0.8 = small, 1.2 = large)
+  double buttonSize;
+
   AppSettings({
     this.palmRejection = false,
     this.isDarkMode = false,
@@ -58,6 +61,7 @@ class AppSettings {
     this.selectedFavoritePenId,
     this.themeType = AppThemeType.ivory,
     this.customFontFamily,
+    this.buttonSize = 1.0,
   }) : favoritePens = favoritePens ?? FavoritePen.getDefaultFavorites();
 
   AppSettings copyWith({
@@ -77,6 +81,7 @@ class AppSettings {
     String? selectedFavoritePenId,
     AppThemeType? themeType,
     String? customFontFamily,
+    double? buttonSize,
   }) {
     return AppSettings(
       palmRejection: palmRejection ?? this.palmRejection,
@@ -95,6 +100,7 @@ class AppSettings {
       selectedFavoritePenId: selectedFavoritePenId ?? this.selectedFavoritePenId,
       themeType: themeType ?? this.themeType,
       customFontFamily: customFontFamily ?? this.customFontFamily,
+      buttonSize: buttonSize ?? this.buttonSize,
     );
   }
 

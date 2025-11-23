@@ -397,6 +397,12 @@ class DrawingProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  void setButtonSize(double size) {
+    _settings = _settings.copyWith(buttonSize: size);
+    _saveSettings();
+    notifyListeners();
+  }
+
   void setMode(DrawingMode mode) {
     _mode = mode;
     _selectionRect = null;
@@ -686,8 +692,9 @@ class DrawingProvider extends ChangeNotifier {
       }
     }
 
-    // Palm rejection: ignore if palm rejection is enabled and input is not from pen/stylus
-    if (_settings.palmRejection && !isPen && !isStylusPen && _mode == DrawingMode.pen) {
+    // Palm rejection: ONLY reject touch/finger input when palmRejection is enabled
+    // Always allow stylus pen input regardless of palmRejection setting
+    if (_settings.palmRejection && deviceKind == PointerDeviceKind.touch && _mode == DrawingMode.pen) {
       return;
     }
 

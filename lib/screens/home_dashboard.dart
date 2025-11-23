@@ -13,6 +13,9 @@ import 'notes_list_screen.dart';
 import 'stats_screen.dart';
 import 'font_settings_screen.dart';
 import 'gesture_guide_screen.dart';
+import 'background_settings_screen.dart';
+import 'settings_screen.dart';
+import 'wrong_answer_screen.dart';
 
 /// Home dashboard with planner-centric design
 /// "Gong-stagram" aesthetic: minimal, clean, motivating
@@ -25,6 +28,27 @@ class HomeDashboard extends StatefulWidget {
 
 class _HomeDashboardState extends State<HomeDashboard> {
   bool _performanceInitialized = false;
+
+  // Inspirational quotes
+  static const List<String> _quotes = [
+    '오늘도 화이팅!',
+    '작은 진전도 진전입니다',
+    '꾸준함이 재능을 이긴다',
+    '오늘의 노력이 내일의 결과',
+    '할 수 있다고 믿으면 이미 반은 성공',
+    '포기하지 않는 한 실패는 없다',
+    '지금 이 순간에 집중하세요',
+    '당신은 생각보다 강합니다',
+    '매일 조금씩 성장하고 있어요',
+    '완벽하지 않아도 괜찮아요',
+    '시작이 반이다',
+    '노력은 배신하지 않습니다',
+  ];
+
+  String _getTodayQuote() {
+    final dayOfYear = DateTime.now().difference(DateTime(DateTime.now().year, 1, 1)).inDays;
+    return _quotes[dayOfYear % _quotes.length];
+  }
 
   @override
   void didChangeDependencies() {
@@ -84,6 +108,38 @@ class _HomeDashboardState extends State<HomeDashboard> {
                     const TodayStudyCard(),
 
                     const SizedBox(height: AppTheme.spaceLg),
+
+                    // Recent notes section
+                    if (provider.noteService.allNotes.isNotEmpty) ...[
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: AppTheme.spaceLg),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              '최근 노트',
+                              style: AppTheme.heading2(isDarkMode),
+                            ),
+                            TextButton(
+                              onPressed: () {
+                                context.pushSlideRight(const NotesListScreen());
+                              },
+                              child: Text(
+                                '전체보기',
+                                style: TextStyle(
+                                  color: AppTheme.primary,
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: AppTheme.spaceMd),
+                      _buildRecentNotes(context, provider, isDarkMode),
+                      const SizedBox(height: AppTheme.spaceLg),
+                    ],
 
                     // Today's planner
                     Padding(
@@ -149,6 +205,8 @@ class _HomeDashboardState extends State<HomeDashboard> {
     final now = DateTime.now();
     final weekdays = ['월', '화', '수', '목', '금', '토', '일'];
     final weekday = weekdays[now.weekday - 1];
+    final hour = now.hour.toString().padLeft(2, '0');
+    final minute = now.minute.toString().padLeft(2, '0');
 
     return Container(
       padding: const EdgeInsets.all(AppTheme.spaceLg),
@@ -158,26 +216,44 @@ class _HomeDashboardState extends State<HomeDashboard> {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                '${now.month}월 ${now.day}일 $weekday요일',
-                style: AppTheme.bodySmall(isDarkMode),
+              Row(
+                children: [
+                  Text(
+                    '${now.month}월 ${now.day}일 $weekday요일',
+                    style: AppTheme.bodySmall(isDarkMode),
+                  ),
+                  const SizedBox(width: 12),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: AppTheme.primary.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      '$hour:$minute',
+                      style: AppTheme.bodySmall(isDarkMode).copyWith(
+                        color: AppTheme.primary,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ],
               ),
               const SizedBox(height: 4),
               Text(
-                '오늘도 화이팅!',
+                _getTodayQuote(),
                 style: AppTheme.heading1(isDarkMode),
               ),
             ],
           ),
-          // Settings button
+          // Hamburger menu
           IconButton(
             icon: Icon(
-              Icons.settings_outlined,
+              Icons.menu,
               color: isDarkMode ? AppTheme.darkText : AppTheme.lightText,
             ),
             onPressed: () {
-              // Navigate to settings
-              _showThemeSelector(context, provider);
+              _showSettingsMenu(context, provider);
             },
           ),
         ],
@@ -428,6 +504,9 @@ class _HomeDashboardState extends State<HomeDashboard> {
           if (index == 1) {
             // Navigate to notes list
             context.pushSlideRight(const NotesListScreen());
+          } else if (index == 2) {
+            // Navigate to wrong answer notes
+            context.pushSlideRight(const WrongAnswerScreen());
           } else if (index == 3) {
             // Navigate to stats
             context.pushSlideRight(const StatsScreen());
@@ -459,26 +538,202 @@ class _HomeDashboardState extends State<HomeDashboard> {
     );
   }
 
-  void _showThemeSelector(BuildContext context, DrawingProvider provider) {
+  Widget _buildRecentNotes(BuildContext context, DrawingProvider provider, bool isDarkMode) {
+    final recentNotes = provider.noteService.allNotes.take(3).toList();
+
+    return SizedBox(
+      height: 140,
+      child: ListView.builder(
+        padding: const EdgeInsets.symmetric(horizontal: AppTheme.spaceLg),
+        scrollDirection: Axis.horizontal,
+        itemCount: recentNotes.length,
+        itemBuilder: (context, index) {
+          final note = recentNotes[index];
+          return GestureDetector(
+            onTap: () async {
+              await hapticService.medium();
+              provider.switchToNote(note.id);
+              if (mounted) {
+                context.pushSlideUp(const CanvasScreen());
+              }
+            },
+            child: Container(
+              width: 160,
+              margin: EdgeInsets.only(right: index < recentNotes.length - 1 ? AppTheme.spaceMd : 0),
+              decoration: AppTheme.containerDecoration(isDarkMode),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Note preview/cover
+                  Container(
+                    height: 80,
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFF667EEA), Color(0xFF764BA2)],
+                      ),
+                      borderRadius: const BorderRadius.vertical(
+                        top: Radius.circular(AppTheme.radiusMd),
+                      ),
+                    ),
+                    child: Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            _getNoteIcon(note.template),
+                            color: Colors.white,
+                            size: 32,
+                          ),
+                          const SizedBox(height: 4),
+                          if (note.totalStrokes > 0)
+                            Text(
+                              '${note.totalStrokes} 획',
+                              style: const TextStyle(
+                                color: Colors.white70,
+                                fontSize: 11,
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  // Note info
+                  Padding(
+                    padding: const EdgeInsets.all(12),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          note.title,
+                          style: AppTheme.bodyMedium(isDarkMode).copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          note.lastModifiedString,
+                          style: AppTheme.bodySmall(isDarkMode).copyWith(
+                            color: isDarkMode
+                                ? AppTheme.darkTextSecondary
+                                : AppTheme.lightTextSecondary,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  IconData _getNoteIcon(NoteTemplate template) {
+    switch (template) {
+      case NoteTemplate.blank:
+        return Icons.note;
+      case NoteTemplate.lined:
+        return Icons.subject;
+      case NoteTemplate.grid:
+        return Icons.grid_on;
+      case NoteTemplate.dots:
+        return Icons.scatter_plot;
+      case NoteTemplate.cornell:
+        return Icons.view_sidebar;
+      case NoteTemplate.music:
+        return Icons.music_note;
+    }
+  }
+
+  void _showSettingsMenu(BuildContext context, DrawingProvider provider) {
+    final isDarkMode = provider.isDarkMode;
+
     showModalBottomSheet(
       context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
       builder: (context) => Container(
         padding: const EdgeInsets.all(AppTheme.spaceLg),
+        decoration: BoxDecoration(
+          color: isDarkMode ? const Color(0xFF2A2A2A) : Colors.white,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('설정', style: AppTheme.heading2(provider.isDarkMode)),
-            const SizedBox(height: AppTheme.spaceLg),
+            // Handle bar
+            Center(
+              child: Container(
+                margin: const EdgeInsets.only(bottom: 20),
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: isDarkMode ? Colors.white24 : Colors.black12,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            ),
 
-            // Font settings button
+            // Title
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text('설정', style: AppTheme.heading2(isDarkMode)),
+                IconButton(
+                  icon: Icon(
+                    Icons.close,
+                    color: isDarkMode ? AppTheme.darkTextSecondary : AppTheme.lightTextSecondary,
+                  ),
+                  onPressed: () => Navigator.pop(context),
+                ),
+              ],
+            ),
+
+            const SizedBox(height: AppTheme.spaceMd),
+
+            // Theme settings
             ListTile(
-              leading: const Icon(Icons.font_download),
+              leading: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: AppTheme.primary.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Icon(Icons.palette, color: AppTheme.primary),
+              ),
+              title: const Text('테마 설정'),
+              subtitle: Text(
+                _getThemeName(provider.settings.themeType),
+                style: const TextStyle(fontSize: 12),
+              ),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () {
+                Navigator.pop(context);
+                _showThemeSelector(context, provider);
+              },
+            ),
+
+            // Font settings
+            ListTile(
+              leading: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF34C759).withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Icon(Icons.font_download, color: Color(0xFF34C759)),
+              ),
               title: const Text('폰트 설정'),
               subtitle: Text(
                 provider.settings.customFontFamily ?? '기본 폰트 (SF Pro)',
                 style: const TextStyle(fontSize: 12),
               ),
+              trailing: const Icon(Icons.chevron_right),
               onTap: () {
                 Navigator.pop(context);
                 Navigator.push(
@@ -488,10 +743,137 @@ class _HomeDashboardState extends State<HomeDashboard> {
               },
             ),
 
-            const Divider(),
+            // Note settings
+            ListTile(
+              leading: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFF9500).withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Icon(Icons.note, color: Color(0xFFFF9500)),
+              ),
+              title: const Text('노트 설정'),
+              subtitle: const Text(
+                '템플릿, 배경, 페이지 설정',
+                style: TextStyle(fontSize: 12),
+              ),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const BackgroundSettingsScreen()),
+                );
+              },
+            ),
 
-            Text('테마 선택', style: AppTheme.heading3(provider.isDarkMode)),
+            // App settings
+            ListTile(
+              leading: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF5E5CE6).withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Icon(Icons.settings, color: Color(0xFF5E5CE6)),
+              ),
+              title: const Text('앱 설정'),
+              subtitle: const Text(
+                '펜 도구, 손바닥 거부, 자동 레이어',
+                style: TextStyle(fontSize: 12),
+              ),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const SettingsScreen()),
+                );
+              },
+            ),
+
+            // Gesture guide
+            ListTile(
+              leading: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFF3B30).withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Icon(Icons.touch_app, color: Color(0xFFFF3B30)),
+              ),
+              title: const Text('제스처 가이드'),
+              subtitle: const Text(
+                '앱 사용법 보기',
+                style: TextStyle(fontSize: 12),
+              ),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const GestureGuideScreen()),
+                );
+              },
+            ),
+
             const SizedBox(height: AppTheme.spaceMd),
+          ],
+        ),
+      ),
+    );
+  }
+
+  String _getThemeName(AppThemeType type) {
+    switch (type) {
+      case AppThemeType.ivory:
+        return '아이보리';
+      case AppThemeType.pastelPink:
+        return '파스텔 핑크';
+      case AppThemeType.pastelBlue:
+        return '파스텔 블루';
+      case AppThemeType.pastelGreen:
+        return '파스텔 그린';
+      case AppThemeType.minimalist:
+        return '미니멀';
+      case AppThemeType.darkMode:
+        return '다크 모드';
+    }
+  }
+
+  void _showThemeSelector(BuildContext context, DrawingProvider provider) {
+    final isDarkMode = provider.isDarkMode;
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        padding: const EdgeInsets.all(AppTheme.spaceLg),
+        decoration: BoxDecoration(
+          color: isDarkMode ? const Color(0xFF2A2A2A) : Colors.white,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Handle bar
+            Center(
+              child: Container(
+                margin: const EdgeInsets.only(bottom: 20),
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: isDarkMode ? Colors.white24 : Colors.black12,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            ),
+
+            Text('테마 선택', style: AppTheme.heading2(isDarkMode)),
+            const SizedBox(height: AppTheme.spaceLg),
+
             Wrap(
               spacing: AppTheme.spaceMd,
               runSpacing: AppTheme.spaceMd,
@@ -504,6 +886,8 @@ class _HomeDashboardState extends State<HomeDashboard> {
                 _buildThemeOption(context, provider, AppThemeType.darkMode, '다크 모드', const Color(0xFF1E1E1E)),
               ],
             ),
+
+            const SizedBox(height: AppTheme.spaceLg),
           ],
         ),
       ),
