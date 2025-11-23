@@ -16,7 +16,7 @@ class WrongAnswerScreen extends StatelessWidget {
     return Consumer<DrawingProvider>(
       builder: (context, provider, child) {
         final isDarkMode = provider.isDarkMode;
-        final wrongAnswers = provider.wrongAnswerManager.allWrongAnswers;
+        final wrongAnswers = provider.wrongAnswerService.allWrongAnswers;
 
         return Scaffold(
           backgroundColor: isDarkMode ? const Color(0xFF1E1E1E) : Colors.white,
@@ -108,10 +108,8 @@ class WrongAnswerScreen extends StatelessWidget {
         child: InkWell(
           onTap: () {
             // Navigate to the source note
-            if (wrongAnswer.sourceNoteId != null) {
-              provider.switchToNote(wrongAnswer.sourceNoteId!);
-              context.pushSlideUp(const CanvasScreen());
-            }
+            provider.switchToNote(wrongAnswer.sourceNoteId);
+            context.pushSlideUp(const CanvasScreen());
           },
           borderRadius: BorderRadius.circular(AppTheme.radiusMd),
           child: Padding(
@@ -136,7 +134,7 @@ class WrongAnswerScreen extends StatelessWidget {
                         borderRadius: BorderRadius.circular(AppTheme.radiusSm),
                       ),
                       child: Text(
-                        wrongAnswer.subject ?? '기타',
+                        wrongAnswer.subject,
                         style: const TextStyle(
                           color: Colors.white,
                           fontSize: 12,
@@ -146,7 +144,7 @@ class WrongAnswerScreen extends StatelessWidget {
                     ),
                     // Date
                     Text(
-                      _formatDate(wrongAnswer.createdAt),
+                      _formatDate(wrongAnswer.clippedAt),
                       style: TextStyle(
                         fontSize: 12,
                         color: isDarkMode
@@ -160,22 +158,20 @@ class WrongAnswerScreen extends StatelessWidget {
                 const SizedBox(height: AppTheme.spaceMd),
 
                 // Title/Description
-                if (wrongAnswer.title != null) ...[
-                  Text(
-                    wrongAnswer.title!,
-                    style: AppTheme.bodyLarge(isDarkMode).copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
+                Text(
+                  wrongAnswer.title,
+                  style: AppTheme.bodyLarge(isDarkMode).copyWith(
+                    fontWeight: FontWeight.bold,
                   ),
-                  const SizedBox(height: AppTheme.spaceSm),
-                ],
+                ),
+                const SizedBox(height: AppTheme.spaceSm),
 
                 // Tags
-                if (wrongAnswer.tags.isNotEmpty) ...[
+                if (wrongAnswer.tags != null && wrongAnswer.tags!.isNotEmpty) ...[
                   Wrap(
                     spacing: AppTheme.spaceSm,
                     runSpacing: AppTheme.spaceSm,
-                    children: wrongAnswer.tags.map((tag) {
+                    children: wrongAnswer.tags!.split(',').map((tag) {
                       return Container(
                         padding: const EdgeInsets.symmetric(
                           horizontal: 8,

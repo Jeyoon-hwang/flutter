@@ -5,6 +5,7 @@ import '../utils/app_theme.dart';
 import '../utils/page_routes.dart';
 import '../models/planner.dart';
 import '../models/app_settings.dart';
+import '../models/note.dart';
 import '../widgets/study_timer_widget.dart' hide TodayStudyCard;
 import '../widgets/today_study_card.dart';
 import '../services/haptic_service.dart';
