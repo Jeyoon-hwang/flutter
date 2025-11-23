@@ -364,20 +364,33 @@ class _FloatingToolbarState extends State<FloatingToolbar> {
     AdvancedPen pen,
     {required bool isSelected, required bool isDarkMode}
   ) {
-    return GestureDetector(
-      onTap: () {
-        HapticFeedback.selectionClick();
-        setState(() {
-          _selectedPenId = pen.id;
-        });
-        provider.setAdvancedPen(pen);
-        provider.setMode(DrawingMode.pen);
-      },
-      onLongPress: () {
-        HapticFeedback.mediumImpact();
-        _showPenCustomizer(context, provider, pen: pen);
-      },
-      child: AnimatedContainer(
+    return Tooltip(
+      message: '${pen.name}\n탭: 선택 | 길게 누르기: 편집',
+      preferBelow: false,
+      verticalOffset: 10,
+      textStyle: const TextStyle(
+        fontSize: 12,
+        color: Colors.white,
+      ),
+      decoration: BoxDecoration(
+        color: Colors.black.withValues(alpha: 0.9),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      waitDuration: const Duration(milliseconds: 500),
+      child: GestureDetector(
+        onTap: () {
+          HapticFeedback.selectionClick();
+          setState(() {
+            _selectedPenId = pen.id;
+          });
+          provider.setAdvancedPen(pen);
+          provider.setMode(DrawingMode.pen);
+        },
+        onLongPress: () {
+          HapticFeedback.mediumImpact();
+          _showPenCustomizer(context, provider, pen: pen);
+        },
+        child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         width: 56,
         height: 56,
@@ -438,9 +451,23 @@ class _FloatingToolbarState extends State<FloatingToolbar> {
     bool isEnabled = true,
     Color? color,
   }) {
-    return GestureDetector(
-      onTap: isEnabled ? onTap : null,
-      child: AnimatedOpacity(
+    return Tooltip(
+      message: label,
+      preferBelow: false,
+      verticalOffset: 10,
+      textStyle: const TextStyle(
+        fontSize: 12,
+        fontWeight: FontWeight.w600,
+        color: Colors.white,
+      ),
+      decoration: BoxDecoration(
+        color: Colors.black.withValues(alpha: 0.9),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      waitDuration: const Duration(milliseconds: 500),
+      child: GestureDetector(
+        onTap: isEnabled ? onTap : null,
+        child: AnimatedOpacity(
         duration: const Duration(milliseconds: 200),
         opacity: isEnabled ? 1.0 : 0.3,
         child: AnimatedContainer(
@@ -491,6 +518,7 @@ class _FloatingToolbarState extends State<FloatingToolbar> {
           ),
         ),
       ),
+    ),
     );
   }
 
