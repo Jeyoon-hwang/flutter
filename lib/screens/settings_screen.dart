@@ -139,6 +139,28 @@ class SettingsScreen extends StatelessWidget {
               _buildSectionHeader('툴바 커스터마이징', provider.isDarkMode),
               _buildSettingCard(
                 context,
+                icon: Icons.aspect_ratio,
+                title: '버튼 크기',
+                subtitle: provider.settings.buttonSize < 0.9
+                    ? '작게 (${(provider.settings.buttonSize * 100).toInt()}%)'
+                    : provider.settings.buttonSize > 1.1
+                        ? '크게 (${(provider.settings.buttonSize * 100).toInt()}%)'
+                        : '보통 (${(provider.settings.buttonSize * 100).toInt()}%)',
+                trailing: SizedBox(
+                  width: 150,
+                  child: Slider(
+                    value: provider.settings.buttonSize,
+                    min: 0.8,
+                    max: 1.4,
+                    divisions: 6,
+                    activeColor: const Color(0xFF667EEA),
+                    onChanged: (value) => provider.setButtonSize(value),
+                  ),
+                ),
+                isDarkMode: provider.isDarkMode,
+              ),
+              _buildSettingCard(
+                context,
                 icon: Icons.edit,
                 title: '펜 도구',
                 subtitle: '펜 도구 표시',

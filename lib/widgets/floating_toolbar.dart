@@ -40,14 +40,6 @@ class _FloatingToolbarState extends State<FloatingToolbar> {
   @override
   Widget build(BuildContext context) {
     final isTablet = ResponsiveUtil.isTablet(context);
-    final buttonSize = isTablet ? 56.0 : 48.0;
-    final smallButtonSize = isTablet ? 48.0 : 40.0;
-    final iconSize = isTablet ? 28.0 : 24.0;
-    final smallIconSize = isTablet ? 24.0 : 20.0;
-    final spacing = isTablet ? 12.0 : 8.0;
-    final padding = isTablet ? 20.0 : 16.0;
-    final verticalPadding = isTablet ? 16.0 : 12.0;
-    final colorButtonSize = isTablet ? 48.0 : 40.0;
 
     final screenSize = MediaQuery.of(context).size;
     final defaultBottom = isTablet ? 40.0 : 30.0;
@@ -63,6 +55,17 @@ class _FloatingToolbarState extends State<FloatingToolbar> {
         if (provider.focusMode) {
           return const SizedBox.shrink();
         }
+
+        // Apply button size multiplier from settings
+        final sizeMultiplier = provider.settings.buttonSize;
+        final buttonSize = (isTablet ? 56.0 : 48.0) * sizeMultiplier;
+        final smallButtonSize = (isTablet ? 48.0 : 40.0) * sizeMultiplier;
+        final iconSize = (isTablet ? 28.0 : 24.0) * sizeMultiplier;
+        final smallIconSize = (isTablet ? 24.0 : 20.0) * sizeMultiplier;
+        final spacing = (isTablet ? 12.0 : 8.0) * sizeMultiplier;
+        final padding = (isTablet ? 20.0 : 16.0) * sizeMultiplier;
+        final verticalPadding = (isTablet ? 16.0 : 12.0) * sizeMultiplier;
+        final colorButtonSize = (isTablet ? 48.0 : 40.0) * sizeMultiplier;
 
         return Positioned(
           left: _position.dx - (screenSize.width / 2),

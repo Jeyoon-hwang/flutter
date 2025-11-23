@@ -397,6 +397,12 @@ class DrawingProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  void setButtonSize(double size) {
+    _settings = _settings.copyWith(buttonSize: size);
+    _saveSettings();
+    notifyListeners();
+  }
+
   void setMode(DrawingMode mode) {
     _mode = mode;
     _selectionRect = null;
