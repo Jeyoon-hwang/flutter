@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../providers/drawing_provider.dart';
 import '../utils/app_theme.dart';
 import '../utils/page_routes.dart';
+import '../utils/motivational_quotes.dart';
 import '../models/planner.dart';
 import '../models/app_settings.dart';
 import '../models/note.dart';
@@ -30,25 +31,9 @@ class HomeDashboard extends StatefulWidget {
 class _HomeDashboardState extends State<HomeDashboard> {
   bool _performanceInitialized = false;
 
-  // Inspirational quotes
-  static const List<String> _quotes = [
-    '오늘도 화이팅!',
-    '작은 진전도 진전입니다',
-    '꾸준함이 재능을 이긴다',
-    '오늘의 노력이 내일의 결과',
-    '할 수 있다고 믿으면 이미 반은 성공',
-    '포기하지 않는 한 실패는 없다',
-    '지금 이 순간에 집중하세요',
-    '당신은 생각보다 강합니다',
-    '매일 조금씩 성장하고 있어요',
-    '완벽하지 않아도 괜찮아요',
-    '시작이 반이다',
-    '노력은 배신하지 않습니다',
-  ];
-
+  // Get today's motivational quote
   String _getTodayQuote() {
-    final dayOfYear = DateTime.now().difference(DateTime(DateTime.now().year, 1, 1)).inDays;
-    return _quotes[dayOfYear % _quotes.length];
+    return MotivationalQuotes.getTimeBasedQuote();
   }
 
   @override
