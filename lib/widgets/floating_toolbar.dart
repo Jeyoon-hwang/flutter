@@ -5,8 +5,6 @@ import 'package:provider/provider.dart';
 import '../providers/drawing_provider.dart';
 import '../utils/responsive_util.dart';
 import '../models/advanced_pen.dart';
-import './ocr_result_dialog.dart';
-import './template_picker.dart';
 import './pen_customizer.dart';
 
 class FloatingToolbar extends StatefulWidget {
@@ -18,18 +16,24 @@ class FloatingToolbar extends StatefulWidget {
   State<FloatingToolbar> createState() => _FloatingToolbarState();
 }
 
-class _FloatingToolbarState extends State<FloatingToolbar> with SingleTickerProviderStateMixin {
+class _FloatingToolbarState extends State<FloatingToolbar> with TickerProviderStateMixin {
   String? _selectedPenId;
   bool _isExpanded = false; // Toolbar collapsed by default
   bool _isHidden = false; // Toolbar hidden at edge
   late AnimationController _slideController;
+  late AnimationController _fadeController;
+  late AnimationController _scaleController;
   late Animation<Offset> _slideAnimation;
+  late Animation<double> _fadeAnimation;
+  late Animation<double> _scaleAnimation;
 
   @override
   void initState() {
     super.initState();
+
+    // Slide animation for hiding/showing toolbar
     _slideController = AnimationController(
-      duration: const Duration(milliseconds: 300),
+      duration: const Duration(milliseconds: 400),
       vsync: this,
     );
     _slideAnimation = Tween<Offset>(
@@ -37,38 +41,50 @@ class _FloatingToolbarState extends State<FloatingToolbar> with SingleTickerProv
       end: const Offset(0, 1), // Slide down to hide
     ).animate(CurvedAnimation(
       parent: _slideController,
+      curve: Curves.easeInOutCubic,
+    ));
+
+    // Fade animation for smooth transitions
+    _fadeController = AnimationController(
+      duration: const Duration(milliseconds: 300),
+      vsync: this,
+    );
+    _fadeAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(
+      parent: _fadeController,
+      curve: Curves.easeOut,
+    ));
+
+    // Scale animation for button press effects
+    _scaleController = AnimationController(
+      duration: const Duration(milliseconds: 150),
+      vsync: this,
+    );
+    _scaleAnimation = Tween<double>(
+      begin: 1.0,
+      end: 0.95,
+    ).animate(CurvedAnimation(
+      parent: _scaleController,
       curve: Curves.easeInOut,
     ));
+
+    // Start with fade in
+    _fadeController.forward();
   }
 
   @override
   void dispose() {
     _slideController.dispose();
+    _fadeController.dispose();
+    _scaleController.dispose();
     super.dispose();
   }
-
-  static const List<Color> presetColors = [
-    Colors.black,
-    Color(0xFF424242),
-    Color(0xFFFF3B30),
-    Color(0xFFFF2D55),
-    Color(0xFFFF9500),
-    Color(0xFFFFCC00),
-    Color(0xFF34C759),
-    Color(0xFF30D158),
-    Color(0xFF007AFF),
-    Color(0xFF0A84FF),
-    Color(0xFF5E5CE6),
-    Color(0xFFAF52DE),
-    Color(0xFFBF5AF2),
-    Color(0xFF8E8E93),
-    Colors.white,
-  ];
 
   @override
   Widget build(BuildContext context) {
     final isTablet = ResponsiveUtil.isTablet(context);
-    final screenSize = MediaQuery.of(context).size;
 
     return Consumer<DrawingProvider>(
       builder: (context, provider, child) {
@@ -84,16 +100,26 @@ class _FloatingToolbarState extends State<FloatingToolbar> with SingleTickerProv
             children: [
               // Hidden state - small arrow to show toolbar
               if (_isHidden)
-                GestureDetector(
-                  onTap: () {
-                    setState(() {
-                      _isHidden = false;
-                      _isExpanded = true;
-                    });
-                    _slideController.reverse();
-                    HapticFeedback.selectionClick();
-                  },
-                  child: Container(
+                FadeTransition(
+                  opacity: _fadeAnimation,
+                  child: ScaleTransition(
+                    scale: Tween<double>(begin: 0.8, end: 1.0).animate(
+                      CurvedAnimation(
+                        parent: _fadeController,
+                        curve: Curves.elasticOut,
+                      ),
+                    ),
+                    child: GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          _isHidden = false;
+                          _isExpanded = true;
+                        });
+                        _slideController.reverse();
+                        _fadeController.forward();
+                        HapticFeedback.selectionClick();
+                      },
+                      child: Container(
                     margin: const EdgeInsets.only(bottom: 8),
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
@@ -115,24 +141,36 @@ class _FloatingToolbarState extends State<FloatingToolbar> with SingleTickerProv
                         ),
                       ],
                     ),
-                    child: Icon(
-                      Icons.keyboard_arrow_up,
-                      size: 28,
-                      color: const Color(0xFF667EEA),
+                        child: Icon(
+                          Icons.keyboard_arrow_up,
+                          size: 28,
+                          color: const Color(0xFF667EEA),
+                        ),
+                      ),
                     ),
                   ),
                 ),
 
               // Collapsed state - small toggle button
               if (!_isExpanded && !_isHidden)
-                GestureDetector(
-                  onTap: () {
-                    setState(() {
-                      _isExpanded = true;
-                    });
-                    HapticFeedback.selectionClick();
-                  },
-                  child: Container(
+                FadeTransition(
+                  opacity: _fadeAnimation,
+                  child: ScaleTransition(
+                    scale: Tween<double>(begin: 0.9, end: 1.0).animate(
+                      CurvedAnimation(
+                        parent: _fadeController,
+                        curve: Curves.easeOutBack,
+                      ),
+                    ),
+                    child: GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          _isExpanded = true;
+                        });
+                        _fadeController.forward();
+                        HapticFeedback.selectionClick();
+                      },
+                      child: Container(
                     margin: const EdgeInsets.only(bottom: 8),
                     padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                     decoration: BoxDecoration(
@@ -172,14 +210,16 @@ class _FloatingToolbarState extends State<FloatingToolbar> with SingleTickerProv
                           ),
                         ),
                         const SizedBox(width: 8),
-                        Icon(
-                          Icons.keyboard_arrow_up,
-                          size: 20,
-                          color: isDarkMode ? Colors.white70 : Colors.black54,
-                        ),
-                      ],
+                          Icon(
+                            Icons.keyboard_arrow_up,
+                            size: 20,
+                            color: isDarkMode ? Colors.white70 : Colors.black54,
+                          ),
+                        ],
+                      ),
                     ),
                   ),
+                ),
                 ),
 
               // Expanded state - full toolbar
@@ -501,24 +541,6 @@ class _FloatingToolbarState extends State<FloatingToolbar> with SingleTickerProv
                             ),
                           ),
 
-                          // OCR Tool
-                          if (provider.settings.showOcrTool) ...[
-                            Padding(
-                              padding: const EdgeInsets.only(right: 8),
-                              child: _buildToolButton(
-                                context,
-                                icon: Icons.text_rotation_none,
-                                label: 'OCR',
-                                isActive: provider.mode == DrawingMode.ocr,
-                                onTap: () {
-                                  HapticFeedback.selectionClick();
-                                  provider.setMode(DrawingMode.ocr);
-                                },
-                                isDarkMode: isDarkMode,
-                              ),
-                            ),
-                          ],
-
                           // Template Tool
                           Padding(
                             padding: const EdgeInsets.only(right: 8),
@@ -573,19 +595,30 @@ class _FloatingToolbarState extends State<FloatingToolbar> with SingleTickerProv
       ),
       waitDuration: const Duration(milliseconds: 500),
       child: GestureDetector(
+        onTapDown: (_) {
+          _scaleController.forward();
+        },
+        onTapUp: (_) {
+          _scaleController.reverse();
+        },
+        onTapCancel: () {
+          _scaleController.reverse();
+        },
         onTap: () {
           HapticFeedback.selectionClick();
           setState(() {
             _selectedPenId = pen.id;
           });
-          provider.setAdvancedPen(pen);
+          provider.selectAdvancedPen(pen.id);
           provider.setMode(DrawingMode.pen);
         },
         onLongPress: () {
           HapticFeedback.mediumImpact();
           _showPenCustomizer(context, provider, pen: pen);
         },
-        child: AnimatedContainer(
+        child: ScaleTransition(
+          scale: _scaleAnimation,
+          child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         width: 56,
         height: 56,
@@ -633,6 +666,9 @@ class _FloatingToolbarState extends State<FloatingToolbar> with SingleTickerProv
           ],
         ),
       ),
+          ),
+        ),
+      ),
     );
   }
 
@@ -660,13 +696,18 @@ class _FloatingToolbarState extends State<FloatingToolbar> with SingleTickerProv
         borderRadius: BorderRadius.circular(8),
       ),
       waitDuration: const Duration(milliseconds: 500),
-      child: GestureDetector(
-        onTap: isEnabled ? onTap : null,
-        child: AnimatedOpacity(
+      child: AnimatedOpacity(
         duration: const Duration(milliseconds: 200),
         opacity: isEnabled ? 1.0 : 0.3,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: isEnabled ? onTap : null,
+            borderRadius: BorderRadius.circular(12),
+            splashColor: (color ?? const Color(0xFF667EEA)).withOpacity(0.3),
+            highlightColor: (color ?? const Color(0xFF667EEA)).withOpacity(0.1),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
           width: 56,
           height: 56,
           decoration: BoxDecoration(
@@ -718,45 +759,38 @@ class _FloatingToolbarState extends State<FloatingToolbar> with SingleTickerProv
   }
 
   void _showPenCustomizer(BuildContext context, DrawingProvider provider, {AdvancedPen? pen}) {
+    // Create a default pen if none provided
+    final initialPen = pen ?? AdvancedPen.getDefaultAdvancedPens().first;
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) => PenCustomizer(
-        pen: pen,
-        onSave: (newPen) {
+        initialPen: initialPen,
+        onPenChanged: (newPen) {
           if (pen == null) {
+            // Adding new pen
             provider.addAdvancedPen(newPen);
           } else {
-            provider.updateAdvancedPen(newPen);
+            // Updating existing pen
+            provider.updateAdvancedPen(pen.id, newPen);
           }
           setState(() {
             _selectedPenId = newPen.id;
           });
         },
-        onDelete: pen != null
-            ? () {
-                provider.deleteAdvancedPen(pen.id);
-                if (_selectedPenId == pen.id) {
-                  setState(() {
-                    _selectedPenId = null;
-                  });
-                }
-              }
-            : null,
+        isDarkMode: provider.isDarkMode,
       ),
     );
   }
 
   void _showTemplatePicker(BuildContext context, DrawingProvider provider) {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      builder: (context) => TemplatePicker(
-        onTemplateSelected: (template) {
-          provider.setTemplate(template);
-          Navigator.pop(context);
-        },
+    // TODO: Implement template picker
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('템플릿 기능은 곧 추가될 예정입니다'),
+        duration: Duration(seconds: 2),
       ),
     );
   }
@@ -791,7 +825,7 @@ class _FloatingToolbarState extends State<FloatingToolbar> with SingleTickerProv
           ),
           ElevatedButton(
             onPressed: () {
-              provider.clearCanvas();
+              provider.clear();
               Navigator.pop(context);
             },
             style: ElevatedButton.styleFrom(
