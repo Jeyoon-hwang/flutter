@@ -544,16 +544,54 @@ class _HomeDashboardState extends State<HomeDashboard> {
   }
 
   Widget _buildRecentNotes(BuildContext context, DrawingProvider provider, bool isDarkMode) {
-    final recentNotes = provider.noteService.allNotes.take(3).toList();
+    // Filter notes modified within the last 30 days
+    final now = DateTime.now();
+    final thirtyDaysAgo = now.subtract(const Duration(days: 30));
+
+    final recentNotes = provider.noteService.allNotes
+        .where((note) => note.modifiedAt.isAfter(thirtyDaysAgo))
+        .toList()
+      ..sort((a, b) => b.modifiedAt.compareTo(a.modifiedAt)); // Most recent first
+
+    final displayNotes = recentNotes.take(5).toList();
+
+    if (displayNotes.isEmpty) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: AppTheme.spaceLg),
+        child: Container(
+          padding: const EdgeInsets.all(AppTheme.spaceLg),
+          decoration: AppTheme.containerDecoration(isDarkMode),
+          child: Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  Icons.note_add_outlined,
+                  size: 48,
+                  color: isDarkMode ? AppTheme.darkTextSecondary : AppTheme.lightTextSecondary,
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  '최근 30일 내에 수정한 노트가 없습니다',
+                  style: AppTheme.bodyMedium(isDarkMode).copyWith(
+                    color: isDarkMode ? AppTheme.darkTextSecondary : AppTheme.lightTextSecondary,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
 
     return SizedBox(
-      height: 160, // Increased height to prevent overflow
+      height: 200, // Increased height for better thumbnails
       child: ListView.builder(
         padding: const EdgeInsets.symmetric(horizontal: AppTheme.spaceLg),
         scrollDirection: Axis.horizontal,
-        itemCount: recentNotes.length,
+        itemCount: displayNotes.length,
         itemBuilder: (context, index) {
-          final note = recentNotes[index];
+          final note = displayNotes[index];
           return GestureDetector(
             onTap: () async {
               await hapticService.medium();
@@ -563,46 +601,109 @@ class _HomeDashboardState extends State<HomeDashboard> {
               }
             },
             child: Container(
-              width: 160,
-              height: 155, // Explicit height constraint
-              margin: EdgeInsets.only(right: index < recentNotes.length - 1 ? AppTheme.spaceMd : 0),
+              width: 180,
+              height: 195, // Explicit height constraint
+              margin: EdgeInsets.only(right: index < displayNotes.length - 1 ? AppTheme.spaceMd : 0),
               clipBehavior: Clip.hardEdge, // Clip overflow
-              decoration: AppTheme.containerDecoration(isDarkMode),
+              decoration: BoxDecoration(
+                color: isDarkMode ? AppTheme.darkSurface : Colors.white,
+                borderRadius: BorderRadius.circular(AppTheme.radiusLg),
+                boxShadow: AppTheme.shadowMd(isDarkMode),
+              ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  // Note preview/cover
+                  // Note preview/thumbnail
                   Container(
-                    height: 80,
+                    height: 120,
                     decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: [Color(0xFF667EEA), Color(0xFF764BA2)],
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: _getGradientColors(note.template),
                       ),
                       borderRadius: const BorderRadius.vertical(
-                        top: Radius.circular(AppTheme.radiusMd),
+                        top: Radius.circular(AppTheme.radiusLg),
                       ),
                     ),
-                    child: Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            _getNoteIcon(note.template),
-                            color: Colors.white,
-                            size: 32,
-                          ),
-                          const SizedBox(height: 4),
-                          if (note.totalStrokes > 0)
-                            Text(
-                              '${note.totalStrokes} 획',
-                              style: const TextStyle(
-                                color: Colors.white70,
-                                fontSize: 11,
-                              ),
+                    child: Stack(
+                      children: [
+                        // Background pattern
+                        Positioned.fill(
+                          child: Opacity(
+                            opacity: 0.1,
+                            child: Icon(
+                              _getNoteIcon(note.template),
+                              size: 80,
+                              color: Colors.white,
                             ),
-                        ],
-                      ),
+                          ),
+                        ),
+                        // Content info
+                        Padding(
+                          padding: const EdgeInsets.all(12),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              // Template icon
+                              Container(
+                                padding: const EdgeInsets.all(8),
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withValues(alpha: 0.3),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Icon(
+                                  _getNoteIcon(note.template),
+                                  color: Colors.white,
+                                  size: 20,
+                                ),
+                              ),
+                              // Stats
+                              Row(
+                                children: [
+                                  if (note.totalStrokes > 0) ...[
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                      decoration: BoxDecoration(
+                                        color: Colors.white.withValues(alpha: 0.3),
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          const Icon(Icons.edit, color: Colors.white, size: 12),
+                                          const SizedBox(width: 4),
+                                          Text(
+                                            '${note.totalStrokes}',
+                                            style: const TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 11,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                  if (note.isFavorite) ...[
+                                    const SizedBox(width: 4),
+                                    Container(
+                                      padding: const EdgeInsets.all(4),
+                                      decoration: BoxDecoration(
+                                        color: Colors.white.withValues(alpha: 0.3),
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: const Icon(Icons.favorite, color: Colors.white, size: 12),
+                                    ),
+                                  ],
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                   // Note info
@@ -615,22 +716,38 @@ class _HomeDashboardState extends State<HomeDashboard> {
                         children: [
                           Text(
                             note.title,
-                            style: AppTheme.bodyMedium(isDarkMode).copyWith(
+                            style: AppTheme.bodyLarge(isDarkMode).copyWith(
                               fontWeight: FontWeight.bold,
+                              fontSize: 14,
                             ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
                           const SizedBox(height: 4),
-                          Text(
-                            note.lastModifiedString,
-                            style: AppTheme.bodySmall(isDarkMode).copyWith(
-                              color: isDarkMode
-                                  ? AppTheme.darkTextSecondary
-                                  : AppTheme.lightTextSecondary,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
+                          Row(
+                            children: [
+                              Icon(
+                                Icons.access_time,
+                                size: 12,
+                                color: isDarkMode
+                                    ? AppTheme.darkTextSecondary
+                                    : AppTheme.lightTextSecondary,
+                              ),
+                              const SizedBox(width: 4),
+                              Expanded(
+                                child: Text(
+                                  note.lastModifiedString,
+                                  style: AppTheme.bodySmall(isDarkMode).copyWith(
+                                    color: isDarkMode
+                                        ? AppTheme.darkTextSecondary
+                                        : AppTheme.lightTextSecondary,
+                                    fontSize: 11,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ],
                           ),
                         ],
                       ),
@@ -643,6 +760,23 @@ class _HomeDashboardState extends State<HomeDashboard> {
         },
       ),
     );
+  }
+
+  List<Color> _getGradientColors(NoteTemplate template) {
+    switch (template) {
+      case NoteTemplate.blank:
+        return [const Color(0xFF667EEA), const Color(0xFF764BA2)];
+      case NoteTemplate.lined:
+        return [const Color(0xFF4FACFE), const Color(0xFF00F2FE)];
+      case NoteTemplate.grid:
+        return [const Color(0xFFFA709A), const Color(0xFFFEE140)];
+      case NoteTemplate.dots:
+        return [const Color(0xFF30CFD0), const Color(0xFF330867)];
+      case NoteTemplate.cornell:
+        return [const Color(0xFFA8EDEA), const Color(0xFFFED6E3)];
+      case NoteTemplate.music:
+        return [const Color(0xFFFF9A9E), const Color(0xFFFECAB6)];
+    }
   }
 
   IconData _getNoteIcon(NoteTemplate template) {
