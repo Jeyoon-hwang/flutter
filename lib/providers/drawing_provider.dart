@@ -30,6 +30,7 @@ import '../models/advanced_pen.dart';
 import '../models/performance_settings.dart';
 import '../models/study_timer.dart';
 import '../utils/stroke_smoother.dart';
+import '../services/auto_save_service.dart';
 
 enum DrawingMode { pen, eraser, select, shape, text, wrongAnswerClip }
 
@@ -125,6 +126,10 @@ class DrawingProvider extends ChangeNotifier {
   final AppStateService _appStateService = AppStateService();
   AppStateService get appStateService => _appStateService;
 
+  // Auto-save service (prevents work loss)
+  final AutoSaveService _autoSaveService = AutoSaveService();
+  AutoSaveService get autoSaveService => _autoSaveService;
+
   // Advanced pen system
   final List<AdvancedPen> _advancedPens = [];
   String? _selectedAdvancedPenId;
@@ -176,6 +181,31 @@ class DrawingProvider extends ChangeNotifier {
 
     // Restore last opened note if exists
     await _restoreLastSession();
+
+    // Initialize auto-save
+    _initializeAutoSave();
+  }
+
+  /// Initialize auto-save system
+  void _initializeAutoSave() {
+    // Configure auto-save callbacks
+    _autoSaveService.onAutoSave = () async {
+      // Save current note
+      if (_noteService.currentNote != null) {
+        await _noteService.saveCurrentNote();
+      }
+    };
+
+    _autoSaveService.onSaveSuccess = () {
+      debugPrint('✅ Auto-save successful');
+    };
+
+    _autoSaveService.onSaveError = (error) {
+      debugPrint('❌ Auto-save error: $error');
+    };
+
+    // Start auto-save timer (30 seconds)
+    _autoSaveService.startAutoSave();
   }
 
   /// Load saved settings from persistence
@@ -1119,6 +1149,9 @@ class DrawingProvider extends ChangeNotifier {
 
       // Auto-save to current note
       _saveToCurrentNote();
+
+      // Mark unsaved changes for auto-save system
+      _autoSaveService.markUnsavedChanges(isStroke: true);
     }
     notifyListeners();
   }

@@ -100,7 +100,7 @@ class HistoryAction {
 class HistoryManager extends ChangeNotifier {
   final List<HistoryAction> _history = [];
   int _currentIndex = -1;
-  final int _maxHistory = 100; // Increased from 50 for more undo steps
+  final int _maxHistory = 500; // Massive history for professional use (500 actions!)
 
   /// Get all history actions (for debugging or advanced UI)
   List<HistoryAction> get history => List.unmodifiable(_history);
