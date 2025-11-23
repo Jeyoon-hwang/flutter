@@ -20,6 +20,7 @@ class FloatingToolbar extends StatefulWidget {
 
 class _FloatingToolbarState extends State<FloatingToolbar> {
   String? _selectedPenId;
+  bool _isExpanded = false; // Toolbar collapsed by default
 
   static const List<Color> presetColors = [
     Colors.black,
@@ -56,12 +57,73 @@ class _FloatingToolbarState extends State<FloatingToolbar> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              ClipRRect(
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(0)),
-                child: BackdropFilter(
-                  filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+              // Collapsed state - small toggle button
+              if (!_isExpanded)
+                GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      _isExpanded = true;
+                    });
+                    HapticFeedback.selectionClick();
+                  },
                   child: Container(
-                  decoration: BoxDecoration(
+                    margin: const EdgeInsets.only(bottom: 8),
+                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: isDarkMode
+                            ? [Colors.black.withValues(alpha: 0.9), Colors.black.withValues(alpha: 0.95)]
+                            : [Colors.white.withValues(alpha: 0.9), Colors.white.withValues(alpha: 0.95)],
+                      ),
+                      borderRadius: BorderRadius.circular(24),
+                      border: Border.all(
+                        color: isDarkMode ? Colors.white.withValues(alpha: 0.1) : Colors.black.withValues(alpha: 0.1),
+                        width: 1,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.2),
+                          blurRadius: 15,
+                          offset: const Offset(0, -3),
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.brush,
+                          size: 20,
+                          color: const Color(0xFF667EEA),
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          '툴바 열기',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: isDarkMode ? Colors.white : Colors.black87,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Icon(
+                          Icons.keyboard_arrow_up,
+                          size: 20,
+                          color: isDarkMode ? Colors.white70 : Colors.black54,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+
+              // Expanded state - full toolbar
+              if (_isExpanded)
+                ClipRRect(
+                  borderRadius: const BorderRadius.vertical(top: Radius.circular(0)),
+                  child: BackdropFilter(
+                    filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                    child: Container(
+                    decoration: BoxDecoration(
                   gradient: LinearGradient(
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
@@ -98,11 +160,56 @@ class _FloatingToolbarState extends State<FloatingToolbar> {
                       horizontal: isTablet ? 20 : 16,
                       vertical: isTablet ? 16 : 12,
                     ),
-                    child: SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        // Close button
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            GestureDetector(
+                              onTap: () {
+                                setState(() {
+                                  _isExpanded = false;
+                                });
+                                HapticFeedback.selectionClick();
+                              },
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                                decoration: BoxDecoration(
+                                  color: isDarkMode
+                                      ? Colors.white.withValues(alpha: 0.1)
+                                      : Colors.black.withValues(alpha: 0.05),
+                                  borderRadius: BorderRadius.circular(16),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(
+                                      Icons.keyboard_arrow_down,
+                                      size: 18,
+                                      color: isDarkMode ? Colors.white70 : Colors.black54,
+                                    ),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      '툴바 닫기',
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: isDarkMode ? Colors.white70 : Colors.black54,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 12),
+                        SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
                           // Advanced Pens Section
                           ...advancedPens.take(isTablet ? 6 : 4).map((pen) => Padding(
                                 padding: const EdgeInsets.only(right: 8),
@@ -348,8 +455,10 @@ class _FloatingToolbarState extends State<FloatingToolbar> {
                               isDarkMode: isDarkMode,
                             ),
                           ),
-                        ],
-                      ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ),
