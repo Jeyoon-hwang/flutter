@@ -10,6 +10,7 @@ import '../widgets/version_control_panel.dart';
 import '../widgets/advanced_pen_bar.dart';
 import '../widgets/pen_status_indicator.dart';
 import '../widgets/hamburger_menu.dart';
+import '../widgets/keyboard_shortcuts_overlay.dart';
 import '../utils/keyboard_shortcuts.dart';
 import 'package:provider/provider.dart';
 import '../providers/drawing_provider.dart';
@@ -25,6 +26,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
   final GlobalKey _repaintBoundaryKey = GlobalKey();
   bool _showGestureHint = false;
   bool _showVersionControl = false; // Toggle for version control panel
+  bool _showKeyboardShortcuts = false; // Toggle for keyboard shortcuts overlay
 
   @override
   void initState() {
@@ -48,7 +50,14 @@ class _CanvasScreenState extends State<CanvasScreen> {
         return Shortcuts(
           shortcuts: KeyboardShortcuts.getShortcuts(),
           child: Actions(
-            actions: KeyboardShortcuts.getActions(provider),
+            actions: KeyboardShortcuts.getActions(
+              provider,
+              onShowHelp: () {
+                setState(() {
+                  _showKeyboardShortcuts = !_showKeyboardShortcuts;
+                });
+              },
+            ),
             child: Focus(
               autofocus: true,
               child: Scaffold(
@@ -144,6 +153,51 @@ class _CanvasScreenState extends State<CanvasScreen> {
                   if (_showGestureHint) _buildGestureHint(),
                   if (provider.isSelectMode) _buildSelectionHint(),
                   if (provider.isShapeMode) _buildShapeHint(),
+
+                  // Keyboard shortcuts overlay
+                  if (_showKeyboardShortcuts)
+                    KeyboardShortcutsOverlay(
+                      onClose: () {
+                        setState(() {
+                          _showKeyboardShortcuts = false;
+                        });
+                      },
+                    ),
+
+                  // Floating help button
+                  if (!provider.focusMode)
+                    Positioned(
+                      bottom: 100,
+                      right: 20,
+                      child: GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            _showKeyboardShortcuts = !_showKeyboardShortcuts;
+                          });
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            gradient: const LinearGradient(
+                              colors: [Color(0xFF667EEA), Color(0xFF764BA2)],
+                            ),
+                            shape: BoxShape.circle,
+                            boxShadow: [
+                              BoxShadow(
+                                color: const Color(0xFF667EEA).withValues(alpha: 0.4),
+                                blurRadius: 15,
+                                offset: const Offset(0, 5),
+                              ),
+                            ],
+                          ),
+                          child: const Icon(
+                            Icons.keyboard,
+                            color: Colors.white,
+                            size: 24,
+                          ),
+                        ),
+                      ),
+                    ),
                 ],
               ),
             ),

@@ -42,11 +42,18 @@ class KeyboardShortcuts {
       // Select all
       LogicalKeySet(LogicalKeyboardKey.control, LogicalKeyboardKey.keyA):
           const SelectAllIntent(),
+
+      // Help
+      LogicalKeySet(LogicalKeyboardKey.slash, LogicalKeyboardKey.shift):
+          const ShowHelpIntent(),
     };
   }
 
   /// Get action map for shortcuts
-  static Map<Type, Action<Intent>> getActions(DrawingProvider provider) {
+  static Map<Type, Action<Intent>> getActions(
+    DrawingProvider provider, {
+    VoidCallback? onShowHelp,
+  }) {
     return {
       SelectToolIntent: CallbackAction<SelectToolIntent>(
         onInvoke: (_) => provider.setMode(DrawingMode.select),
@@ -93,6 +100,12 @@ class KeyboardShortcuts {
       ),
       SelectAllIntent: CallbackAction<SelectAllIntent>(
         onInvoke: (_) => provider.selectAll(),
+      ),
+      ShowHelpIntent: CallbackAction<ShowHelpIntent>(
+        onInvoke: (_) {
+          onShowHelp?.call();
+          return null;
+        },
       ),
     };
   }
@@ -173,4 +186,8 @@ class DeleteSelectionIntent extends Intent {
 
 class SelectAllIntent extends Intent {
   const SelectAllIntent();
+}
+
+class ShowHelpIntent extends Intent {
+  const ShowHelpIntent();
 }
