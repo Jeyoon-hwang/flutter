@@ -9,6 +9,7 @@ import '../widgets/page_navigation.dart';
 import '../widgets/version_control_panel.dart';
 import '../widgets/advanced_pen_bar.dart';
 import '../widgets/pen_status_indicator.dart';
+import '../widgets/hamburger_menu.dart';
 import 'package:provider/provider.dart';
 import '../providers/drawing_provider.dart';
 
@@ -64,6 +65,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
 
                   // Show header and toolbar only when not in focus mode
                   if (!provider.focusMode) ...[
+                    const HamburgerMenu(),
                     AppHeader(repaintBoundaryKey: _repaintBoundaryKey),
                     FloatingToolbar(repaintBoundaryKey: _repaintBoundaryKey),
                   ],

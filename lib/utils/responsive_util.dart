@@ -75,4 +75,55 @@ class ResponsiveUtil {
       right: 0,
     );
   }
+
+  // Toolbar positioning for phone vs tablet
+  static ToolbarLayout getToolbarLayout(BuildContext context) {
+    if (isTablet(context)) {
+      return ToolbarLayout.floating; // Draggable anywhere
+    } else {
+      return ToolbarLayout.bottom; // Fixed at bottom
+    }
+  }
+
+  // Get toolbar position based on device
+  static Offset getDefaultToolbarPosition(BuildContext context) {
+    final size = MediaQuery.of(context).size;
+    if (isTablet(context)) {
+      // Tablet: center middle
+      return Offset(size.width / 2, size.height - 150);
+    } else {
+      // Phone: bottom center
+      return Offset(size.width / 2, size.height - 100);
+    }
+  }
+
+  // Button layout for different devices
+  static ButtonLayout getButtonLayout(BuildContext context) {
+    if (isTablet(context)) {
+      return ButtonLayout.expanded; // Show all buttons with labels
+    } else {
+      return ButtonLayout.compact; // Icons only, collapsed
+    }
+  }
+
+  // Get spacing multiplier
+  static double getSpacing(BuildContext context) {
+    return isTablet(context) ? 12.0 : 8.0;
+  }
+
+  // Get border radius
+  static double getBorderRadius(BuildContext context) {
+    return isTablet(context) ? 16.0 : 12.0;
+  }
+
+  // Animation duration based on device
+  static Duration getAnimationDuration(BuildContext context) {
+    // Faster on phone for better responsiveness
+    return isPhone(context)
+        ? const Duration(milliseconds: 200)
+        : const Duration(milliseconds: 300);
+  }
 }
+
+enum ToolbarLayout { floating, bottom, top }
+enum ButtonLayout { compact, expanded }
