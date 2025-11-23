@@ -74,27 +74,27 @@ class _FloatingToolbarState extends State<FloatingToolbar> {
               left: _position.dx - (screenSize.width / 2),
               top: _position.dy,
               child: GestureDetector(
-            onPanStart: (details) {},
-            onPanUpdate: (details) {
-              setState(() {
-                _position = Offset(
-                  (_position.dx + details.delta.dx).clamp(100.0, screenSize.width - 100),
-                  (_position.dy + details.delta.dy).clamp(50.0, screenSize.height - 150),
-                );
-              });
-            },
-            onPanEnd: (details) {},
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(isTablet ? 16 : 14),
-              child: BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                child: Container(
-                  padding: EdgeInsets.symmetric(horizontal: padding, vertical: verticalPadding),
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: provider.isDarkMode
+                onPanStart: (details) {},
+                onPanUpdate: (details) {
+                  setState(() {
+                    _position = Offset(
+                      (_position.dx + details.delta.dx).clamp(100.0, screenSize.width - 100),
+                      (_position.dy + details.delta.dy).clamp(50.0, screenSize.height - 150),
+                    );
+                  });
+                },
+                onPanEnd: (details) {},
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(isTablet ? 16 : 14),
+                  child: BackdropFilter(
+                    filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                    child: Container(
+                      padding: EdgeInsets.symmetric(horizontal: padding, vertical: verticalPadding),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: provider.isDarkMode
                           ? [
                               Colors.black.withValues(alpha: 0.7),
                               Colors.black.withValues(alpha: 0.5),
@@ -414,7 +414,7 @@ class _FloatingToolbarState extends State<FloatingToolbar> {
                 ),
               ),
             ),
-              ),
+            ),
 
             // Pen settings panel (floating next to toolbar)
             if (_showPenSettings)
