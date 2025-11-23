@@ -10,6 +10,7 @@ import '../widgets/version_control_panel.dart';
 import '../widgets/advanced_pen_bar.dart';
 import '../widgets/pen_status_indicator.dart';
 import '../widgets/hamburger_menu.dart';
+import '../utils/keyboard_shortcuts.dart';
 import 'package:provider/provider.dart';
 import '../providers/drawing_provider.dart';
 
@@ -44,8 +45,14 @@ class _CanvasScreenState extends State<CanvasScreen> {
   Widget build(BuildContext context) {
     return Consumer<DrawingProvider>(
       builder: (context, provider, child) {
-        return Scaffold(
-          body: Container(
+        return Shortcuts(
+          shortcuts: KeyboardShortcuts.getShortcuts(),
+          child: Actions(
+            actions: KeyboardShortcuts.getActions(provider),
+            child: Focus(
+              autofocus: true,
+              child: Scaffold(
+                body: Container(
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 begin: Alignment.topLeft,
@@ -138,6 +145,9 @@ class _CanvasScreenState extends State<CanvasScreen> {
                   if (provider.isSelectMode) _buildSelectionHint(),
                   if (provider.isShapeMode) _buildShapeHint(),
                 ],
+              ),
+            ),
+                ),
               ),
             ),
           ),
