@@ -7,6 +7,8 @@ import '../utils/responsive_util.dart';
 import '../models/advanced_pen.dart';
 import './pen_customizer.dart';
 
+enum EdgeLocation { none, top, bottom, left, right }
+
 class FloatingToolbar extends StatefulWidget {
   final GlobalKey repaintBoundaryKey;
 
@@ -20,6 +22,12 @@ class _FloatingToolbarState extends State<FloatingToolbar> with TickerProviderSt
   String? _selectedPenId;
   bool _isExpanded = false; // Toolbar collapsed by default
   bool _isHidden = false; // Toolbar hidden at edge
+
+  // Toolbar position
+  double _toolbarX = 0;
+  double _toolbarY = 20; // Start at top
+  EdgeLocation _dockedEdge = EdgeLocation.none;
+
   late AnimationController _slideController;
   late AnimationController _fadeController;
   late AnimationController _scaleController;
@@ -82,45 +90,88 @@ class _FloatingToolbarState extends State<FloatingToolbar> with TickerProviderSt
     super.dispose();
   }
 
+  void _onDragEnd(DragEndDetails details, Size screenSize) {
+    const edgeThreshold = 50.0;
+
+    setState(() {
+      // Check proximity to edges
+      if (_toolbarY < edgeThreshold) {
+        // Dock to top
+        _dockedEdge = EdgeLocation.top;
+        _toolbarY = 0;
+        _isHidden = true;
+      } else if (_toolbarY > screenSize.height - 100) {
+        // Dock to bottom
+        _dockedEdge = EdgeLocation.bottom;
+        _toolbarY = screenSize.height - 80;
+        _isHidden = true;
+      } else if (_toolbarX < edgeThreshold) {
+        // Dock to left
+        _dockedEdge = EdgeLocation.left;
+        _toolbarX = -300; // Hide off screen
+        _isHidden = true;
+      } else if (_toolbarX > screenSize.width - edgeThreshold) {
+        // Dock to right
+        _dockedEdge = EdgeLocation.right;
+        _toolbarX = screenSize.width - 60;
+        _isHidden = true;
+      } else {
+        _dockedEdge = EdgeLocation.none;
+        _isHidden = false;
+      }
+    });
+  }
+
+  void _showToolbar() {
+    setState(() {
+      _isHidden = false;
+      _isExpanded = true;
+
+      // Move toolbar to visible position based on docked edge
+      if (_dockedEdge == EdgeLocation.left) {
+        _toolbarX = 10;
+      } else if (_dockedEdge == EdgeLocation.right) {
+        _toolbarX = MediaQuery.of(context).size.width - 400;
+      }
+    });
+  }
+
+  IconData _getArrowIcon() {
+    switch (_dockedEdge) {
+      case EdgeLocation.top:
+        return Icons.keyboard_arrow_down;
+      case EdgeLocation.bottom:
+        return Icons.keyboard_arrow_up;
+      case EdgeLocation.left:
+        return Icons.keyboard_arrow_right;
+      case EdgeLocation.right:
+        return Icons.keyboard_arrow_left;
+      default:
+        return Icons.drag_handle;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final isTablet = ResponsiveUtil.isTablet(context);
+    final screenSize = MediaQuery.of(context).size;
 
     return Consumer<DrawingProvider>(
       builder: (context, provider, child) {
         final isDarkMode = provider.isDarkMode;
         final advancedPens = provider.advancedPens;
 
-        return Positioned(
-          left: 0,
-          right: 0,
-          bottom: 0,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // Hidden state - small arrow to show toolbar
-              if (_isHidden)
-                FadeTransition(
-                  opacity: _fadeAnimation,
-                  child: ScaleTransition(
-                    scale: Tween<double>(begin: 0.8, end: 1.0).animate(
-                      CurvedAnimation(
-                        parent: _fadeController,
-                        curve: Curves.elasticOut,
-                      ),
-                    ),
-                    child: GestureDetector(
-                      onTap: () {
-                        setState(() {
-                          _isHidden = false;
-                          _isExpanded = true;
-                        });
-                        _slideController.reverse();
-                        _fadeController.forward();
-                        HapticFeedback.selectionClick();
-                      },
-                      child: Container(
-                    margin: const EdgeInsets.only(bottom: 8),
+        return Stack(
+          children: [
+            // Docked edge indicator (arrow button)
+            if (_isHidden && _dockedEdge != EdgeLocation.none)
+              Positioned(
+                left: _dockedEdge == EdgeLocation.left ? 0 : (_dockedEdge == EdgeLocation.right ? screenSize.width - 50 : null),
+                top: _dockedEdge == EdgeLocation.top ? 0 : (_dockedEdge == EdgeLocation.bottom ? null : screenSize.height / 2 - 25),
+                bottom: _dockedEdge == EdgeLocation.bottom ? 0 : null,
+                child: GestureDetector(
+                  onTap: _showToolbar,
+                  child: Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
@@ -128,202 +179,105 @@ class _FloatingToolbarState extends State<FloatingToolbar> with TickerProviderSt
                             ? [Colors.black.withValues(alpha: 0.9), Colors.black.withValues(alpha: 0.95)]
                             : [Colors.white.withValues(alpha: 0.9), Colors.white.withValues(alpha: 0.95)],
                       ),
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: isDarkMode ? Colors.white.withValues(alpha: 0.1) : Colors.black.withValues(alpha: 0.1),
-                        width: 1,
-                      ),
+                      borderRadius: BorderRadius.circular(8),
                       boxShadow: [
                         BoxShadow(
                           color: Colors.black.withValues(alpha: 0.2),
-                          blurRadius: 15,
-                          offset: const Offset(0, -3),
+                          blurRadius: 10,
                         ),
                       ],
                     ),
-                        child: Icon(
-                          Icons.keyboard_arrow_up,
-                          size: 28,
-                          color: const Color(0xFF667EEA),
-                        ),
-                      ),
+                    child: Icon(
+                      _getArrowIcon(),
+                      color: const Color(0xFF667EEA),
+                      size: 24,
                     ),
                   ),
                 ),
+              ),
 
-              // Collapsed state - small toggle button
-              if (!_isExpanded && !_isHidden)
-                FadeTransition(
-                  opacity: _fadeAnimation,
-                  child: ScaleTransition(
-                    scale: Tween<double>(begin: 0.9, end: 1.0).animate(
-                      CurvedAnimation(
-                        parent: _fadeController,
-                        curve: Curves.easeOutBack,
-                      ),
-                    ),
-                    child: GestureDetector(
-                      onTap: () {
-                        setState(() {
-                          _isExpanded = true;
-                        });
-                        _fadeController.forward();
-                        HapticFeedback.selectionClick();
-                      },
-                      child: Container(
-                    margin: const EdgeInsets.only(bottom: 8),
-                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+            // Main draggable toolbar
+            if (!_isHidden)
+              Positioned(
+                left: _toolbarX,
+                top: _toolbarY,
+                child: GestureDetector(
+                  onPanUpdate: (details) {
+                    setState(() {
+                      _toolbarX += details.delta.dx;
+                      _toolbarY += details.delta.dy;
+
+                      // Keep within screen bounds
+                      _toolbarX = _toolbarX.clamp(0.0, screenSize.width - 400);
+                      _toolbarY = _toolbarY.clamp(0.0, screenSize.height - 100);
+                    });
+                  },
+                  onPanEnd: (details) => _onDragEnd(details, screenSize),
+                  child: Container(
+                    width: isTablet ? 500 : 400,
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
                         colors: isDarkMode
-                            ? [Colors.black.withValues(alpha: 0.9), Colors.black.withValues(alpha: 0.95)]
-                            : [Colors.white.withValues(alpha: 0.9), Colors.white.withValues(alpha: 0.95)],
+                            ? [
+                                Colors.black.withValues(alpha: 0.95),
+                                Colors.black.withValues(alpha: 0.98),
+                              ]
+                            : [
+                                Colors.white.withValues(alpha: 0.95),
+                                Colors.white.withValues(alpha: 0.98),
+                              ],
                       ),
-                      borderRadius: BorderRadius.circular(24),
+                      borderRadius: BorderRadius.circular(16),
                       border: Border.all(
-                        color: isDarkMode ? Colors.white.withValues(alpha: 0.1) : Colors.black.withValues(alpha: 0.1),
+                        color: isDarkMode
+                            ? Colors.white.withValues(alpha: 0.1)
+                            : Colors.black.withValues(alpha: 0.1),
                         width: 1,
                       ),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.2),
-                          blurRadius: 15,
-                          offset: const Offset(0, -3),
+                          color: Colors.black.withValues(alpha: 0.3),
+                          blurRadius: 20,
+                          offset: const Offset(0, 5),
                         ),
                       ],
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          Icons.brush,
-                          size: 20,
-                          color: const Color(0xFF667EEA),
-                        ),
-                        const SizedBox(width: 8),
-                        Text(
-                          '툴바 열기',
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                            color: isDarkMode ? Colors.white : Colors.black87,
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                          Icon(
-                            Icons.keyboard_arrow_up,
-                            size: 20,
-                            color: isDarkMode ? Colors.white70 : Colors.black54,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-                ),
-
-              // Expanded state - full toolbar
-              if (_isExpanded && !_isHidden)
-                SlideTransition(
-                  position: _slideAnimation,
-                  child: GestureDetector(
-                    onVerticalDragEnd: (details) {
-                      // Swipe down to hide
-                      if (details.primaryVelocity != null && details.primaryVelocity! > 300) {
-                        setState(() {
-                          _isHidden = true;
-                        });
-                        _slideController.forward();
-                        HapticFeedback.mediumImpact();
-                      }
-                    },
-                    child: ClipRRect(
-                  borderRadius: const BorderRadius.vertical(top: Radius.circular(0)),
-                  child: BackdropFilter(
-                    filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                    child: Container(
-                    decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: isDarkMode
-                        ? [
-                            Colors.black.withValues(alpha: 0.95),
-                            Colors.black.withValues(alpha: 0.98),
-                          ]
-                        : [
-                            Colors.white.withValues(alpha: 0.95),
-                            Colors.white.withValues(alpha: 0.98),
-                          ],
-                  ),
-                  border: Border(
-                    top: BorderSide(
-                      color: isDarkMode
-                          ? Colors.white.withValues(alpha: 0.1)
-                          : Colors.black.withValues(alpha: 0.1),
-                      width: 1,
-                    ),
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.2),
-                      blurRadius: 20,
-                      offset: const Offset(0, -5),
-                    ),
-                  ],
-                ),
-                child: SafeArea(
-                  top: false,
-                  child: Padding(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: isTablet ? 20 : 16,
-                      vertical: isTablet ? 16 : 12,
                     ),
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        // Close button
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            GestureDetector(
-                              onTap: () {
-                                setState(() {
-                                  _isExpanded = false;
-                                });
-                                HapticFeedback.selectionClick();
-                              },
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-                                decoration: BoxDecoration(
-                                  color: isDarkMode
-                                      ? Colors.white.withValues(alpha: 0.1)
-                                      : Colors.black.withValues(alpha: 0.05),
-                                  borderRadius: BorderRadius.circular(16),
-                                ),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Icon(
-                                      Icons.keyboard_arrow_down,
-                                      size: 18,
-                                      color: isDarkMode ? Colors.white70 : Colors.black54,
-                                    ),
-                                    const SizedBox(width: 4),
-                                    Text(
-                                      '툴바 닫기',
-                                      style: TextStyle(
-                                        fontSize: 12,
-                                        color: isDarkMode ? Colors.white70 : Colors.black54,
-                                      ),
-                                    ),
-                                  ],
-                                ),
+                        // Drag handle
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.symmetric(vertical: 8),
+                          decoration: BoxDecoration(
+                            color: isDarkMode
+                                ? Colors.white.withValues(alpha: 0.05)
+                                : Colors.black.withValues(alpha: 0.03),
+                            borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+                          ),
+                          child: Center(
+                            child: Container(
+                              width: 40,
+                              height: 4,
+                              decoration: BoxDecoration(
+                                color: isDarkMode
+                                    ? Colors.white.withValues(alpha: 0.3)
+                                    : Colors.black.withValues(alpha: 0.3),
+                                borderRadius: BorderRadius.circular(2),
                               ),
                             ),
-                          ],
+                          ),
                         ),
-                        const SizedBox(height: 12),
+                        Padding(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: isTablet ? 20 : 16,
+                            vertical: isTablet ? 16 : 12,
+                          ),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
                         SingleChildScrollView(
                           scrollDirection: Axis.horizontal,
                           child: Row(
@@ -563,14 +517,12 @@ class _FloatingToolbarState extends State<FloatingToolbar> with TickerProviderSt
                     ),
                   ),
                 ),
-              ),
+              ],
             ),
-                  ),
-                ),
-              ),
-            ],
           ),
-        );
+        ),
+      ],
+    );
       },
     );
   }
