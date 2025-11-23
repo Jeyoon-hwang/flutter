@@ -72,33 +72,46 @@ class _FloatingToolbarState extends State<FloatingToolbar> with TickerProviderSt
   }
 
   void _onDragEnd(DragEndDetails details, Size screenSize) {
-    const edgeThreshold = 50.0;
+    // Calculate toolbar center point
+    const toolbarWidth = 400.0;
+    const toolbarHeight = 100.0;
+    final toolbarCenterX = _toolbarX + toolbarWidth / 2;
+    final toolbarCenterY = _toolbarY + toolbarHeight / 2;
+
+    // Calculate distances to each edge
+    final distanceToTop = toolbarCenterY;
+    final distanceToBottom = screenSize.height - toolbarCenterY;
+    final distanceToLeft = toolbarCenterX;
+    final distanceToRight = screenSize.width - toolbarCenterX;
+
+    // Find closest edge
+    final minDistance = [distanceToTop, distanceToBottom, distanceToLeft, distanceToRight].reduce((a, b) => a < b ? a : b);
 
     setState(() {
-      // Check proximity to edges
-      if (_toolbarY < edgeThreshold) {
-        // Dock to top
+      if (minDistance == distanceToTop) {
+        // Snap to top
         _dockedEdge = EdgeLocation.top;
         _toolbarY = 0;
+        _toolbarX = (screenSize.width - toolbarWidth) / 2; // Center horizontally
         _isHidden = true;
-      } else if (_toolbarY > screenSize.height - 100) {
-        // Dock to bottom
+      } else if (minDistance == distanceToBottom) {
+        // Snap to bottom
         _dockedEdge = EdgeLocation.bottom;
         _toolbarY = screenSize.height - 80;
+        _toolbarX = (screenSize.width - toolbarWidth) / 2; // Center horizontally
         _isHidden = true;
-      } else if (_toolbarX < edgeThreshold) {
-        // Dock to left
+      } else if (minDistance == distanceToLeft) {
+        // Snap to left
         _dockedEdge = EdgeLocation.left;
         _toolbarX = -300; // Hide off screen
+        _toolbarY = (screenSize.height - toolbarHeight) / 2; // Center vertically
         _isHidden = true;
-      } else if (_toolbarX > screenSize.width - edgeThreshold) {
-        // Dock to right
+      } else if (minDistance == distanceToRight) {
+        // Snap to right
         _dockedEdge = EdgeLocation.right;
         _toolbarX = screenSize.width - 60;
+        _toolbarY = (screenSize.height - toolbarHeight) / 2; // Center vertically
         _isHidden = true;
-      } else {
-        _dockedEdge = EdgeLocation.none;
-        _isHidden = false;
       }
     });
   }
@@ -706,19 +719,16 @@ class _FloatingToolbarState extends State<FloatingToolbar> with TickerProviderSt
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // Pen preview
-            Container(
-              width: 24,
-              height: 3,
-              decoration: BoxDecoration(
-                color: pen.color,
-                borderRadius: BorderRadius.circular(2),
-              ),
+            // Pen icon with color
+            Icon(
+              pen.getIcon(),
+              size: 24,
+              color: pen.color,
             ),
-            const SizedBox(height: 6),
-            // Pen name
+            const SizedBox(height: 4),
+            // Pen type name only (not full pen name)
             Text(
-              pen.name,
+              pen.getTypeName(),
               style: TextStyle(
                 fontSize: 10,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
