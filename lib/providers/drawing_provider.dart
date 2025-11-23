@@ -451,11 +451,23 @@ class DrawingProvider extends ChangeNotifier {
   void deleteSelection() {
     if (_selectionRect != null) {
       // Delete all strokes within selection
+      final deletedStrokes = <DrawingStroke>[];
       _strokes.removeWhere((stroke) {
-        return stroke.points.any((point) => _selectionRect!.contains(point.offset));
+        final shouldRemove = stroke.points.any((point) => _selectionRect!.contains(point.offset));
+        if (shouldRemove) deletedStrokes.add(stroke);
+        return shouldRemove;
       });
+
       clearSelection();
-      _historyManager.recordAction(HistoryActionType.delete, null);
+
+      // Record history if strokes were deleted
+      if (deletedStrokes.isNotEmpty) {
+        _historyManager.recordAction(HistoryAction(
+          type: HistoryActionType.removeStroke,
+          timestamp: DateTime.now(),
+        ));
+      }
+
       notifyListeners();
     }
   }

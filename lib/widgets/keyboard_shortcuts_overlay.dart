@@ -1,6 +1,5 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
-import '../utils/keyboard_shortcuts.dart';
 import '../utils/responsive_util.dart';
 
 /// Keyboard shortcuts help overlay
