@@ -119,11 +119,11 @@ class _FloatingToolbarState extends State<FloatingToolbar> {
                           ),
                         ],
                       ),
-                  child: SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
+                      child: SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
                         // Tool buttons (only show if enabled in settings)
                         if (provider.settings.showPenTool) ...[
                           _ModernToolButton(
@@ -408,7 +408,9 @@ class _FloatingToolbarState extends State<FloatingToolbar> {
                           SizedBox(width: spacing * 1.5),
                           const TemplatePickerButton(),
                         ],
-                      ],
+                          ],
+                        ),
+                      ),
                     ),
                   ),
                 ),
