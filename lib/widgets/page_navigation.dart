@@ -7,7 +7,14 @@ import '../screens/home_dashboard.dart';
 
 /// Page navigation widget for switching between pages (HORIZONTAL LAYOUT)
 class PageNavigation extends StatefulWidget {
-  const PageNavigation({Key? key}) : super(key: key);
+  final Function(bool)? onVersionControlToggle;
+  final bool showVersionControl;
+
+  const PageNavigation({
+    Key? key,
+    this.onVersionControlToggle,
+    this.showVersionControl = false,
+  }) : super(key: key);
 
   @override
   State<PageNavigation> createState() => _PageNavigationState();
@@ -190,6 +197,23 @@ class _PageNavigationState extends State<PageNavigation> {
                       isDarkMode: isDarkMode,
                       isEnabled: true,
                     ),
+
+                    // Version control button
+                    if (provider.noteService.currentNote != null) ...[
+                      const SizedBox(width: 8),
+                      _VersionControlButton(
+                        versionCount: provider.versionManager
+                            .getVersions(provider.noteService.currentNote!.id)
+                            .length,
+                        isActive: widget.showVersionControl,
+                        onTap: () {
+                          if (widget.onVersionControlToggle != null) {
+                            widget.onVersionControlToggle!(!widget.showVersionControl);
+                          }
+                        },
+                        isDarkMode: isDarkMode,
+                      ),
+                    ],
                   ],
                 ),
               ),
@@ -352,6 +376,74 @@ class _NavButton extends StatelessWidget {
                 ? Colors.white
                 : (isDarkMode ? Colors.white.withValues(alpha: 0.9) : Colors.black.withValues(alpha: 0.7)),
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class _VersionControlButton extends StatelessWidget {
+  final int versionCount;
+  final bool isActive;
+  final VoidCallback onTap;
+  final bool isDarkMode;
+
+  const _VersionControlButton({
+    required this.versionCount,
+    required this.isActive,
+    required this.onTap,
+    required this.isDarkMode,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        height: 44,
+        padding: const EdgeInsets.symmetric(horizontal: 12),
+        decoration: BoxDecoration(
+          color: isActive
+              ? const Color(0xFF667EEA).withValues(alpha: 0.2)
+              : (isDarkMode
+                  ? Colors.white.withValues(alpha: 0.1)
+                  : Colors.black.withValues(alpha: 0.05)),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: isActive
+                ? const Color(0xFF667EEA)
+                : (isDarkMode
+                    ? Colors.white.withValues(alpha: 0.1)
+                    : Colors.black.withValues(alpha: 0.05)),
+            width: isActive ? 2 : 1,
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.account_tree,
+              size: 18,
+              color: isActive
+                  ? const Color(0xFF667EEA)
+                  : (isDarkMode
+                      ? Colors.white.withValues(alpha: 0.9)
+                      : Colors.black.withValues(alpha: 0.7)),
+            ),
+            const SizedBox(width: 6),
+            Text(
+              '$versionCount',
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
+                color: isActive
+                    ? const Color(0xFF667EEA)
+                    : (isDarkMode
+                        ? Colors.white.withValues(alpha: 0.9)
+                        : Colors.black.withValues(alpha: 0.7)),
+              ),
+            ),
+          ],
         ),
       ),
     );

@@ -81,7 +81,14 @@ class _CanvasScreenState extends State<CanvasScreen> {
                   const SliderPanel(),
                   const ShapePalette(),
                   const LayerPanel(),
-                  const PageNavigation(),
+                  PageNavigation(
+                    showVersionControl: _showVersionControl,
+                    onVersionControlToggle: (show) {
+                      setState(() {
+                        _showVersionControl = show;
+                      });
+                    },
+                  ),
                   if (_showVersionControl) const VersionControlPanel(),
 
                   // Pen status indicator (top right corner)
