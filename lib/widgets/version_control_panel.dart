@@ -607,6 +607,9 @@ class VersionControlPanel extends StatelessWidget {
   void _showCommitDialog(BuildContext context, DrawingProvider provider) {
     final TextEditingController controller = TextEditingController();
 
+    // Calculate pen usage statistics
+    final penStats = _calculatePenStats(provider);
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -617,58 +620,141 @@ class VersionControlPanel extends StatelessWidget {
             Text('커밋 만들기'),
           ],
         ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              '변경 사항을 설명하는 메시지를 작성하세요:',
-              style: TextStyle(fontSize: 14),
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: controller,
-              maxLines: 3,
-              decoration: const InputDecoration(
-                hintText: '예: 수학 공식 추가, 다이어그램 완성',
-                border: OutlineInputBorder(),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                '변경 사항을 설명하는 메시지를 작성하세요:',
+                style: TextStyle(fontSize: 14),
               ),
-              autofocus: true,
-            ),
-            const SizedBox(height: 12),
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Colors.blue.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.blue.withValues(alpha: 0.3)),
+              const SizedBox(height: 12),
+              TextField(
+                controller: controller,
+                maxLines: 3,
+                decoration: const InputDecoration(
+                  hintText: '예: 수학 공식 추가, 다이어그램 완성',
+                  border: OutlineInputBorder(),
+                ),
+                autofocus: true,
               ),
-              child: const Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
+              const SizedBox(height: 16),
+
+              // Pen usage statistics
+              if (penStats.isNotEmpty) ...[
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF667EEA).withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: const Color(0xFF667EEA).withValues(alpha: 0.3)),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Icon(Icons.info_outline, size: 16, color: Colors.blue),
-                      SizedBox(width: 6),
+                      const Row(
+                        children: [
+                          Icon(Icons.edit, size: 16, color: Color(0xFF667EEA)),
+                          SizedBox(width: 6),
+                          Text(
+                            '펜 사용 통계',
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF667EEA),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      ...penStats.entries.map((entry) {
+                        final penName = entry.key;
+                        final count = entry.value;
+                        final percentage = (count / penStats.values.reduce((a, b) => a + b) * 100).toStringAsFixed(1);
+
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 6),
+                          child: Row(
+                            children: [
+                              Container(
+                                width: 8,
+                                height: 8,
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFF667EEA),
+                                  shape: BoxShape.circle,
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  penName,
+                                  style: const TextStyle(fontSize: 12),
+                                ),
+                              ),
+                              Text(
+                                '$count 획 ($percentage%)',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  color: provider.isDarkMode
+                                      ? Colors.white.withValues(alpha: 0.6)
+                                      : Colors.black.withValues(alpha: 0.6),
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      }),
+                      const SizedBox(height: 4),
                       Text(
-                        '커밋이란?',
-                        style: TextStyle(
-                          fontSize: 12,
+                        '총 ${penStats.values.reduce((a, b) => a + b)} 획',
+                        style: const TextStyle(
+                          fontSize: 11,
                           fontWeight: FontWeight.bold,
-                          color: Colors.blue,
+                          color: Color(0xFF667EEA),
                         ),
                       ),
                     ],
                   ),
-                  SizedBox(height: 6),
-                  Text(
-                    '현재 작업 상태를 저장합니다. 나중에 이 시점으로 복원할 수 있습니다.',
-                    style: TextStyle(fontSize: 11),
-                  ),
-                ],
+                ),
+                const SizedBox(height: 12),
+              ],
+
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.blue.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.blue.withValues(alpha: 0.3)),
+                ),
+                child: const Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(Icons.info_outline, size: 16, color: Colors.blue),
+                        SizedBox(width: 6),
+                        Text(
+                          '커밋이란?',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.blue,
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 6),
+                    Text(
+                      '현재 작업 상태를 저장합니다. 나중에 이 시점으로 복원할 수 있습니다.',
+                      style: TextStyle(fontSize: 11),
+                    ),
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
         actions: [
           TextButton(
@@ -883,5 +969,38 @@ class VersionControlPanel extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  /// Calculate pen usage statistics from current strokes
+  Map<String, int> _calculatePenStats(DrawingProvider provider) {
+    final stats = <String, int>{};
+
+    // Count strokes by pen type
+    for (final stroke in provider.strokes) {
+      // Get pen name based on stroke properties
+      String penName;
+      if (stroke.isEraser) {
+        penName = '지우개';
+      } else if (stroke.isPencil) {
+        penName = '연필';
+      } else if (stroke.isPen) {
+        penName = '볼펜';
+      } else if (stroke.isMarker) {
+        penName = '마커';
+      } else if (stroke.isHighlighter) {
+        penName = '형광펜';
+      } else {
+        penName = '기타';
+      }
+
+      stats[penName] = (stats[penName] ?? 0) + 1;
+    }
+
+    // Sort by count (descending)
+    final sortedStats = Map.fromEntries(
+      stats.entries.toList()..sort((a, b) => b.value.compareTo(a.value)),
+    );
+
+    return sortedStats;
   }
 }
