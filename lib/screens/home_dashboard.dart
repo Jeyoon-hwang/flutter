@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:file_picker/file_picker.dart';
 import '../providers/drawing_provider.dart';
 import '../utils/app_theme.dart';
 import '../utils/page_routes.dart';
@@ -169,14 +170,8 @@ class _HomeDashboardState extends State<HomeDashboard> {
           // FAB for quick note
           floatingActionButton: FloatingActionButton.extended(
             onPressed: () async {
-              // Haptic feedback
               await hapticService.medium();
-
-              // Create quick note and navigate to canvas
-              provider.createQuickNote();
-              if (mounted) {
-                context.pushSlideUp(const CanvasScreen());
-              }
+              _showQuickNoteMenu(context, provider, isDarkMode);
             },
             backgroundColor: AppTheme.primary,
             icon: const Icon(Icons.edit),
@@ -1280,5 +1275,165 @@ class _HomeDashboardState extends State<HomeDashboard> {
         ),
       ),
     );
+  }
+
+  void _showQuickNoteMenu(BuildContext context, DrawingProvider provider, bool isDarkMode) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        decoration: BoxDecoration(
+          color: isDarkMode ? const Color(0xFF2A2A2A) : Colors.white,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Handle bar
+            Container(
+              margin: const EdgeInsets.only(top: 12, bottom: 8),
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: isDarkMode ? Colors.white24 : Colors.black12,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+
+            // Title
+            Padding(
+              padding: const EdgeInsets.all(20),
+              child: Text(
+                '빠른 메모',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: isDarkMode ? Colors.white : Colors.black,
+                ),
+              ),
+            ),
+
+            // Regular note option
+            ListTile(
+              leading: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF667EEA), Color(0xFF764BA2)],
+                  ),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Icon(Icons.edit, color: Colors.white, size: 24),
+              ),
+              title: Text(
+                '일반 노트',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: isDarkMode ? Colors.white : Colors.black87,
+                ),
+              ),
+              subtitle: Text(
+                '빈 노트로 시작하기',
+                style: TextStyle(
+                  fontSize: 14,
+                  color: isDarkMode ? Colors.white70 : Colors.black54,
+                ),
+              ),
+              onTap: () async {
+                Navigator.pop(context);
+                await _createRegularNote(context, provider);
+              },
+            ),
+
+            // PDF note option
+            ListTile(
+              leading: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFFFF6B6B), Color(0xFFFFE66D)],
+                  ),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Icon(Icons.picture_as_pdf, color: Colors.white, size: 24),
+              ),
+              title: Text(
+                'PDF 노트',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: isDarkMode ? Colors.white : Colors.black87,
+                ),
+              ),
+              subtitle: Text(
+                'PDF를 배경으로 사용하기',
+                style: TextStyle(
+                  fontSize: 14,
+                  color: isDarkMode ? Colors.white70 : Colors.black54,
+                ),
+              ),
+              onTap: () async {
+                Navigator.pop(context);
+                await _createPdfNote(context, provider);
+              },
+            ),
+
+            const SizedBox(height: 32),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _createRegularNote(BuildContext context, DrawingProvider provider) async {
+    await hapticService.light();
+    provider.createQuickNote();
+    if (mounted) {
+      context.pushSlideUp(const CanvasScreen());
+    }
+  }
+
+  Future<void> _createPdfNote(BuildContext context, DrawingProvider provider) async {
+    try {
+      // Show loading indicator
+      if (!mounted) return;
+
+      await hapticService.light();
+
+      // Pick PDF file
+      FilePickerResult? result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['pdf'],
+      );
+
+      if (result != null && result.files.single.path != null) {
+        final pdfPath = result.files.single.path!;
+
+        // Create note with PDF
+        provider.createQuickNote();
+        provider.noteService.updateCurrentNote(pdfPath: pdfPath);
+
+        if (mounted) {
+          await hapticService.success();
+          context.pushSlideUp(const CanvasScreen());
+        }
+      } else {
+        // User cancelled
+        if (mounted) {
+          await hapticService.error();
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        await hapticService.error();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('PDF 파일을 불러올 수 없습니다: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 }
